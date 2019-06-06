@@ -1,4 +1,4 @@
-# Creating a Multi-Partition Solution using Azure Cosmos DB
+# Creating a Partitioned Collection with .NET SDK
 
 In this lab, you will create multiple Azure Cosmos DB containers. Some of the containers will be unlimited and configured with a partition key, while others will be fixed-sized. You will then use the SQL API and .NET SDK to query specific containers using a single partition key or across multiple partition keys.
 
@@ -33,10 +33,10 @@ In this lab, you will create multiple Azure Cosmos DB containers. Some of the co
 1. In the terminal pane, enter and execute the following command:
 
     ```sh
-    dotnet add package Microsoft.Azure.DocumentDB.Core --version 1.9.1
+    dotnet add package Microsoft.Azure.Cosmos --version 3.0.0.10-preview
     ```
 
-    > This command will add the [Microsoft.Azure.DocumentDB.Core](../media/https://www.nuget.org/packages/Microsoft.Azure.DocumentDB.Core/) NuGet package as a project dependency. The lab instructions have been tested using the ``1.9.1`` version of this NuGet package.
+    > This command will add the [Microsoft.Azure.Cosmos](https://www.nuget.org/packages/Microsoft.Azure.Cosmos/) NuGet package as a project dependency. The lab instructions have been tested using the ``1.9.1`` version of this NuGet package.
 
 1. In the terminal pane, enter and execute the following command:
 
@@ -87,11 +87,11 @@ In this lab, you will create multiple Azure Cosmos DB containers. Some of the co
         </PropertyGroup>        
         <PropertyGroup>
             <OutputType>Exe</OutputType>
-            <TargetFramework>netcoreapp2.0</TargetFramework>
+            <TargetFramework>netcoreapp2.2</TargetFramework>
         </PropertyGroup>        
         <ItemGroup>
-            <PackageReference Include="Bogus" Version="22.0.7" />
-            <PackageReference Include="Microsoft.Azure.DocumentDB.Core" Version="1.9.1" />
+            <PackageReference Include="Bogus" Version="22.0.8" />
+            <PackageReference Include="Microsoft.Azure.Cosmos" Version="3.0.0.10-preview" />
         </ItemGroup>        
     </Project>
     ```
@@ -100,9 +100,9 @@ In this lab, you will create multiple Azure Cosmos DB containers. Some of the co
 
     ![Open editor](../media/02-program_editor.jpg)
 
-### Create DocumentClient Instance
+### Create CosmosClient Instance
 
-*The DocumentClient class is the main "entry point" to using the SQL API in Azure Cosmos DB. We are going to create an instance of the **DocumentClient** class by passing in connection metadata as parameters of the class' constructor. We will then use this class instance throughout the lab.*
+*The CosmosClient class is the main "entry point" to using the SQL API in Azure Cosmos DB. We are going to create an instance of the **CosmosClient** class by passing in connection metadata as parameters of the class' constructor. We will then use this class instance throughout the lab.*
 
 1. Within the **Program.cs** editor tab, Add the following using blocks to the top of the editor:
 
@@ -112,9 +112,7 @@ In this lab, you will create multiple Azure Cosmos DB containers. Some of the co
     using System.Linq;
     using System.Net;
     using System.Threading.Tasks;
-    using Microsoft.Azure.Documents;
-    using Microsoft.Azure.Documents.Client;
-    using Microsoft.Azure.Documents.Linq;
+    using Microsoft.Azure.Cosmos;
     ```
 
 1. Locate the **Program** class and replace it with the following class:
@@ -155,10 +153,10 @@ In this lab, you will create multiple Azure Cosmos DB containers. Some of the co
     }
     ```
 
-1. Within the **Main** method, add the following lines of code to author a using block that creates and disposes a **DocumentClient** instance:
+1. Within the **Main** method, add the following lines of code to author a using block that creates and disposes a **CosmosClient** instance:
 
     ```csharp
-    using (DocumentClient client = new DocumentClient(_endpointUri, _primaryKey))
+    using (CosmosClient client = new CosmosClient(_endpointUri, _primaryKey))
     {        
     }
     ```
@@ -172,7 +170,7 @@ In this lab, you will create multiple Azure Cosmos DB containers. Some of the co
         private static readonly string _primaryKey = "<your key>";
         public static async Task Main(string[] args)
         {    
-            using (DocumentClient client = new DocumentClient(_endpointUri, _primaryKey))
+            using (CosmosClient client = new CosmosClient(_endpointUri, _primaryKey))
             {
             }     
         }
@@ -202,29 +200,23 @@ In this lab, you will create multiple Azure Cosmos DB containers. Some of the co
 1. Locate the using block within the **Main** method:
 
     ```csharp
-    using (DocumentClient client = new DocumentClient(_endpointUri, _primaryKey))
+    using (CosmosClient client = new CosmosClient(_endpointUri, _primaryKey))
     {                        
     }
     ```
 
-1. Add the following code to the method to create a new ``Database`` instance:
+1. Add the following code to the method to create a new ``CosmosDatabase`` instance if one does not already exist:
 
     ```csharp
-    Database targetDatabase = new Database { Id = "EntertainmentDatabase" };
-    ```
-
-1. Add the following code to create a new database instance if one does not already exist:
-
-    ```csharp
-    targetDatabase = await client.CreateDatabaseIfNotExistsAsync(targetDatabase);
+    CosmosDatabase targetDatabase = await client.Databases.CreateDatabaseIfNotExistsAsync("EntertainmentDatabase");
     ```
 
     > This code will check to see if a database exists in your Azure Cosmos DB account that meets the specified parameters. If a database that matches does not exist, it will create a new database.
 
-1. Add the following code to print out the self-link of the database:
+1. Add the following code to print out the ID of the database:
 
     ```csharp
-    await Console.Out.WriteLineAsync($"Database Self-Link:\t{targetDatabase.SelfLink}");
+    await Console.Out.WriteLineAsync($"Database Id:\t{targetDatabase.Id}");
     ```
 
     > The ``targetDatabase`` variable will have metadata about the database whether a new database is created or an existing one is read.
@@ -243,7 +235,7 @@ In this lab, you will create multiple Azure Cosmos DB containers. Some of the co
 
 1. Observe the output of the running command.
 
-    > In the console window, you will see the self-link string for the database resource in your Azure Cosmos DB account.
+    > In the console window, you will see the ID string for the database resource in your Azure Cosmos DB account.
 
 1. In the open terminal pane, enter and execute the following command again:
 
@@ -255,7 +247,7 @@ In this lab, you will create multiple Azure Cosmos DB containers. Some of the co
 
 1. Again, observe the output of the running command.
 
-    > Since the database already exists, you will see the same self-link on both executions of the console application. This simply means that the SDK detected that the database already exists and used the existing database instance instead of creating a new instance of the database.
+    > Since the database already exists, the SDK detected that the database already exists and used the existing database instance instead of creating a new instance of the database.
 
 1. Click the **🗙** symbol to close the terminal pane.
 
@@ -267,7 +259,7 @@ In this lab, you will create multiple Azure Cosmos DB containers. Some of the co
 1. Locate the using block within the **Main** method and delete any existing code:
 
     ```csharp
-    using (DocumentClient client = new DocumentClient(_endpointUri, _primaryKey))
+    using (CosmosClient client = new CosmosClient(_endpointUri, _primaryKey))
     {                        
     }
     ```
@@ -475,7 +467,7 @@ In this lab, you will create multiple Azure Cosmos DB containers. Some of the co
 1. Locate the using block within the **Main** method and delete any existing code:
 
     ```csharp
-    using (DocumentClient client = new DocumentClient(_endpointUri, _primaryKey))
+    using (CosmosClient client = new CosmosClient(_endpointUri, _primaryKey))
     {                        
     }
     ```
@@ -523,7 +515,7 @@ In this lab, you will create multiple Azure Cosmos DB containers. Some of the co
     ResourceResponse<Document> result = await client.CreateDocumentAsync(collectionLink, interaction);
     ```
 
-    > The ``CreateDocumentAsync`` method of the ``DocumentClient`` class takes in a self-link for a collection and an object that you would like to serialize into JSON and store as a document within the specified collection.
+    > The ``CreateDocumentAsync`` method of the ``CosmosClient`` class takes in a self-link for a collection and an object that you would like to serialize into JSON and store as a document within the specified collection.
 
 1. Still within the ``foreach`` block, add the following line of code to write the value of the newly created resource's ``id`` property to the console:
 
@@ -538,7 +530,7 @@ In this lab, you will create multiple Azure Cosmos DB containers. Some of the co
     ```csharp
     public static async Task Main(string[] args)
     {    
-        using (DocumentClient client = new DocumentClient(_endpointUri, _primaryKey))
+        using (CosmosClient client = new CosmosClient(_endpointUri, _primaryKey))
         {
             await client.OpenAsync();
             Uri collectionLink = UriFactory.CreateDocumentCollectionUri("EntertainmentDatabase", "CustomCollection");
@@ -592,7 +584,7 @@ In this lab, you will create multiple Azure Cosmos DB containers. Some of the co
     ```csharp
     public static async Task Main(string[] args)
     {  
-        using (DocumentClient client = new DocumentClient(_endpointUri, _primaryKey))
+        using (CosmosClient client = new CosmosClient(_endpointUri, _primaryKey))
         {
             await client.OpenAsync();
             Uri collectionLink = UriFactory.CreateDocumentCollectionUri("EntertainmentDatabase", "CustomCollection");
@@ -643,7 +635,7 @@ In this lab, you will create multiple Azure Cosmos DB containers. Some of the co
     ```csharp
     public static async Task Main(string[] args)
     {  
-        using (DocumentClient client = new DocumentClient(_endpointUri, _primaryKey))
+        using (CosmosClient client = new CosmosClient(_endpointUri, _primaryKey))
         {
             await client.OpenAsync();
             Uri collectionLink = UriFactory.CreateDocumentCollectionUri("EntertainmentDatabase", "CustomCollection");
