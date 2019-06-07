@@ -40,8 +40,6 @@ In this lab, you will populate an Azure Cosmos DB container from an existing set
 
     1. In the **Container Id** field, enter the value **StudentCollection**.
 
-    1. In the **Storage capacity** section, select the **Unlimited** option.
-
     1. In the **Partition key** field, enter the value ``/enrollmentYear``.
 
     1. In the **Throughput** field, enter the value ``11000``.
@@ -89,7 +87,7 @@ You will use **Azure Data Factory (ADF)** to import the JSON array stored in the
 
     ![adf-search](../media/03-adf_search.png)
 
-5. Create a new **Data Factory**. You should name this data factory **importstudentdata** and select the relevant Azure subscription. You should ensure your existing **cosmosdblab-group** resource group is selected as well as a Version **V2**. Select **East US** as the region. Click **create**.
+5. Create a new **Data Factory**. You should name this data factory **importstudentdata** with a unique number appended and select the relevant Azure subscription. You should ensure your existing **cosmosdblab-group** resource group is selected as well as a Version **V2**. Select **East US** as the region. Click **create**.
 
     ![df](../media/03-adf_selections.jpg)
 
@@ -125,7 +123,7 @@ You will use **Azure Data Factory (ADF)** to import the JSON array stored in the
 
     ![](../media/03-adf_SourceNext.JPG)
 
-14. Add the Cosmos DB target data store by selecting **Create new connection** and selecting **Azure Cosmos DB**.
+14. Add the Cosmos DB target data store by selecting **Create new connection** and selecting **Azure Cosmos DB (SQL API)**.
 
     ![](../media/03-adf_selecttarget.jpg)
 
@@ -137,7 +135,7 @@ You will use **Azure Data Factory (ADF)** to import the JSON array stored in the
 
     ![](../media/03-adf_destconnectionnext.jpg)
 
-17. Select your container from the drop-down menu. You will map your Blob storage file to the correct Cosmos DB container.
+17. Select your container from the drop-down menu. You will map your Blob storage file to the correct Cosmos DB container. Select **Skip column mapping for all tables** before continuing.
 
     ![](../media/03-adf_correcttable.jpg)
 
@@ -157,15 +155,15 @@ You will use **Azure Data Factory (ADF)** to import the JSON array stored in the
 
     ![](../media/03-adf-succeeded.jpg)
 
-22. Once the import process has completed, close the ADF. You will now proceed to execute simple queries on your imported data. 
+22. Once the import process has completed, close the ADF. You will now proceed to validate your imported data. 
 
 ## Executing Simple Queries
 
-*The Azure Cosmos DB Data Explorer allows you to view documents and run queries directly within the Azure Portal. In this exercise, you will use the Data Explorer to query the data stored in our container.*
+*The Azure Cosmos DB Data Explorer allows you to view documents and run queries directly within the Azure Portal. In this exercise, you will use the Data Explorer to view the data stored in our container.*
 
 ### Validate Imported Data
 
-*First, you will validate that the data was successfully imported into your container using the **Documents** view in the **Data Explorer**.*
+*You will validate that the data was successfully imported into your container using the **Items** view in the **Data Explorer**.*
 
 1. Return to the **Azure Portal** (<http://portal.azure.com>).
 
@@ -189,11 +187,8 @@ You will use **Azure Data Factory (ADF)** to import the JSON array stored in the
 
     ![Container node](../media/03-collection_node.jpg)
 
-1. Within the **StudentCollection** node, click the **Documents** link to view a subset of the various documents in the container. Select a few of the documents and observe the properties and structure of the documents.
+1. Within the **StudentCollection** node, click the **Items** link to view a subset of the various documents in the container. Select a few of the documents and observe the properties and structure of the documents.
 
     ![Documents](../media/03-documents.jpg)
 
     ![Example document](../media/03-example_document.jpg)
-
-
-> Before you start this lab, you will need to create an Azure Cosmos DB database and container that you will use throughout the lab. You will also use the **Azure Data Factory (ADF)** to import existing data into your container.
