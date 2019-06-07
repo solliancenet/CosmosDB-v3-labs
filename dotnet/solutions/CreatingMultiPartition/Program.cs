@@ -44,11 +44,8 @@ public class Program
             {
                 IndexingPolicy = indexingPolicy
             };
-            CosmosRequestOptions requestOptions = new CosmosRequestOptions
-            {
-            };
-            var responseCustom = await targetDatabase.Containers.CreateContainerIfNotExistsAsync(containerSettings, 10000, requestOptions);
-            var customCollection = responseCustom.Container;
+            var containerResponse = await targetDatabase.Containers.CreateContainerIfNotExistsAsync(containerSettings, 10000);
+            var customCollection = containerResponse.Container;
             await Console.Out.WriteLineAsync($"Custom Collection Id:\t{customCollection.Id}");
 
             var foodInteractions = new Bogus.Faker<PurchaseFoodOrBeverage>()

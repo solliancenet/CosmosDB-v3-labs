@@ -264,18 +264,10 @@ In this lab, you will create multiple Azure Cosmos DB containers. Some of the co
     }
     ```
 
-1. Add the following code to the method to open a connection to the database asynchronously:
-
-    ```csharp
-    await client.OpenAsync();
-    ```
-
-    > By default, the first request has a higher latency because it has to fetch the address routing table. To avoid this startup latency on the first request, you should call ``OpenAsync()`` once during initialization as follows.
-
 1. Add the following code to the method to create a self-link to an existing database:
 
     ```csharp
-    Uri databaseLink = UriFactory.CreateDatabaseUri("EntertainmentDatabase");
+    CosmosDatabase targetDatabase = await client.Databases.CreateDatabaseIfNotExistsAsync("EntertainmentDatabase");
     ```
 
 1. Add the following code to create a new ``IndexingPolicy`` instance with a custom indexing policy configured:
@@ -289,66 +281,38 @@ In this lab, you will create multiple Azure Cosmos DB containers. Some of the co
         {
             new IncludedPath
             {
-                Path = "/*",
-                Indexes = new Collection<Index>
-                {
-                    new RangeIndex(DataType.Number, -1),
-                    new RangeIndex(DataType.String, -1)                           
-                }
+                Path = "/*"
             }
         }
     };
     ```
 
-    > By default, all Azure Cosmos DB data is indexed. Although many customers are happy to let Azure Cosmos DB automatically handle all aspects of indexing, you can specify a custom indexing policy for collections. This indexing policy is very similar to the default indexing policy created by the SDK but it implements a **Range** index on string types instead of a **Hash** index.
+    > By default, all Azure Cosmos DB data is indexed. Although many customers are happy to let Azure Cosmos DB automatically handle all aspects of indexing, you can specify a custom indexing policy for collections. This indexing policy is very similar to the default indexing policy created by the SDK.
 
-1. Add the following code to create a new ``PartitionKeyDefinition`` instance with a single partition key of ``/type`` defined:
+1. Add the following code to create a new ``CosmosContainerSettings`` instance with a single partition key of ``/type`` defined and including the previously created ``IndexingPolicy``:
 
     ```csharp
-    PartitionKeyDefinition partitionKeyDefinition = new PartitionKeyDefinition
+    var containerSettings = new CosmosContainerSettings("CustomCollection", "/type")
     {
-        Paths = new Collection<string> { "/type" }
+        IndexingPolicy = indexingPolicy
     };
     ```
 
     > This definition will create a partition key on the ``/type`` path. Partition key paths are case sensitive. This is especially important when you consider JSON property casing in the context of .NET CLR object to JSON object serialization.
 
-1. Add the following lines of code to create a new ``DocumentCollection`` instance where you specify values for multiple properties:
+1. Add the following lines of code to create a new ``CosmosContainer`` instance if one does not already exist within your database. Specify the previously created settings and a value for **throughput**:
 
     ```csharp
-    DocumentCollection customCollection = new DocumentCollection
-    {
-        Id = "CustomCollection",
-        PartitionKey = partitionKeyDefinition,
-        IndexingPolicy = indexingPolicy
-    };   
+    var containerResponse = await targetDatabase.Containers.CreateContainerIfNotExistsAsync(containerSettings, 10000);
+    var customCollection = containerResponse.Container;
     ```
 
-    > We are going to explicitly specify various values for a collection created using the .NET SDK.
-
-1. Add the following code to create a new ``RequestOptions`` instance seting the **throughput** for the collection:
-
-    ```csharp
-    RequestOptions requestOptions = new RequestOptions
-    {
-        OfferThroughput = 10000
-    };
-    ```
-
-    > Here is where we can specify the RU/s allocated for the collection. If this is not specified, the SDK has a default value for RU/s assigned to a collection.
-
-1. Add the following code to create a new collection instance if one does not already exist within your database:
-
-    ```csharp
-    customCollection = await client.CreateDocumentCollectionIfNotExistsAsync(databaseLink, customCollection, requestOptions);         
-    ```
-
-    > This code will check to see if a collection exists in your database that meets all of the specified parameters. If a collection that matches does not exist, it will create a new collection.
+    > This code will check to see if a collection exists in your database that meets all of the specified parameters. If a collection that matches does not exist, it will create a new collection. Here is where we can specify the RU/s allocated for a newly created collection. If this is not specified, the SDK has a default value for RU/s assigned to a collection.
 
 1. Add the following code to print out the self-link of the database:
 
     ```csharp
-    await Console.Out.WriteLineAsync($"Custom Collection Self-Link:\t{customCollection.SelfLink}");  
+    await Console.Out.WriteLineAsync($"Custom Collection Id:\t{customCollection.Id}");
     ```
 
     > The ``customCollection`` variable will have metadata about the collection whether a new collection is created or an existing one is read.
@@ -404,6 +368,7 @@ In this lab, you will create multiple Azure Cosmos DB containers. Some of the co
     ```csharp
     public class PurchaseFoodOrBeverage : IInteraction
     {
+        public string id { get; set; }
         public decimal unitPrice { get; set; }
         public decimal totalPrice { get; set; }
         public int quantity { get; set; }
@@ -420,6 +385,7 @@ In this lab, you will create multiple Azure Cosmos DB containers. Some of the co
     ```csharp
     public class ViewMap : IInteraction
     {	
+        public string id { get; set; }
         public int minutesViewed { get; set; }
         public string type { get; set; }
     }
@@ -434,6 +400,7 @@ In this lab, you will create multiple Azure Cosmos DB containers. Some of the co
     ```csharp
     public class WatchLiveTelevisionChannel : IInteraction
     {
+        public string id { get; set; }
         public string channelName { get; set; }
         public int minutesViewed { get; set; }
         public string type { get; set; }
@@ -472,16 +439,12 @@ In this lab, you will create multiple Azure Cosmos DB containers. Some of the co
     }
     ```
 
-1. Add the following code to the method to create an asynchronous connection:
+1. Add the following code to the method to create a reference to an existing collection:
 
     ```csharp
-    await client.OpenAsync();
-    ```
-
-1. Add the following code to the method to create a self-link to an existing collection:
-
-    ```csharp
-    Uri collectionLink = UriFactory.CreateDocumentCollectionUri("EntertainmentDatabase", "CustomCollection");
+    var targetDatabase = await client.Databases.CreateDatabaseIfNotExistsAsync("EntertainmentDatabase");
+    var containerResponse = await targetDatabase.Containers.CreateContainerIfNotExistsAsync("CustomCollection", "/type");
+    var customCollection = containerResponse.Container;
     ```
 
 1. Observe the code in the **Main** method.
@@ -492,14 +455,15 @@ In this lab, you will create multiple Azure Cosmos DB containers. Some of the co
 
     ```csharp
     var foodInteractions = new Bogus.Faker<PurchaseFoodOrBeverage>()
+        .RuleFor(i => i.id, (fake) => Guid.NewGuid().ToString())
         .RuleFor(i => i.type, (fake) => nameof(PurchaseFoodOrBeverage))
         .RuleFor(i => i.unitPrice, (fake) => Math.Round(fake.Random.Decimal(1.99m, 15.99m), 2))
         .RuleFor(i => i.quantity, (fake) => fake.Random.Number(1, 5))
         .RuleFor(i => i.totalPrice, (fake, user) => Math.Round(user.unitPrice * user.quantity, 2))
-        .Generate(500);
+        .GenerateLazy(500);
     ```
 
-    > As a reminder, the Bogus library generates a set of test data. In this example, you are creating 1000 items using the Bogus library and the rules listed above. The **GenerateLazy** method tells the Bogus library to prepare for a request of 500 items by returning a variable of type **IEnumerable<Transaction>**. Since LINQ uses deferred execution by default, the items aren't actually created until the collection is iterated.
+    > As a reminder, the Bogus library generates a set of test data. In this example, you are creating 500 items using the Bogus library and the rules listed above. The **GenerateLazy** method tells the Bogus library to prepare for a request of 500 items by returning a variable of type **IEnumerable<PurchaseFoodOrBeverage>**. Since LINQ uses deferred execution by default, the items aren't actually created until the collection is iterated.
     
 1. Add the following foreach block to iterate over the ``PurchaseFoodOrBeverage`` instances:
 
@@ -509,21 +473,21 @@ In this lab, you will create multiple Azure Cosmos DB containers. Some of the co
     }
     ```
 
-1. Within the ``foreach`` block, add the following line of code to asynchronously create a document and save the result of the creation task to a variable:
+1. Within the ``foreach`` block, add the following line of code to asynchronously create a collection item and save the result of the creation task to a variable:
 
     ```csharp
-    ResourceResponse<Document> result = await client.CreateDocumentAsync(collectionLink, interaction);
+    CosmosItemResponse<PurchaseFoodOrBeverage> result = await customCollection.Items.CreateItemAsync(interaction.type, interaction);
     ```
 
-    > The ``CreateDocumentAsync`` method of the ``CosmosClient`` class takes in a self-link for a collection and an object that you would like to serialize into JSON and store as a document within the specified collection.
+    > The ``CreateItemAsync`` method of the ``CosmosItems`` class takes in a partition key value and an object that you would like to serialize into JSON and store as a document within the specified container.
 
 1. Still within the ``foreach`` block, add the following line of code to write the value of the newly created resource's ``id`` property to the console:
 
     ```csharp
-    await Console.Out.WriteLineAsync($"Document #{foodInteractions.IndexOf(interaction):000} Created\t{result.Resource.Id}");
+    await Console.Out.WriteLineAsync($"Document Created\t{result.Resource.Id}");
     ```
 
-    > The ``ResourceResponse`` type has a property named ``Resource`` that can give you access to interesting data about a document such as it's unique id, time-to-live value, self-link, ETag, timestamp,  and attachments.
+    > The ``CosmosItemResponse`` type has a property named ``Resource`` that contains the object representing the document as well as other properties to give you access to interesting data about a document such as its ETag.
 
 1. Your **Main** method should look like this:
 
@@ -532,24 +496,26 @@ In this lab, you will create multiple Azure Cosmos DB containers. Some of the co
     {    
         using (CosmosClient client = new CosmosClient(_endpointUri, _primaryKey))
         {
-            await client.OpenAsync();
-            Uri collectionLink = UriFactory.CreateDocumentCollectionUri("EntertainmentDatabase", "CustomCollection");
+            var targetDatabase = await client.Databases.CreateDatabaseIfNotExistsAsync("EntertainmentDatabase");
+            var containerResponse = await targetDatabase.Containers.CreateContainerIfNotExistsAsync("CustomCollection", "/type");
+            var customCollection = containerResponse.Container;
             var foodInteractions = new Bogus.Faker<PurchaseFoodOrBeverage>()
+                .RuleFor(i => i.id, (fake) => Guid.NewGuid().ToString())
                 .RuleFor(i => i.type, (fake) => nameof(PurchaseFoodOrBeverage))
                 .RuleFor(i => i.unitPrice, (fake) => Math.Round(fake.Random.Decimal(1.99m, 15.99m), 2))
                 .RuleFor(i => i.quantity, (fake) => fake.Random.Number(1, 5))
                 .RuleFor(i => i.totalPrice, (fake, user) => Math.Round(user.unitPrice * user.quantity, 2))
-                .Generate(500);
+                .GenerateLazy(500);
             foreach(var interaction in foodInteractions)
             {
-                ResourceResponse<Document> result = await client.CreateDocumentAsync(collectionLink, interaction);
-                await Console.Out.WriteLineAsync($"Document #{foodInteractions.IndexOf(interaction):000} Created\t{result.Resource.Id}");
+                CosmosItemResponse<PurchaseFoodOrBeverage> result = await customCollection.Items.CreateItemAsync(interaction.type, interaction);
+                await Console.Out.WriteLineAsync($"Document Created\t{result.Resource.Id}");
             }
         }     
     }
     ```
 
-    > As a reminder, the Bogus library generates a set of test data. In this example, you are creating 1000 items using the Bogus library and the rules listed above. The **GenerateLazy** method tells the Bogus library to prepare for a request of 500 items by returning a variable of type **IEnumerable<Transaction>**. Since LINQ uses deferred execution by default, the items aren't actually created until the collection is iterated. The **foreach** loop at the end of this code block iterates over the collection and creates documents in Azure Cosmos DB.
+    > As a reminder, the Bogus library generates a set of test data. In this example, you are creating 500 items using the Bogus library and the rules listed above. The **GenerateLazy** method tells the Bogus library to prepare for a request of 500 items by returning a variable of type **IEnumerable<PurchaseFoodOrBeverage>**. Since LINQ uses deferred execution by default, the items aren't actually created until the collection is iterated. The **foreach** loop at the end of this code block iterates over the collection and creates documents in Azure Cosmos DB.
 
 1. Save all of your open editor tabs.
 
