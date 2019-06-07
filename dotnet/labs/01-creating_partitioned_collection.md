@@ -463,7 +463,7 @@ In this lab, you will create multiple Azure Cosmos DB containers. Some of the co
         .GenerateLazy(500);
     ```
 
-    > As a reminder, the Bogus library generates a set of test data. In this example, you are creating 500 items using the Bogus library and the rules listed above. The **GenerateLazy** method tells the Bogus library to prepare for a request of 500 items by returning a variable of type **IEnumerable<PurchaseFoodOrBeverage>**. Since LINQ uses deferred execution by default, the items aren't actually created until the collection is iterated.
+    > As a reminder, the Bogus library generates a set of test data. In this example, you are creating 500 items using the Bogus library and the rules listed above. The **GenerateLazy** method tells the Bogus library to prepare for a request of 500 items by returning a variable of type **IEnumerable**. Since LINQ uses deferred execution by default, the items aren't actually created until the collection is iterated.
     
 1. Add the following foreach block to iterate over the ``PurchaseFoodOrBeverage`` instances:
 
@@ -479,7 +479,7 @@ In this lab, you will create multiple Azure Cosmos DB containers. Some of the co
     CosmosItemResponse<PurchaseFoodOrBeverage> result = await customCollection.Items.CreateItemAsync(interaction.type, interaction);
     ```
 
-    > The ``CreateItemAsync`` method of the ``CosmosItems`` class takes in a partition key value and an object that you would like to serialize into JSON and store as a document within the specified container.
+    > The ``CreateItemAsync`` method of the ``CosmosItems`` class takes in a partition key value and an object that you would like to serialize into JSON and store as a document within the specified container. The ``id`` property, which here we've assigned to a unique Guid on each object, is a special required value in Cosmos DB that is used for indexing and must be unique for every item in a container.
 
 1. Still within the ``foreach`` block, add the following line of code to write the value of the newly created resource's ``id`` property to the console:
 
@@ -515,7 +515,7 @@ In this lab, you will create multiple Azure Cosmos DB containers. Some of the co
     }
     ```
 
-    > As a reminder, the Bogus library generates a set of test data. In this example, you are creating 500 items using the Bogus library and the rules listed above. The **GenerateLazy** method tells the Bogus library to prepare for a request of 500 items by returning a variable of type **IEnumerable<PurchaseFoodOrBeverage>**. Since LINQ uses deferred execution by default, the items aren't actually created until the collection is iterated. The **foreach** loop at the end of this code block iterates over the collection and creates documents in Azure Cosmos DB.
+    > As a reminder, the Bogus library generates a set of test data. In this example, you are creating 500 items using the Bogus library and the rules listed above. The **GenerateLazy** method tells the Bogus library to prepare for a request of 500 items by returning a variable of type **IEnumerable**. Since LINQ uses deferred execution by default, the items aren't actually created until the collection is iterated. The **foreach** loop at the end of this code block iterates over the collection and creates documents in Azure Cosmos DB.
 
 1. Save all of your open editor tabs.
 
@@ -552,23 +552,25 @@ In this lab, you will create multiple Azure Cosmos DB containers. Some of the co
     {  
         using (CosmosClient client = new CosmosClient(_endpointUri, _primaryKey))
         {
-            await client.OpenAsync();
-            Uri collectionLink = UriFactory.CreateDocumentCollectionUri("EntertainmentDatabase", "CustomCollection");
+            var targetDatabase = await client.Databases.CreateDatabaseIfNotExistsAsync("EntertainmentDatabase");
+            var containerResponse = await targetDatabase.Containers.CreateContainerIfNotExistsAsync("CustomCollection", "/type");
+            var customCollection = containerResponse.Container;
             var tvInteractions = new Bogus.Faker<WatchLiveTelevisionChannel>()
+                .RuleFor(i => i.id, (fake) => Guid.NewGuid().ToString())
                 .RuleFor(i => i.type, (fake) => nameof(WatchLiveTelevisionChannel))
                 .RuleFor(i => i.minutesViewed, (fake) => fake.Random.Number(1, 45))
                 .RuleFor(i => i.channelName, (fake) => fake.PickRandom(new List<string> { "NEWS-6", "DRAMA-15", "ACTION-12", "DOCUMENTARY-4", "SPORTS-8" }))
-                .Generate(500);
+                .GenerateLazy(500);
             foreach(var interaction in tvInteractions)
             {
-                ResourceResponse<Document> result = await client.CreateDocumentAsync(collectionLink, interaction);
-                await Console.Out.WriteLineAsync($"Document #{tvInteractions.IndexOf(interaction):000} Created\t{result.Resource.Id}");
+                CosmosItemResponse<WatchLiveTelevisionChannel> result = await customCollection.Items.CreateItemAsync(interaction.type, interaction);
+                await Console.Out.WriteLineAsync($"Document Created\t{result.Resource.id}");
             }
         }
     }
     ```
 
-    > As a reminder, the Bogus library generates a set of test data. In this example, you are creating 1000 items using the Bogus library and the rules listed above. The **GenerateLazy** method tells the Bogus library to prepare for a request of 500 items by returning a variable of type **IEnumerable<Transaction>**. Since LINQ uses deferred execution by default, the items aren't actually created until the collection is iterated. The **foreach** loop at the end of this code block iterates over the collection and creates documents in Azure Cosmos DB.
+    > As a reminder, the Bogus library generates a set of test data. In this example, you are creating 500 items using the Bogus library and the rules listed above. The **GenerateLazy** method tells the Bogus library to prepare for a request of 500 items by returning a variable of type **IEnumerable**. Since LINQ uses deferred execution by default, the items aren't actually created until the collection is iterated. The **foreach** loop at the end of this code block iterates over the collection and creates documents in Azure Cosmos DB.
 
 1. Save all of your open editor tabs.
 
@@ -603,22 +605,24 @@ In this lab, you will create multiple Azure Cosmos DB containers. Some of the co
     {  
         using (CosmosClient client = new CosmosClient(_endpointUri, _primaryKey))
         {
-            await client.OpenAsync();
-            Uri collectionLink = UriFactory.CreateDocumentCollectionUri("EntertainmentDatabase", "CustomCollection");
+            var targetDatabase = await client.Databases.CreateDatabaseIfNotExistsAsync("EntertainmentDatabase");
+            var containerResponse = await targetDatabase.Containers.CreateContainerIfNotExistsAsync("CustomCollection", "/type");
+            var customCollection = containerResponse.Container;
             var mapInteractions = new Bogus.Faker<ViewMap>()
+                .RuleFor(i => i.id, (fake) => Guid.NewGuid().ToString())
                 .RuleFor(i => i.type, (fake) => nameof(ViewMap))
                 .RuleFor(i => i.minutesViewed, (fake) => fake.Random.Number(1, 45))
-                .Generate(500);
+                .GenerateLazy(500);
             foreach(var interaction in mapInteractions)
             {
-                ResourceResponse<Document> result = await client.CreateDocumentAsync(collectionLink, interaction);
-                await Console.Out.WriteLineAsync($"Document #{mapInteractions.IndexOf(interaction):000} Created\t{result.Resource.Id}");
+                CosmosItemResponse<ViewMap> result = await customCollection.Items.CreateItemAsync(interaction.type, interaction);
+                await Console.Out.WriteLineAsync($"Document Created\t{result.Resource.id}");
             }
         }
     }
     ```
 
-    > As a reminder, the Bogus library generates a set of test data. In this example, you are creating 1000 items using the Bogus library and the rules listed above. The **GenerateLazy** method tells the Bogus library to prepare for a request of 500 items by returning a variable of type **IEnumerable<Transaction>**. Since LINQ uses deferred execution by default, the items aren't actually created until the collection is iterated. The **foreach** loop at the end of this code block iterates over the collection and creates documents in Azure Cosmos DB.
+    > As a reminder, the Bogus library generates a set of test data. In this example, you are creating 500 items using the Bogus library and the rules listed above. The **GenerateLazy** method tells the Bogus library to prepare for a request of 500 items by returning a variable of type **IEnumerable**. Since LINQ uses deferred execution by default, the items aren't actually created until the collection is iterated. The **foreach** loop at the end of this code block iterates over the collection and creates documents in Azure Cosmos DB.
 
 1. Save all of your open editor tabs.
 
