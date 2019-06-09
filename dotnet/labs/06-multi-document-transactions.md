@@ -4,11 +4,11 @@ In this lab, you will author and execute multiple stored procedures within your 
 
 ## Setup
 
-> Before you start this lab, you will need to create an Azure Cosmos DB database and collection that you will use throughout the lab.
+> Before you start this lab, you will need to create an Azure Cosmos DB database and container that you will use throughout the lab.
 
-### Create Azure Cosmos DB Database and Collection
+### Create Azure Cosmos DB Database and Container
 
-*You will now create a database and collection within your Azure Cosmos DB account.*
+*You will now create a database and container within your Azure Cosmos DB account.*
 
 1. On the left side of the portal, click the **Resource groups** link.
 
@@ -20,15 +20,15 @@ In this lab, you will author and execute multiple stored procedures within your 
 
 1. In the **Azure Cosmos DB** blade, locate and click the **Overview** link on the left side of the blade.
 
-1. At the top of the **Azure Cosmos DB** blade, click the **Add Collection** button.
+1. At the top of the **Azure Cosmos DB** blade, click the **Add Container** button.
 
-1. In the **Add Collection** popup, perform the following actions:
+1. In the **Add Container** popup, perform the following actions:
 
     1. In the **Database id** field, select the **Create new** option and enter the value **FinancialDatabase**.
 
     1. Ensure the **Provision database throughput** option is not selected.
 
-    1. In the **Collection id** field, enter the value **InvestorCollection**.
+    1. In the **Container id** field, enter the value **InvestorCollection**.
 
     1. In the **Storage capacity** section, select the **Unlimited** option.
 
@@ -38,7 +38,7 @@ In this lab, you will author and execute multiple stored procedures within your 
 
     1. Click the **OK** button.
 
-1. Wait for the creation of the new **database** and **collection** to finish before moving on with this lab.
+1. Wait for the creation of the new **database** and **container** to finish before moving on with this lab.
 
 ### Retrieve Account Credentials
 
@@ -52,13 +52,13 @@ In this lab, you will author and execute multiple stored procedures within your 
 
 ## Author Simple Stored Procedures
 
-*You will get started in this lab by authoring simple stored procedures that implement common server-side tasks such as adding one or more documents as part of a database transaction.*
+*You will get started in this lab by authoring simple stored procedures that implement common server-side tasks such as adding one or more items as part of a database transaction.*
 
 ### Open Data Explorer
 
 1. In the **Azure Cosmos DB** blade, locate and click the **Data Explorer** link on the left side of the blade.
 
-1. In the **Data Explorer** section, expand the **FinancialDatabase** database node and then expand the **InvestorCollection** collection node. 
+1. In the **Data Explorer** section, expand the **FinancialDatabase** database node and then expand the **InvestorCollection** container node. 
 
 1. Within the **InvestorCollection** node, click the **Documents** link.
 
@@ -124,7 +124,7 @@ In this lab, you will author and execute multiple stored procedures within your 
     }
     ```
 
-    > Inside the JavaScript callback, users can either handle the exception or throw an error. In case a callback is not provided and there is an error, the Azure Cosmos DB runtime throws an error. This stored procedures creates a new document and uses a nested callback function to return the document as the body of the response.
+    > Inside the JavaScript callback, users can either handle the exception or throw an error. In case a callback is not provided and there is an error, the Azure Cosmos DB runtime throws an error. This stored procedures creates a new item and uses a nested callback function to return the item as the body of the response.
 
 1. Click the **Save** button at the top of the tab.
 
@@ -142,7 +142,7 @@ In this lab, you will author and execute multiple stored procedures within your 
 
 1. In the **Result** pane at the bottom of the tab, observe the results of the stored procedure's execution.
 
-    > You should see a new document in your collection. Azure Cosmos DB has assigned additional fields to the document such as ``id`` and ``_etag``.
+    > You should see a new item in your container. Azure Cosmos DB has assigned additional fields to the item such as ``id`` and ``_etag``.
 
 1. Click the **New SQL Query** button at the top of the **Data Explorer** section.
 
@@ -152,7 +152,7 @@ In this lab, you will author and execute multiple stored procedures within your 
     SELECT * FROM investors WHERE investors.company = "contosoairlines" AND investors.industry = "travel"
     ```
 
-    > This query will retrieve the document you have just created.
+    > This query will retrieve the item you have just created.
 
 1. Click the **Execute Query** button in the query tab to run the query. 
 
@@ -207,11 +207,11 @@ In this lab, you will author and execute multiple stored procedures within your 
 
 1. In the **Result** pane at the bottom of the tab, observe the results of the stored procedure's execution.
 
-    > You should see the unique id of a new document in your collection.
+    > You should see the unique id of a new item in your container.
 
 1. Click the *console.log* link in the **Result** pane to view the log data for your stored procedure execution.
 
-    > You can see that the procedural components of the stored procedure finished first and then the callback function was executed once the document was created. This can help you understand the asynchronous nature of JavaScript callbacks.
+    > You can see that the procedural components of the stored procedure finished first and then the callback function was executed once the item was created. This can help you understand the asynchronous nature of JavaScript callbacks.
 
 ### Create Stored Procedure with Callback Functions
 
@@ -252,7 +252,7 @@ In this lab, you will author and execute multiple stored procedures within your 
 
 1. In the **Result** pane at the bottom of the tab, observe that the stored procedure execution has failed.
 
-    > Stored procedures are bound to a specific partition key. In this example, tried to execute the stored procedure within the context of the **adventureworks** partition key. Within the stored procedure, we tried to create a new document using the **contosoairlines** partition key. The stored procedure was unable to create a new document (or access existing documents) in a partition key other than the one specified when the stored procedure is executed. This caused the stored procedure to fail. You are not able to create or manipulate documents across partition keys within a stored procedure. 
+    > Stored procedures are bound to a specific partition key. In this example, tried to execute the stored procedure within the context of the **adventureworks** partition key. Within the stored procedure, we tried to create a new item using the **contosoairlines** partition key. The stored procedure was unable to create a new item (or access existing items) in a partition key other than the one specified when the stored procedure is executed. This caused the stored procedure to fail. You are not able to create or manipulate items across partition keys within a stored procedure. 
 
 1. Click the **Execute** button at the top of the tab.
 
@@ -268,7 +268,7 @@ In this lab, you will author and execute multiple stored procedures within your 
 
 1. In the **Result** pane at the bottom of the tab, observe the results of the stored procedure's execution.
 
-    > You should see a new document in your collection. Azure Cosmos DB has assigned additional fields to the document such as ``id`` and ``_etag``.
+    > You should see a new item in your container. Azure Cosmos DB has assigned additional fields to the item such as ``id`` and ``_etag``.
 
 1. Click the **New SQL Query** button at the top of the **Data Explorer** section.
 
@@ -278,7 +278,7 @@ In this lab, you will author and execute multiple stored procedures within your 
     SELECT * FROM investors WHERE investors.company = "adventureworks"
     ```
 
-    > This query will retrieve the document you have just created.
+    > This query will retrieve the item you have just created.
 
 1. Click the **Execute Query** button in the query tab to run the query. 
 
@@ -328,7 +328,7 @@ In this lab, you will author and execute multiple stored procedures within your 
     }
     ```
 
-    > This stored procedure uses nested callbacks to create two seperate documents. You may have scenarios where your data is split across multiple JSON documents and you will need to add or modify multiple documents in a single stored procedure.
+    > This stored procedure uses nested callbacks to create two separate items. You may have scenarios where your data is split across multiple JSON documents and you will need to add or modify multiple items in a single stored procedure.
 
 1. Click the **Save** button at the top of the tab.
 
@@ -350,7 +350,7 @@ In this lab, you will author and execute multiple stored procedures within your 
 
 1. In the **Result** pane at the bottom of the tab, observe the results of the stored procedure's execution.
 
-    > You should see a new document in your collection. Azure Cosmos DB has assigned additional fields to the document such as ``id`` and ``_etag``.
+    > You should see a new item in your container. Azure Cosmos DB has assigned additional fields to the item such as ``id`` and ``_etag``.
 
 1. Replace the contents of the *stored procedure editor* with the following JavaScript code:
 
@@ -390,7 +390,7 @@ In this lab, you will author and execute multiple stored procedures within your 
     }
     ```
 
-    > Transactions are deeply and natively integrated into Cosmos DB’s JavaScript programming model. Inside a JavaScript function, all operations are automatically wrapped under a single transaction. If the JavaScript completes without any exception, the operations to the database are committed. We are going to change the stored procedure to put in a different company name for the second document. This should cause the stored procedure to fail since the second document uses a different partition key. If there is any exception that’s propagated from the script, Cosmos DB’s JavaScript runtime will roll back the whole transaction. This will effectively ensure that the first or second documents are not commited to the database.
+    > Transactions are deeply and natively integrated into Cosmos DB’s JavaScript programming model. Inside a JavaScript function, all operations are automatically wrapped under a single transaction. If the JavaScript completes without any exception, the operations to the database are committed. We are going to change the stored procedure to put in a different company name for the second item. This should cause the stored procedure to fail since the second item uses a different partition key. If there is any exception that’s propagated from the script, Cosmos DB’s JavaScript runtime will roll back the whole transaction. This will effectively ensure that the first or second items are not commited to the database.
 
 1. Click the **Update** button at the top of the tab.
 
@@ -412,7 +412,7 @@ In this lab, you will author and execute multiple stored procedures within your 
 
 1. In the **Result** pane at the bottom of the tab, observe that the stored procedure execution has failed.
 
-    > This stored procedure failed to create the second document so the entire transaction was rolled back.
+    > This stored procedure failed to create the second item so the entire transaction was rolled back.
 
 1. Click the **New SQL Query** button at the top of the **Data Explorer** section.
 
@@ -422,7 +422,7 @@ In this lab, you will author and execute multiple stored procedures within your 
     SELECT * FROM investors WHERE investors.company = "jetsonairways"
     ```
 
-    > This query won't retrieve any documents since the transaction was rolled back.
+    > This query won't retrieve any items since the transaction was rolled back.
 
 1. Click the **Execute Query** button in the query tab to run the query. 
 
