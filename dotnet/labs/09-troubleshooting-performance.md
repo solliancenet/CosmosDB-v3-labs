@@ -4,11 +4,11 @@ In this lab, you will use the .NET SDK to tune an Azure Cosmos DB request to opt
 
 ## Setup
 
-> Before you start this lab, you will need to create an Azure Cosmos DB database and collection that you will use throughout the lab. You will also use the **Azure Data Factory** to import existing data into your collection.
+> Before you start this lab, you will need to create an Azure Cosmos DB database and container that you will use throughout the lab. You will also use the **Azure Data Factory** to import existing data into your container.
 
-### Create Azure Cosmos DB Database and Collection
+### Create Azure Cosmos DB Database and Container
 
-*You will now create a database and collection within your Azure Cosmos DB account.*
+*You will now create a database and container within your Azure Cosmos DB account.*
 
 1. On the left side of the portal, click the **Resource groups** link.
 
@@ -20,15 +20,15 @@ In this lab, you will use the .NET SDK to tune an Azure Cosmos DB request to opt
 
 1. In the **Azure Cosmos DB** blade, locate and click the **Overview** link on the left side of the blade.
 
-1. At the top of the **Azure Cosmos DB** blade, click the **Add Collection** button.
+1. At the top of the **Azure Cosmos DB** blade, click the **Add Container** button.
 
-1. In the **Add Collection** popup, perform the following actions:
+1. In the **Add Container** popup, perform the following actions:
 
     1. In the **Database id** field, select the **Create new** option and enter the value **FinancialDatabase**.
 
     1. Ensure the **Provision database throughput** option is not selected.
 
-    1. In the **Collection id** field, enter the value **TransactionCollection**.
+    1. In the **Container id** field, enter the value **TransactionCollection**.
 
     1. In the **Storage capacity** section, select the **Unlimited** option.
 
@@ -38,15 +38,15 @@ In this lab, you will use the .NET SDK to tune an Azure Cosmos DB request to opt
 
     1. Click the **OK** button.
 
-1. Wait for the creation of the new **database** and **collection** to finish before moving on with this lab.
+1. Wait for the creation of the new **database** and **container** to finish before moving on with this lab.
 
-1. At the top of the **Azure Cosmos DB** blade, click the **Add Collection** button.
+1. At the top of the **Azure Cosmos DB** blade, click the **Add Container** button.
 
-1. In the **Add Collection** popup, perform the following actions:
+1. In the **Add Container** popup, perform the following actions:
 
     1. In the **Database id** field, select the **Existing database** option and then enter the value **FinancialDatabase**.
 
-    1. In the **Collection id** field, enter the value **PeopleCollection**.
+    1. In the **Container id** field, enter the value **PeopleCollection**.
 
     1. In the **Storage capacity** section, select the **Fixed-Size** option.
 
@@ -54,7 +54,7 @@ In this lab, you will use the .NET SDK to tune an Azure Cosmos DB request to opt
 
     1. Click the **OK** button.
 
-1. Wait for the creation of the new **database** and **collection** to finish before moving on with this lab.
+1. Wait for the creation of the new **database** and **container** to finish before moving on with this lab.
 
 ### Retrieve Account Credentials
 
@@ -68,7 +68,7 @@ In this lab, you will use the .NET SDK to tune an Azure Cosmos DB request to opt
 
     ![Credentials](../media/05-keys.jpg)
 
-### Import Lab Data Into Collection
+### Import Lab Data Into Container
 
 You will use **Azure Data Factory (ADF)** to import the JSON array stored in the **students.json** file from Azure Blob Storage.
 
@@ -128,7 +128,7 @@ https://cosmoslabs.blob.core.windows.net/?sv=2018-03-28&ss=bfqt&srt=sco&sp=rl&se
 
 16. Select your newly created **targetcosmosdb** connection as the Destination date store.
 
-17. Select your collection from the drop-down menu. You will map your Blob storage file to the correct Cosmos DB collection.
+17. Select your container from the drop-down menu. You will map your Blob storage file to the correct Cosmos DB container.
 
 ![](../media/03-adf_correcttable.jpg)
 
@@ -277,7 +277,7 @@ https://cosmoslabs.blob.core.windows.net/?sv=2018-03-28&ss=bfqt&srt=sco&sp=rl&se
     private static readonly Uri _endpointUri = new Uri("");
     private static readonly string _primaryKey = "";
     private static readonly string _databaseId = "FinancialDatabase";
-    private static readonly string _collectionId = "PeopleCollection";  
+    private static readonly string _containerId = "PeopleCollection";  
     ```
 
 1. For the ``_endpointUri`` variable, replace the placeholder value with the **URI** value from your Azure Cosmos DB account that you recorded earlier in this lab: 
@@ -362,7 +362,7 @@ https://cosmoslabs.blob.core.windows.net/?sv=2018-03-28&ss=bfqt&srt=sco&sp=rl&se
 
 *Azure Cosmos DB returns various response headers that can give you more metadata about your request and what operations occured on the server-side. The .NET SDK exposes many of these headers to you as properties of the ``ResourceResponse<>`` class.*
 
-### Observe RU Charge for Large Document
+### Observe RU Charge for Large Item
 
 1. Locate the using block within the **Main** method:
 
@@ -474,7 +474,7 @@ https://cosmoslabs.blob.core.windows.net/?sv=2018-03-28&ss=bfqt&srt=sco&sp=rl&se
     SELECT TOP 2 * FROM coll ORDER BY coll._ts DESC
     ```
 
-    > This query will return the latest two documents added to your collection.
+    > This query will return the latest two items added to your container.
 
 1. Click the **Execute Query** button in the query tab to run the query. 
 
@@ -565,7 +565,7 @@ https://cosmoslabs.blob.core.windows.net/?sv=2018-03-28&ss=bfqt&srt=sco&sp=rl&se
     SELECT * FROM coll WHERE IS_DEFINED(coll.Relatives)
     ```
 
-    > This query will return the only document in your collection with a property named **Children**.
+    > This query will return the only item in your container with a property named **Children**.
 
 1. Click the **Execute Query** button in the query tab to run the query. 
 
@@ -643,7 +643,7 @@ https://cosmoslabs.blob.core.windows.net/?sv=2018-03-28&ss=bfqt&srt=sco&sp=rl&se
 
     > This new policy will exclude the ``/Relatives/*`` path from indexing effectively removing the **Children** property of your large JSON document from the index.
 
-1. Click the **Save** button at the top of the section to persist your new indexing policy and "kick off" a transformation of the collection's index.
+1. Click the **Save** button at the top of the section to persist your new indexing policy and "kick off" a transformation of the container's index.
 
 1. Click the **New SQL Query** button at the top of the **Data Explorer** section.
 
@@ -681,7 +681,7 @@ https://cosmoslabs.blob.core.windows.net/?sv=2018-03-28&ss=bfqt&srt=sco&sp=rl&se
 
 1. Observe the results of the console project.
 
-    > You should see a difference in the number of RUs required to create this document. This is due to the indexer skipping the paths you excluded.
+    > You should see a difference in the number of RUs required to create this item. This is due to the indexer skipping the paths you excluded.
 
 1. Click the **🗙** symbol to close the terminal pane.
 
@@ -725,7 +725,7 @@ https://cosmoslabs.blob.core.windows.net/?sv=2018-03-28&ss=bfqt&srt=sco&sp=rl&se
 
     > This new policy removes the ``/Relatives/*`` path from the excluded path list so that the path can be indexed again.
 
-1. Click the **Save** button at the top of the section to persist your new indexing policy and "kick off" a transformation of the collection's index.
+1. Click the **Save** button at the top of the section to persist your new indexing policy and "kick off" a transformation of the container's index.
 
 1. Click the **New SQL Query** button at the top of the **Data Explorer** section.
 
@@ -737,7 +737,7 @@ https://cosmoslabs.blob.core.windows.net/?sv=2018-03-28&ss=bfqt&srt=sco&sp=rl&se
 
 1. Click the **Execute Query** button in the query tab to run the query. 
 
-    > This query should now work. If you see an empty result set, this is because the indexer has not finished indexing all of the documents in the collection. Simply rerun the query until you see a non-empty result set.
+    > This query should now work. If you see an empty result set, this is because the indexer has not finished indexing all of the items in the container. Simply rerun the query until you see a non-empty result set.
 
 ### Implement Upsert using Response Status Codes
 
@@ -759,7 +759,7 @@ https://cosmoslabs.blob.core.windows.net/?sv=2018-03-28&ss=bfqt&srt=sco&sp=rl&se
     Uri documentLink = UriFactory.CreateDocumentUri(_databaseId, _collectionId, "example.document");
     ```
 
-    > Instead of having a Uri that references a collection, we will create a Uri that references a specific document. To create this Uri, you will need a third parameter specifying the unique string identifier for the document. In this example, our string id is ``example.document``.
+    > Instead of having a Uri that references a container, we will create a Uri that references a specific item. To create this Uri, you will need a third parameter specifying the unique string identifier for the item. In this example, our string id is ``example.document``.
 
 1. Locate the following block of code:
 
@@ -785,7 +785,7 @@ https://cosmoslabs.blob.core.windows.net/?sv=2018-03-28&ss=bfqt&srt=sco&sp=rl&se
     };
     ```
 
-    > Here we are creating a new document that has an **id** property set to a value of ``example.document``.
+    > Here we are creating a new item that has an **id** property set to a value of ``example.document``.
 
 1. Locate the following line of code:
 
@@ -799,7 +799,7 @@ https://cosmoslabs.blob.core.windows.net/?sv=2018-03-28&ss=bfqt&srt=sco&sp=rl&se
     ResourceResponse<Document> readResponse = await client.ReadDocumentAsync(documentLink);
     ```
 
-    > We will now use the **ReadDocumentAsync** method of the **DocumentClient** class to retrieve a document using the unique id.
+    > We will now use the **ReadDocumentAsync** method of the **DocumentClient** class to retrieve an item using the unique id.
 
 1. Locate the following line of code:
 
@@ -848,7 +848,7 @@ https://cosmoslabs.blob.core.windows.net/?sv=2018-03-28&ss=bfqt&srt=sco&sp=rl&se
 
 1. Observe the exception message.
 
-    > You should see that an exception was thrown since a document was not found that matches the specified id.
+    > You should see that an exception was thrown since an item was not found that matches the specified id.
 
 1. Click the **🗙** symbol to close the terminal pane.
 
@@ -915,7 +915,7 @@ https://cosmoslabs.blob.core.windows.net/?sv=2018-03-28&ss=bfqt&srt=sco&sp=rl&se
 
 1. Observe the exception message.
 
-    > You should see a status code indicating that a document was not found. The catch block worked successfully.
+    > You should see a status code indicating that an item was not found. The catch block worked successfully.
 
 1. Click the **🗙** symbol to close the terminal pane.
 
@@ -968,7 +968,7 @@ https://cosmoslabs.blob.core.windows.net/?sv=2018-03-28&ss=bfqt&srt=sco&sp=rl&se
 
 1. Observe the message.
 
-    > Since we are "upserting" a document with a unique **id**, the server-side operation will be to create a new document. You should see the status code ``Created`` indicating that the create operation was completed successfully.
+    > Since we are "upserting" a document with a unique **id**, the server-side operation will be to create a new item. You should see the status code ``Created`` indicating that the create operation was completed successfully.
 
 1. In the open terminal pane, enter and execute the following command:
 
@@ -980,7 +980,7 @@ https://cosmoslabs.blob.core.windows.net/?sv=2018-03-28&ss=bfqt&srt=sco&sp=rl&se
 
 1. Observe the message.
 
-    > Since we are "upserting" a document with the same **id**, the server-side operation will be to update the existing document with the same **id**. You should see the status code ``OK`` indicating that the update operation was completed successfully.
+    > Since we are "upserting" a document with the same **id**, the server-side operation will be to update the existing item with the same **id**. You should see the status code ``OK`` indicating that the update operation was completed successfully.
 
 1. Click the **🗙** symbol to close the terminal pane.
 
@@ -988,7 +988,7 @@ https://cosmoslabs.blob.core.windows.net/?sv=2018-03-28&ss=bfqt&srt=sco&sp=rl&se
 
 *First, you will use the .NET SDK to issue request beyond the assigned capacity for a container. Request unit consumption is evaluated at a per-second rate. For applications that exceed the provisioned request unit rate, requests are rate-limited until the rate drops below the provisioned throughput level. When a request is rate-limited, the server preemptively ends the request with an HTTP status code of ``429 RequestRateTooLargeException`` and returns the ``x-ms-retry-after-ms`` header. The header indicates the amount of time, in milliseconds, that the client must wait before retrying the request. You will observe the rate-limiting of your requests in an example application.*
 
-### Reducing R/U Throughput for a Collection
+### Reducing R/U Throughput for a Container
 
 1. Return to the **Azure Portal** (<http://portal.azure.com>).
 
@@ -1004,7 +1004,7 @@ https://cosmoslabs.blob.core.windows.net/?sv=2018-03-28&ss=bfqt&srt=sco&sp=rl&se
 
 1. In the **Settings** section, locate the **Throughput** field and update it's value to **1000**.
 
-    > This is the minimum throughput that you can allocate to an *unlimited* collection.
+    > This is the minimum throughput that you can allocate to an *unlimited* container.
 
 1. Click the **Save** button at the top of the section to persist your new throughput allocation.
 
@@ -1048,7 +1048,7 @@ https://cosmoslabs.blob.core.windows.net/?sv=2018-03-28&ss=bfqt&srt=sco&sp=rl&se
 
 1. Double-click the **Program.cs** link in the **Explorer** pane to open the file in the editor.
 
-1. Locate the following line of code that identifies the collection that will be used by the application:
+1. Locate the following line of code that identifies the container that will be used by the application:
 
     ```csharp
     private static readonly string _collectionId = "PeopleCollection";  
@@ -1060,7 +1060,7 @@ https://cosmoslabs.blob.core.windows.net/?sv=2018-03-28&ss=bfqt&srt=sco&sp=rl&se
     private static readonly string _collectionId = "TransactionCollection";
     ```
 
-    > We will use a different collection for the next section of the lab.
+    > We will use a different container for the next section of the lab.
 
 1. Locate the *using* block within the **Main** method and delete any existing code:
 
@@ -1116,7 +1116,7 @@ https://cosmoslabs.blob.core.windows.net/?sv=2018-03-28&ss=bfqt&srt=sco&sp=rl&se
     ResourceResponse<Document> result = await client.CreateDocumentAsync(collectionLink, transaction);
     ```
 
-    > The ``CreateDocumentAsync`` method of the ``DocumentClient`` class takes in a self-link for a collection and an object that you would like to serialize into JSON and store as a document within the specified collection.
+    > The ``CreateDocumentAsync`` method of the ``DocumentClient`` class takes in a self-link for a collection and an object that you would like to serialize into JSON and store as an item within the specified collection.
 
 1. Still within the ``foreach`` block, add the following line of code to write the value of the newly created resource's ``id`` property to the console:
 
@@ -1124,7 +1124,7 @@ https://cosmoslabs.blob.core.windows.net/?sv=2018-03-28&ss=bfqt&srt=sco&sp=rl&se
     await Console.Out.WriteLineAsync($"Document Created\t{result.Resource.Id}");
     ```
 
-    > The ``ResourceResponse`` type has a property named ``Resource`` that can give you access to interesting data about a document such as it's unique id, time-to-live value, self-link, ETag, timestamp,  and attachments.
+    > The ``ResourceResponse`` type has a property named ``Resource`` that can give you access to interesting data about a item such as it's unique id, time-to-live value, self-link, ETag, timestamp,  and attachments.
 
 1. Your **Main** method should look like this:
 
@@ -1150,7 +1150,7 @@ https://cosmoslabs.blob.core.windows.net/?sv=2018-03-28&ss=bfqt&srt=sco&sp=rl&se
     }
     ```
 
-    > As a reminder, the Bogus library generates a set of test data. In this example, you are creating 100 items using the Bogus library and the rules listed above. The **GenerateLazy** method tells the Bogus library to prepare for a request of 500 items by returning a variable of type **IEnumerable<Transaction>**. Since LINQ uses deferred execution by default, the items aren't actually created until the collection is iterated. The **foreach** loop at the end of this code block iterates over the collection and creates documents in Azure Cosmos DB.
+    > As a reminder, the Bogus library generates a set of test data. In this example, you are creating 100 items using the Bogus library and the rules listed above. The **GenerateLazy** method tells the Bogus library to prepare for a request of 500 items by returning a variable of type **IEnumerable<Transaction>**. Since LINQ uses deferred execution by default, the items aren't actually created until the collection is iterated. The **foreach** loop at the end of this code block iterates over the collection and creates items in Azure Cosmos DB.
 
 1. Save all of your open editor tabs.
 
@@ -1166,7 +1166,7 @@ https://cosmoslabs.blob.core.windows.net/?sv=2018-03-28&ss=bfqt&srt=sco&sp=rl&se
 
 1. Observe the output of the console application.
 
-    > You should see a list of document ids associated with new documents that are being created by this tool.
+    > You should see a list of item ids associated with new items that are being created by this tool.
 
 1. Click the **🗙** symbol to close the terminal pane.
 
@@ -1196,7 +1196,7 @@ https://cosmoslabs.blob.core.windows.net/?sv=2018-03-28&ss=bfqt&srt=sco&sp=rl&se
     }  
     ```
 
-    > We are going to attempt to run as many of these creation tasks in parallel as possible. Remember, our collection is configured at 1,000 RU/s.
+    > We are going to attempt to run as many of these creation tasks in parallel as possible. Remember, our  is configured at 1,000 RU/s.
 
 1. Your **Main** method should look like this:
 
@@ -1228,7 +1228,7 @@ https://cosmoslabs.blob.core.windows.net/?sv=2018-03-28&ss=bfqt&srt=sco&sp=rl&se
     }
     ```
 
-    > As a reminder, the Bogus library generates a set of test data. In this example, you are creating 100 items using the Bogus library and the rules listed above. The **GenerateLazy** method tells the Bogus library to prepare for a request of 500 items by returning a variable of type **IEnumerable<Transaction>**. Since LINQ uses deferred execution by default, the items aren't actually created until the collection is iterated. The **foreach** loops at the end of this code block iterates over the collection and creates asynchronous tasks. Each asynchronous task will issue a request to Azure Cosmos DB. These requests are issued in parallel and should cause an exceptional scenario since your collection does not have enough assigned throughput to handle the volume of requests.
+    > As a reminder, the Bogus library generates a set of test data. In this example, you are creating 100 items using the Bogus library and the rules listed above. The **GenerateLazy** method tells the Bogus library to prepare for a request of 500 items by returning a variable of type **IEnumerable<Transaction>**. Since LINQ uses deferred execution by default, the items aren't actually created until the collection is iterated. The **foreach** loops at the end of this code block iterates over the collection and creates asynchronous tasks. Each asynchronous task will issue a request to Azure Cosmos DB. These requests are issued in parallel and should cause an exceptional scenario since your  does not have enough assigned throughput to handle the volume of requests.
 
 1. Save all of your open editor tabs.
 
@@ -1244,7 +1244,7 @@ https://cosmoslabs.blob.core.windows.net/?sv=2018-03-28&ss=bfqt&srt=sco&sp=rl&se
 
 1. Observe the output of the console application.
 
-    > This query should execute successfully. We are only creating 100 documents and we most likely will not run into any throughput issues here.
+    > This query should execute successfully. We are only creating 100 items and we most likely will not run into any throughput issues here.
 
 1. Click the **🗙** symbol to close the terminal pane.
 
@@ -1260,7 +1260,7 @@ https://cosmoslabs.blob.core.windows.net/?sv=2018-03-28&ss=bfqt&srt=sco&sp=rl&se
     .GenerateLazy(5000);
     ```
 
-    > We are going to try and create 5000 documents in parallel to see if we can hit out throughput limit.
+    > We are going to try and create 5000 items in parallel to see if we can hit out throughput limit.
 
 1. Save all of your open editor tabs.
 
@@ -1325,9 +1325,9 @@ https://cosmoslabs.blob.core.windows.net/?sv=2018-03-28&ss=bfqt&srt=sco&sp=rl&se
     string sql = "SELECT TOP 1000 * FROM c WHERE c.processed = true ORDER BY c.amount DESC";
     ```
 
-    > This query will perform a cross-partition ORDER BY and only return the top 1000 out of 50000 documents.
+    > This query will perform a cross-partition ORDER BY and only return the top 1000 out of 50000 items.
 
-1. Add the following line of code to create a document query instance:
+1. Add the following line of code to create a item query instance:
 
     ```csharp
     IDocumentQuery<Document> query = client.CreateDocumentQuery<Document>(collectionLink, sql, options).AsDocumentQuery();
@@ -1523,7 +1523,7 @@ https://cosmoslabs.blob.core.windows.net/?sv=2018-03-28&ss=bfqt&srt=sco&sp=rl&se
     timer.Start();
     ```
 
-1. Add the following line of code to create a document query instance:
+1. Add the following line of code to create a item query instance:
 
     ```csharp
     IDocumentQuery<Document> query = client.CreateDocumentQuery<Document>(collectionLink, sql, options).AsDocumentQuery();
@@ -1821,7 +1821,7 @@ https://cosmoslabs.blob.core.windows.net/?sv=2018-03-28&ss=bfqt&srt=sco&sp=rl&se
 
 1. Click the **🗙** symbol to close the terminal pane.
 
-### Reading and Querying Documents
+### Reading and Querying Items
 
 1. Locate the *using* block within the **Main** method and delete any existing code:
 
@@ -1852,9 +1852,9 @@ https://cosmoslabs.blob.core.windows.net/?sv=2018-03-28&ss=bfqt&srt=sco&sp=rl&se
     string sql = "SELECT TOP 1 * FROM c WHERE c.id = 'example.document'";
     ```
 
-    > This query will find a single document matching the specified unique id
+    > This query will find a single item matching the specified unique id
 
-1. Add the following line of code to create a document query instance:
+1. Add the following line of code to create a item query instance:
 
     ```csharp
     IDocumentQuery<Document> query = client.CreateDocumentQuery<Document>(collectionLink, sql).AsDocumentQuery();
@@ -1866,7 +1866,7 @@ https://cosmoslabs.blob.core.windows.net/?sv=2018-03-28&ss=bfqt&srt=sco&sp=rl&se
     FeedResponse<Document> response = await query.ExecuteNextAsync<Document>();
     ```
 
-    > We only need to retrieve a single page since we are getting the ``TOP 1`` documents from the collection.
+    > We only need to retrieve a single page since we are getting the ``TOP 1`` items from the .
 
 1. Add the following line of code to print out the value of the **RequestCharge** property of the **ResourceResponse<>** instance:
 
@@ -1888,7 +1888,7 @@ https://cosmoslabs.blob.core.windows.net/?sv=2018-03-28&ss=bfqt&srt=sco&sp=rl&se
 
 1. Observe the output of the console application.
 
-    > You should see the amount of RUs used to query for the document in your collection.
+    > You should see the amount of RUs used to query for the item in your .
 
 1. Click the **🗙** symbol to close the terminal pane.
 
@@ -1909,13 +1909,13 @@ https://cosmoslabs.blob.core.windows.net/?sv=2018-03-28&ss=bfqt&srt=sco&sp=rl&se
     await client.OpenAsync();
     ```
 
-1. Add the following code to create a Uri referencing the document you wish to search for:
+1. Add the following code to create a Uri referencing the item you wish to search for:
 
     ```csharp
     Uri documentLink = UriFactory.CreateDocumentUri(_databaseId, _collectionId, "example.document");   
     ```
 
-1. Add the following code to use the **ReadDocumentAsync** method of the **DocumentClient** class to retrieve a document using the unique id:
+1. Add the following code to use the **ReadDocumentAsync** method of the **DocumentClient** class to retrieve an item using the unique id:
 
     ```csharp
     ResourceResponse<Document> response = await client.ReadDocumentAsync(documentLink);
@@ -1941,7 +1941,7 @@ https://cosmoslabs.blob.core.windows.net/?sv=2018-03-28&ss=bfqt&srt=sco&sp=rl&se
 
 1. Observe the output of the console application.
 
-    > You should see that it took fewer RUs to obtain the document directly if you have it's unique id.
+    > You should see that it took fewer RUs to obtain the item directly if you have it's unique id.
 
 1. Click the **🗙** symbol to close the terminal pane.
 
