@@ -30,8 +30,6 @@ In this lab, you will author and execute multiple stored procedures within your 
 
     1. In the **Container id** field, enter the value **InvestorCollection**.
 
-    1. In the **Storage capacity** section, select the **Unlimited** option.
-
     1. In the **Partition key** field, enter the value ``/company``.
 
     1. In the **Throughput** field, enter the value ``1000``.
@@ -60,11 +58,11 @@ In this lab, you will author and execute multiple stored procedures within your 
 
 1. In the **Data Explorer** section, expand the **FinancialDatabase** database node and then expand the **InvestorCollection** container node. 
 
-1. Within the **InvestorCollection** node, click the **Documents** link.
+1. Within the **InvestorCollection** node, click the **Items** link.
 
 ### Create Simple Stored Procedure
 
-1. Click the **New Stored Procedure** button at the top of the **Data Explorer** section.
+1. Click the **New Stored Procedure** button (two gears icon) at the top of the **Data Explorer** section.
 
 1. In the stored procedure tab, locate the **Stored Procedure Id** field and enter the value: **greetCaller**.
 
@@ -88,9 +86,9 @@ In this lab, you will author and execute multiple stored procedures within your 
 
     1. In the **Partition key value** field, enter the value: ``example``.
     
-    1. Click the **Add New Param** button.
+    1. If there are no param fields listed, click the **Add New Param** button.
 
-    1. In the new field that appears, enter the value: ``Person``.
+    1. In the param field, use Type **String** and enter the value: ``Person``.
 
     1. Click the **Execute** button.
 
@@ -111,13 +109,13 @@ In this lab, you will author and execute multiple stored procedures within your 
     ```js
     function createDocument(doc) {
         var context = getContext();
-        var collection = context.getCollection();
-        var accepted = collection.createDocument(
-            collection.getSelfLink(),
+        var container = context.getCollection();
+        var accepted = container.createDocument(
+            container.getSelfLink(),
             doc,
-            function (err, newDoc) {
+            function (err, newItem) {
                 if (err) throw new Error('Error' + err.message);
-                context.getResponse().setBody(newDoc);
+                context.getResponse().setBody(newItem);
             }
         );
         if (!accepted) return;
@@ -134,9 +132,9 @@ In this lab, you will author and execute multiple stored procedures within your 
 
     1. In the **Partition key value** field, enter the value: ``contosoairlines``.
     
-    1. Click the **Add New Param** button.
+    1. If there are no param fields listed, click the **Add New Param** button.
 
-    1. In the new field that appears, enter the value: ``{ "company": "contosoairlines", "industry": "travel" }``.
+    1. In the param field, use Type **String** and enter the value: ``{ "company": "contosoairlines", "industry": "travel" }``.
 
     1. Click the **Execute** button.
 
@@ -172,10 +170,10 @@ In this lab, you will author and execute multiple stored procedures within your 
     function createDocumentWithLogging(doc) {
         console.log("procedural-start ");
         var context = getContext();
-        var collection = context.getCollection();
+        var container = context.getCollection();
         console.log("metadata-retrieved ");
-        var accepted = collection.createDocument(
-            collection.getSelfLink(),
+        var accepted = container.createDocument(
+            container.getSelfLink(),
             doc,
             function (err, newDoc) {
                 console.log("callback-started ");
@@ -224,12 +222,12 @@ In this lab, you will author and execute multiple stored procedures within your 
     ```js
     function createDocumentWithFunction(document) {
         var context = getContext();
-        var collection = context.getCollection();
-        if (!collection.createDocument(collection.getSelfLink(), document, documentCreated))
+        var container = context.getCollection();
+        if (!container.createDocument(container.getSelfLink(), document, itemCreated))
             return;
-        function documentCreated(error, newDocument) {
+        function itemCreated(error, newItem) {
             if (error) throw new Error('Error' + error.message);
-            context.getResponse().setBody(newDocument);
+            context.getResponse().setBody(newItem);
         }
     }
     ```
@@ -252,7 +250,7 @@ In this lab, you will author and execute multiple stored procedures within your 
 
 1. In the **Result** pane at the bottom of the tab, observe that the stored procedure execution has failed.
 
-    > Stored procedures are bound to a specific partition key. In this example, tried to execute the stored procedure within the context of the **adventureworks** partition key. Within the stored procedure, we tried to create a new item using the **contosoairlines** partition key. The stored procedure was unable to create a new item (or access existing items) in a partition key other than the one specified when the stored procedure is executed. This caused the stored procedure to fail. You are not able to create or manipulate items across partition keys within a stored procedure. 
+    > Stored procedures are bound to a specific partition key. In this example, we tried to execute the stored procedure within the context of the **adventureworks** partition key. Within the stored procedure, we tried to create a new item using the **contosoairlines** partition key. The stored procedure was unable to create a new item (or access existing items) in a partition key other than the one specified when the stored procedure is executed. This caused the stored procedure to fail. You are not able to create or manipulate items across partition keys within a stored procedure.
 
 1. Click the **Execute** button at the top of the tab.
 
