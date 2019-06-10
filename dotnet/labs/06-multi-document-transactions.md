@@ -295,27 +295,27 @@ In this lab, you will author and execute multiple stored procedures within your 
     ```js
     function createTwoDocuments(companyName, industry, taxRate) {
         var context = getContext();
-        var collection = context.getCollection();
-        var firstDocument = {
+        var container = context.getCollection();
+        var firstItem = {
             company: companyName,
             industry: industry
         };
-        var secondDocument = {
+        var secondItem = {
             company: companyName,
             tax: {
                 exempt: false,
                 rate: taxRate
             }
         };
-        var firstAccepted = collection.createDocument(collection.getSelfLink(), firstDocument, 
-            function (firstError, newFirstDocument) {
+        var firstAccepted = container.createDocument(container.getSelfLink(), firstItem, 
+            function (firstError, newFirstItem) {
                 if (firstError) throw new Error('Error' + firstError.message);
-                var secondAccepted = collection.createDocument(collection.getSelfLink(), secondDocument,
-                    function (secondError, newSecondDocument) {
+                var secondAccepted = container.createDocument(container.getSelfLink(), secondItem,
+                    function (secondError, newSecondItem) {
                         if (secondError) throw new Error('Error' + secondError.message);      
                         context.getResponse().setBody({
-                            companyRecord: newFirstDocument,
-                            taxRecord: newSecondDocument
+                            companyRecord: newFirstItem,
+                            taxRecord: newSecondItem
                         });
                     }
                 );
@@ -348,36 +348,36 @@ In this lab, you will author and execute multiple stored procedures within your 
 
 1. In the **Result** pane at the bottom of the tab, observe the results of the stored procedure's execution.
 
-    > You should see a new item in your container. Azure Cosmos DB has assigned additional fields to the item such as ``id`` and ``_etag``.
+    > You should see new items in your container. Azure Cosmos DB has assigned additional fields to the items such as ``id`` and ``_etag``.
 
 1. Replace the contents of the *stored procedure editor* with the following JavaScript code:
 
     ```js
     function createTwoDocuments(companyName, industry, taxRate) {
         var context = getContext();
-        var collection = context.getCollection();
-        var firstDocument = {
+        var container = context.getCollection();
+        var firstItem = {
             company: companyName,
             industry: industry
         };
-        var secondDocument = {
+        var secondItem = {
             company: companyName + "_taxprofile",
             tax: {
                 exempt: false,
                 rate: taxRate
             }
         };
-        var firstAccepted = collection.createDocument(collection.getSelfLink(), firstDocument, 
-            function (firstError, newFirstDocument) {
+        var firstAccepted = container.createDocument(container.getSelfLink(), firstItem, 
+            function (firstError, newFirstItem) {
                 if (firstError) throw new Error('Error' + firstError.message);
-                console.log('Created: ' + newFirstDocument.id);
-                var secondAccepted = collection.createDocument(collection.getSelfLink(), secondDocument,
-                    function (secondError, newSecondDocument) {
+                console.log('Created: ' + newFirstItem.id);
+                var secondAccepted = container.createDocument(container.getSelfLink(), secondItem,
+                    function (secondError, newSecondItem) {
                         if (secondError) throw new Error('Error' + secondError.message); 
-                        console.log('Created: ' + newSecondDocument.id);                   
+                        console.log('Created: ' + newSecondItem.id);                   
                         context.getResponse().setBody({
-                            companyRecord: newFirstDocument,
-                            taxRecord: newSecondDocument
+                            companyRecord: newFirstItem,
+                            taxRecord: newSecondItem
                         });
                     }
                 );
@@ -398,7 +398,7 @@ In this lab, you will author and execute multiple stored procedures within your 
 
     1. In the **Partition key value** field, enter the value: ``jetsonairways``.
     
-    1. Click the **Add New Param** button three times.
+    1. Click the **Add New Param** button until three param fields are listed.
 
     1. In the first field that appears, enter the value: ``jetsonairways``.
 
@@ -422,7 +422,7 @@ In this lab, you will author and execute multiple stored procedures within your 
 
     > This query won't retrieve any items since the transaction was rolled back.
 
-1. Click the **Execute Query** button in the query tab to run the query. 
+1. Click the **Execute Query** button in the query tab to run the query. You should see only an empty array.
 
 1. In the **Results** pane, observe the results of your query.
 
