@@ -493,3 +493,147 @@ _The CosmosClient class is the main "entry point" to using the SQL API in Azure 
 1. Click the **🗙** symbol to close the terminal pane.
 
 1. Close all open editor tabs.
+
+### Install the Azure Functions Core Tools
+
+1. Install [Node.js](https://docs.npmjs.com/getting-started/installing-node#osx-or-windows) which includes NPM. Ensure you are using Node.js version 8.5 or later.
+
+1. Close your terminal session and open a new one to ensure PATH variables are loaded for Node.js. Execute the following command:
+
+   ```sh
+   npm install -g azure-functions-core-tools
+   ```
+
+### Create a new Azure Function
+
+1. On your local machine, create a new folder that will be used to contain the content of your .NET Core Function project.
+
+1. Navigate to this new folder in your open terminal pane.
+
+1. To create your new function project execute the following in the open terminal pane:
+
+   ```sh
+   func init CosmosDBChangeProj --output .
+   ```
+
+1. From the menu, select the **dotnet** worker runtime option.
+
+1. Once creation is complete, open the project in Visual Studio Code by executing the following from the project folder:
+
+   ```sh
+   code .
+   ```
+
+1. Within the new project folder, modify the host.json file as follows:
+
+   ```json
+   {
+     "version": "2.0",
+     "extensionBundle": {
+       "id": "Microsoft.Azure.Functions.ExtensionBundle",
+       "version": "[1.*, 2.0.0)"
+     }
+   }
+   ```
+
+1. To create the new function, go back to the open terminal pane and execute the following command:
+
+   ```sh
+   func new
+   ```
+
+_If you have trouble getting func new to run, make sure that you have switched directories to the new project directory_
+
+1. From the menu select the **CosmosDBTrigger** option.
+
+1. Give the function a meaningful name, for example _NutritionDataChangeFunction_
+
+### Test your change feed function manually
+
+1. Take a look at the templated function created by this step in Visual Studio Code. It should look like this:
+
+   ```csharp
+   public static class NutritionDataChangeFunction
+   {
+       [FunctionName("FoodDataChangeFunction")]
+       public static void Run([CosmosDBTrigger(
+           databaseName: "databaseName",
+           collectionName: "collectionName",
+           ConnectionStringSetting = "",
+           LeaseCollectionName = "leases")]IReadOnlyList<Document> input, ILogger log)
+       {
+           if (input != null && input.Count > 0)
+           {
+               log.LogInformation("Documents modified " + input.Count);
+               log.LogInformation("First document Id " + input[0].Id);
+           }
+       }
+   }
+   ```
+
+1. Change the databaseName and collectionName values to match those that you setup earlier for the FoodDatabase.
+
+1. Set the value of **ConnectionStringSetting** to `DBConnection`
+
+1. Add an additional parameter to the Run function for **CreateLeaseCollectionIfNotExists** and set it to `true`.
+
+1. Open the `local.settings.json` file and add a new setting value for your database connection using the values you retrieved earlier:
+
+   ```json
+   {
+     "IsEncrypted": false,
+     "Values": {
+       "AzureWebJobsStorage": "UseDevelopmentStorage=true",
+       "FUNCTIONS_WORKER_RUNTIME": "dotnet",
+       "DBConnection": "<your-db-connection-string>"
+     }
+   }
+   ```
+
+1. Your function should now look similar to this:
+
+   ```csharp
+   public static class NutritionDataChangeFunction
+   {
+       [FunctionName("FoodDataChangeFunction")]
+       public static void Run([CosmosDBTrigger(
+           databaseName: "NutritionDatabase",
+           collectionName: "FoodCollection",
+           ConnectionStringSetting = "DBConnection",
+           CreateLeaseCollectionIfNotExists = true,
+           LeaseCollectionName = "leases")]IReadOnlyList<Document> input, ILogger log)
+       {
+           if (input != null && input.Count > 0)
+           {
+               log.LogInformation("Documents modified " + input.Count);
+               log.LogInformation("First document Id " + input[0].Id);
+           }
+       }
+   }
+   ```
+
+1. You are now ready to test your function. From the terminal pane, run the following command to start a host for your function:
+
+   ```sh
+   func host start
+   ```
+
+1. Once the host is running, navigate to the **Data Explorer** associated with your CosmosDB instance.
+
+1. Expand the **NutritionDatabase** node
+
+1. Expand the **FoodCollection** node
+
+1. Choose **items** from the list
+
+1. Select any item in the **Items** pane and make a small change to it. For example, add the following to the **tags** array:
+
+   ```json
+   {
+     "name": "testing-data-change-feed"
+   }
+   ```
+
+1. At the top of the **Data Explorer** select **Update**
+
+1. Watch your running terminal pane, and note that the change is quickly received and processed by your function. For now, this just results in a simple log message that a change has occurred.
