@@ -32,21 +32,21 @@ In this lab, you will populate an Azure Cosmos DB container from an existing set
 
 1. In the **Add Container** popup, perform the following actions:
 
-    1. In the **Database id** field, select the **Create new** option and enter the value **UniversityDatabase**.
+    1. In the **Database id** field, select the **Create new** option and enter the value **NutritionDatabase**.
 
     1. Ensure the **Provision database throughput** option is not selected.
 
         > Provisioning throughput for a database allows you to share the throughput among all the containers that belong to that database. Within an Azure Cosmos DB database, you can have a set of containers which shares the throughput as well as containers, which have dedicated throughput.
 
-    1. In the **Container Id** field, enter the value **StudentCollection**.
+    1. In the **Container Id** field, enter the value **FoodCollection**.
 
-    1. In the **Partition key** field, enter the value ``/enrollmentYear``.
+    1. In the **Partition key** field, enter the value ``/foodGroup``.
 
     1. In the **Throughput** field, enter the value ``11000``.
 
     1. Click the **+ Add Unique Key** link.
 
-    1. In the new **Unique Keys** field, enter the value ``/studentAlias``.
+    1. In the new **Unique Keys** field, enter the value ``/description``.
 
     1. Click the **OK** button.
 
@@ -68,7 +68,7 @@ In this lab, you will populate an Azure Cosmos DB container from an existing set
 
 ### Import Lab Data Into Container
 
-You will use **Azure Data Factory (ADF)** to import the JSON array stored in the **students.json** file from Azure Blob Storage.
+You will use **Azure Data Factory (ADF)** to import the JSON array stored in the **nutrition.json** file from Azure Blob Storage.
 
 1. On the left side of the portal, click the **Resource groups** link.
 
@@ -79,83 +79,83 @@ You will use **Azure Data Factory (ADF)** to import the JSON array stored in the
 1. In the **Resource groups** blade, locate and select the **cosmosgroup-lab** *Resource Group*.
 
 
-3. Click **add** to add a new resource
+1. Click **add** to add a new resource
 
     ![Add adf](../media/03-add_adf.jpg)
 
-4. Search for **Data Factory** and select it
+1. Search for **Data Factory** and select it
 
     ![adf-search](../media/03-adf_search.png)
 
-5. Create a new **Data Factory**. You should name this data factory **importstudentdata** with a unique number appended and select the relevant Azure subscription. You should ensure your existing **cosmosdblab-group** resource group is selected as well as a Version **V2**. Select **East US** as the region. Click **create**.
+1. Create a new **Data Factory**. You should name this data factory **importnutritiondata** with a unique number appended and select the relevant Azure subscription. You should ensure your existing **cosmosdblab-group** resource group is selected as well as a Version **V2**. Select **East US** as the region. Click **create**.
 
     ![df](../media/03-adf_selections.jpg)
 
-6. After creation, open your newly created Data Factory. Select **Author & Monitor** and you will launch ADF. You should see a screen similar to the screenshot below. Select **Copy Data**. We will be using ADF for a one-time copy of data from a source JSON file on Azure Blob Storage to a database in Cosmos DB’s SQL API. ADF can also be used for more frequent data transfers from Cosmos DB to other data stores.
+1. After creation, open your newly created Data Factory. Select **Author & Monitor** and you will launch ADF. You should see a screen similar to the screenshot below. Select **Copy Data**. We will be using ADF for a one-time copy of data from a source JSON file on Azure Blob Storage to a database in Cosmos DB’s SQL API. ADF can also be used for more frequent data transfers from Cosmos DB to other data stores.
     ![](../media/03-adf_author&monitor.jpg)
     ![](../media/03-adf_copydata.jpg)
 
-7. Edit basic properties for this data copy. You should name the task **ImportStudents** and select to **Run once now**
+1. Edit basic properties for this data copy. You should name the task **ImportNutrition** and select to **Run once now**
 
    ![adf-properties](../media/03-adf_properties.jpg)
 
-8. **Create a new connection** and select **Azure Blob Storage**. We will import data from a json file on Azure Blob Storage. In addition to Blob Storage, you can use ADF to migrate from a wide variety of sources. We will not cover migration from these sources in this tutorial.
+1. **Create a new connection** and select **Azure Blob Storage**. We will import data from a json file on Azure Blob Storage. In addition to Blob Storage, you can use ADF to migrate from a wide variety of sources. We will not cover migration from these sources in this tutorial.
 
     ![](../media/03-adf_blob.jpg)
 
-9. Name the source **StudentsJson** and select **Use SAS URI** as the Authentication method. Please use the following SAS URI for read-only access to this Blob Storage container: https://cosmoslabs.blob.core.windows.net/?sv=2018-03-28&ss=bfqt&srt=sco&sp=rl&se=2020-04-01T13:14:14Z&st=2018-11-06T06:14:14Z&spr=https&sig=8HltMx1smolMcSmOhfVdC3drxtmTkq2%2BfJ8574uK60A%3D
+1. Name the source **NutritionJson** and select **Use SAS URI** as the Authentication method. Please use the following SAS URI for read-only access to this Blob Storage container: https://cosmoslabsv3update.blob.core.windows.net/?sv=2018-03-28&ss=bfqt&srt=sco&sp=rl&st=2019-06-11T13%3A43%3A56Z&se=2020-06-12T13%3A43%3A00Z&sig=KJRYFY4%2Fm1pu6rklgvx8T%2BEl5JzF7LUt%2FErvKt1NBhw%3D
 
     ![](../media/03-adf_connecttoblob.jpg)
 
-10. Select the **students** folder
+1. Select the **nutrition** folder
 
     ![](../media/03-adf_choosestudents.jpg)
 
-11. Do not check **Copy file recursively** and **Binary Copy**. Also ensure that **Compression Type** is "none".
+1. Do not check **Copy file recursively** and **Binary Copy**. Also ensure that **Compression Type** is "none".
 
     ![](../media/03-adf_source_next.jpg)
 
-12. ADF should auto-detect the file format to be JSON. You can also select the file format as **JSON format.** You should also make sure you select **Array of Objects**  as the File pattern.
+1. ADF should auto-detect the file format to be JSON. You can also select the file format as **JSON format.** You should also make sure you select **Array of Objects**  as the File pattern.
 
     ![](../media/03-adf_source_dataset_format.jpg)
 
-13. You have now successfully connected the Blob Storage container with the students.json file. You should select **StudentsJson** as the source and click **Next**.
+1. You have now successfully connected the Blob Storage container with the nutrition.json file. You should select **NutritionJson** as the source and click **Next**.
 
     ![](../media/03-adf_SourceNext.JPG)
 
-14. Add the Cosmos DB target data store by selecting **Create new connection** and selecting **Azure Cosmos DB (SQL API)**.
+1. Add the Cosmos DB target data store by selecting **Create new connection** and selecting **Azure Cosmos DB (SQL API)**.
 
     ![](../media/03-adf_selecttarget.jpg)
 
-15. Name the linked service **targetcosmosdb** and select your Azure subscription and Cosmos DB account. You should also select the Cosmos DB database that you created earlier.
+1. Name the linked service **targetcosmosdb** and select your Azure subscription and Cosmos DB account. You should also select the Cosmos DB database that you created earlier.
 
     ![](../media/03-adf_selecttargetdb.jpg)
 
-16. Select your newly created **targetcosmosdb** connection as the Destination date store.
+1. Select your newly created **targetcosmosdb** connection as the Destination date store.
 
     ![](../media/03-adf_destconnectionnext.jpg)
 
-17. Select your container from the drop-down menu. You will map your Blob storage file to the correct Cosmos DB container. Select **Skip column mapping for all tables** before continuing.
+1. Select your container from the drop-down menu. You will map your Blob storage file to the correct Cosmos DB container. Select **Skip column mapping for all tables** before continuing.
 
     ![](../media/03-adf_correcttable.jpg)
 
-18. You should have selected to skip column mappings in a previous step. Click through this screen.
+1. You should have selected to skip column mappings in a previous step. Click through this screen.
 
     ![](../media/03-adf_destinationconnectionfinal.jpg)
 
-19. There is no need to change any settings. Click **next**.
+1. There is no need to change any settings. Click **next**.
 
     ![](../media/03-adf_settings.jpg)
 
-20. After deployment is complete, select **Monitor**.
+1. After deployment is complete, select **Monitor**.
 
     ![](../media/03-adf_deployment.jpg)
 
-21. After a few minutes, refresh the page and the status for the ImportStudents pipeline should be listed as **Succeeded**.
+1. After a few minutes, refresh the page and the status for the ImportNutrition pipeline should be listed as **Succeeded**.
 
     ![](../media/03-adf-succeeded.jpg)
 
-22. Once the import process has completed, close the ADF. You will now proceed to validate your imported data. 
+1. Once the import process has completed, close the ADF. You will now proceed to validate your imported data. 
 
 ## Executing Simple Queries
 
@@ -183,11 +183,11 @@ You will use **Azure Data Factory (ADF)** to import the JSON array stored in the
 
     ![Data Explorer pane](../media/03-data_explorer_pane.jpg)
 
-1. In the **Data Explorer** section, expand the **UniversityDatabase** database node and then expand the **StudentCollection** container node. 
+1. In the **Data Explorer** section, expand the **NutritionDatabase** database node and then expand the **FoodCollection** container node. 
 
     ![Container node](../media/03-collection_node.jpg)
 
-1. Within the **StudentCollection** node, click the **Items** link to view a subset of the various documents in the container. Select a few of the documents and observe the properties and structure of the documents.
+1. Within the **FoodCollection** node, click the **Items** link to view a subset of the various documents in the container. Select a few of the documents and observe the properties and structure of the documents.
 
     ![Documents](../media/03-documents.jpg)
 
