@@ -15,13 +15,12 @@ public class Program
     {
         using (CosmosClient client = new CosmosClient(_endpointUri, _primaryKey))
         {
-            client.GetDatabase().DefineContainer("","").
-            CosmosDatabase targetDatabase = await client..GetDatabase("EntertainmentDatabase").;
+            CosmosDatabase targetDatabase = await client.CreateDatabaseIfNotExistsAsync("EntertainmentDatabase");
             await Console.Out.WriteLineAsync($"Database Id:\t{targetDatabase.Id}");
 
-            CosmosContainerResponse response = await targetDatabase.Containers.CreateContainerIfNotExistsAsync("DefaultCollection", "/id");
+            ContainerResponse response = await targetDatabase.CreateContainerIfNotExistsAsync("DefaultCollection", "/id");
             CosmosContainer defaultContainer = response.Container;
-            await Console.Out.WriteLineAsync($"Default Collection Id:\t{defaultContainer.Id}");
+            await Console.Out.WriteLineAsync($"Default Container Id:\t{defaultContainer.Id}");
 
             IndexingPolicy indexingPolicy = new IndexingPolicy
             {
@@ -31,23 +30,19 @@ public class Program
                 {
                     new IncludedPath
                     {
-                        Path = "/*",
-                        //Indexes = new Collection<Index>
-                        //{
-                        //    new RangeIndex(DataType.Number, -1),
-                        //    new RangeIndex(DataType.String, -1)
-                        //}
+                        Path = "/*"
                     }
                 }
             };
 
             CosmosContainerSettings containerSettings = new CosmosContainerSettings("CustomCollection", $"/{nameof(IInteraction.type)}")
             {
-                IndexingPolicy = indexingPolicy
+                IndexingPolicy = indexingPolicy,
             };
-            var containerResponse = await targetDatabase.Containers.CreateContainerIfNotExistsAsync(containerSettings, 10000);
-            var customCollection = containerResponse.Container;
-            await Console.Out.WriteLineAsync($"Custom Collection Id:\t{customCollection.Id}");
+            var containerResponse = await targetDatabase.CreateContainerIfNotExistsAsync(containerSettings, 10000);
+            var customContainer = containerResponse.Container;
+            //var customContainer = targetDatabase.GetContainer("CustomCollection");
+            await Console.Out.WriteLineAsync($"Custom Container Id:\t{customContainer.Id}");
 
             var foodInteractions = new Bogus.Faker<PurchaseFoodOrBeverage>()
                 .RuleFor(i => i.id, (fake) => Guid.NewGuid().ToString())
@@ -59,8 +54,8 @@ public class Program
 
             foreach (var interaction in foodInteractions)
             {
-                CosmosItemResponse<PurchaseFoodOrBeverage> result = await customCollection.Items.CreateItemAsync(interaction.type, interaction);
-                await Console.Out.WriteLineAsync($"Document Created\t{result.Resource.id}");
+                ItemResponse<PurchaseFoodOrBeverage> result = await customContainer.CreateItemAsync(interaction);
+                await Console.Out.WriteLineAsync($"Item Created\t{result.Resource.id}");
             }
 
             var tvInteractions = new Bogus.Faker<WatchLiveTelevisionChannel>()
@@ -72,8 +67,8 @@ public class Program
 
             foreach (var interaction in tvInteractions)
             {
-                CosmosItemResponse<WatchLiveTelevisionChannel> result = await customCollection.Items.CreateItemAsync(interaction.type, interaction);
-                await Console.Out.WriteLineAsync($"Document Created\t{result.Resource.id}");
+                ItemResponse<WatchLiveTelevisionChannel> result = await customContainer.CreateItemAsync(interaction);
+                await Console.Out.WriteLineAsync($"Item Created\t{result.Resource.id}");
             }
 
             var mapInteractions = new Bogus.Faker<ViewMap>()
@@ -84,11 +79,11 @@ public class Program
 
             foreach (var interaction in mapInteractions)
             {
-                CosmosItemResponse<ViewMap> result = await customCollection.Items.CreateItemAsync(interaction.type, interaction);
-                await Console.Out.WriteLineAsync($"Document Created\t{result.Resource.id}");
+                ItemResponse<ViewMap> result = await customContainer.CreateItemAsync(interaction);
+                await Console.Out.WriteLineAsync($"Item Created\t{result.Resource.id}");
             }
 
-            CosmosResultSetIterator<GeneralInteraction> query = customCollection.Items.CreateItemQuery<GeneralInteraction>("SELECT * FROM c", 2);
+            FeedIterator<GeneralInteraction> query = customContainer.CreateItemQuery<GeneralInteraction>("SELECT * FROM c", 2);
             while (query.HasMoreResults)
             {
                 foreach (GeneralInteraction interaction in await query.FetchNextSetAsync())
