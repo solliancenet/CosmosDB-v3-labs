@@ -2,57 +2,161 @@
 
 In this lab, you will create a number of Azure Functions to consume data from the CosmosDB Change feed.
 
+## Prerequisites
+
+In order to successfully complete this lab you will need the latest .NET Core SDK, and a text editor suitable for programming. This lab will use Visual Studio Code, an open source IDE provided by Microsoft.
+
+To get started with the .NET Core SDk, [Follow this Tutorial](https://aka.ms/dotnetcoregs)
+
+To download and use Visual Studio Code, [Click this Link](https://code.visualstudio.com/)
+
+Finally, you will need a Microsoft Azure account. Free accounts are available for demo purposes. [Visit the Azure Portal](https://portal.azure.com) for details.
+
 ## Setup
 
-> Before you start this lab, you will need to create an Azure Cosmos DB database and container, and populate it with existing data using the **Azure Data Factory (ADF)**
+> Before you start this lab you will need to set up and configure a number of Azure resources that you will use throughout the lab. The .NET SDK requires credentials to connect to your Azure accounts. You will collect and store these credentials in this step.
 
-### Create Azure Cosmos DB Database and Container
+### Create an Azure Resource Group for this Lab
 
-_You will now create a database and container within your Azure Cosmos DB account._
+_You will create an azure resource group to allow for easy management of the resources utilized in this lab_
+
+1. In a new browser window, sign in to the **Azure Portal** (<https://portal.azure.com>).
+
+1. On the left side of the portal, click the **Resource Groups** link.
+
+   ![Resource Groups](../media/08-select-resource-groups.png)
+
+1. In the **Resource Groups** blade, select **Add**
+
+   ![Resource Groups](../media/08-resources-blade.png)
+
+1. In the **Create a resource group** window, create a new resource
+
+   1. Leave Subscription set to the **default** value
+
+   1. Name the resource group **cosmosdblab-group**
+
+   1. Set the Region to one that is closest to your location
+
+   [!Resource Groups](../media/08-create-resource-group.png)
+
+1. At the bottom of the window, click **Review + Create**
+
+1. At the bottom of the review window, click **Create**
+
+> Creation of a new resource group may take a few moments
+
+### Create Azure Cosmos DB Account
+
+_You will now create an Azure Cosmos DB account._
 
 1. On the left side of the portal, click the **Resource groups** link.
 
-   ![Resource groups](../media/03-resource_groups.jpg)
+   ![Resource Groups](../media/08-select-resource-groups.png)
 
-1. In the **Resource groups** blade, locate and select the **cosmosgroup-lab** _Resource Group_.
+1. In the **Resource groups** blade, locate and select the **cosmosdblab-group** _Resource Group_.
 
-   ![Lab resource group](../media/03-lab_resource_group.jpg)
+   ![Lab resource group](../media/08-cosmos-resource.png")
 
-1. In the **cosmosgroup-lab** blade, select the **Azure Cosmos DB** account you recently created.
+1. In the **cosmosdblab-group** blade, click the **Add** button
 
-   ![Cosmos resource](../media/03-cosmos_resource.jpg)
+   ![Cosmos resource](../media/08-resources-add.png)
+
+1. In the **Get Started** blade that opens, type _Azure Cosmos DB_ into the search bar and select the first result.
+
+1. In the new window, click **Create**
+
+   ![Create Azure Cosmos DB](../media/08-create-cosmos.png)
+
+1. In the **Create Azure Cosmos DB Account** window, complete the following configuration.
+
+   1. Leave _Subscription_ set to the **default** value
+
+   1. Choose the **cosmosdblab-group** resource group from _Resource Group_ drop down
+
+   1. In _Account Name_ enter **cosmosdblab** with a numeric suffix like **cosmosdblab0101**.
+
+   1. Leave the _Api_ set to **Core (SQL)**
+
+   1. Set the _Location_ to the region nearest you
+
+1. Click **Review + Create**
+
+   ![Azure Cosmos DB Config](../media/08-cosmos-db-config.png)
+
+1. When you're ready, in the review window click **Create**
+
+> Creating a new Azure Cosmos DB account may take a few minutes. Once it completes, proceed to the next step.
+
+### Create Azure Cosmos DB Database and Containers
+
+_You will now create a database and several containers within your Azure Cosmos DB account_
+
+1. On the left side of the portal, click the **Resource groups** link.
+
+   ![Resource Groups](../media/08-select-resource-groups.png)
+
+1. In the **Resource groups** blade, locate and select the **cosmosdblab-group** _Resource Group_.
+
+   ![Lab resource group](../media/08-cosmos-resource.png")
+
+1. In the **cosmosdblab-group** blade, select the Cosmos DB Account that you just created.
+
+   ![Cosmos DB in Resource Blade](../media/08-cosmos-in-resources.png)
 
 1. In the **Azure Cosmos DB** blade, locate and click the **Overview** link on the left side of the blade.
 
-   ![Overview pane](../media/03-overview.jpg)
+   ![Overview pane](../media/08-cosmos-overview.png)
 
 1. At the top of the **Azure Cosmos DB** blade, click the **Add Container** button.
 
-   ![Add container](../media/03-add_collection.jpg)
+   ![Add container](../media/08-add-container.png)
 
 1. In the **Add Container** popup, perform the following actions:
 
-   1. In the **Database id** field, select the **Create new** option and enter the value **NutritionDatabase**.
+   1. In the **Database id** field, select the **Create new** option and enter the value **StoreDatabase**.
 
    1. Ensure the **Provision database throughput** option is not selected.
 
       > Provisioning throughput for a database allows you to share the throughput among all the containers that belong to that database. Within an Azure Cosmos DB database, you can have a set of containers which shares the throughput as well as containers, which have dedicated throughput.
 
-   1. In the **Container Id** field, enter the value **FoodContainer**.
+   1. In the **Container Id** field, enter the value **CartContainer**.
 
-   1. In the **Partition key** field, enter the value `/foodGroup`.
+   1. In the **Partition key** field, enter the value `/Item`.
 
-   1. In the **Throughput** field, enter the value `11000`.
-
-   1. Click the **+ Add Unique Key** link.
-
-   1. In the new **Unique Keys** field, enter the value `/id`.
+   1. In the **Throughput** field, enter the value `1000`.
 
    1. Click the **OK** button.
 
-   ![Add container](../media/04-add_collection_settings.jpg)
+   ![Add container](../media/08-add-database.png)
 
 1. Wait for the creation of the new **database** and **container** to finish before moving on with this lab.
+
+1. You need to create two additional **containers** for this lab. For each, you can utilize the **New Container** but at the top of the **Data Explorer** window, or return to the **Overview** tab.
+
+   ![Additional Containers](../media/08-add-additional-containers.png)
+
+1. For the first additional container, utilize the following values
+
+   1. In the **Database id** field, select the **Use existing** option and select the **StoreDatabase**.
+
+   1. In the **Container id** field, enter the value **CartContainerByState**
+
+   1. In the **Partiion key** field, enter the value `/BuyerState`
+
+   1. In the **Throughput** field, enter the value `1000`
+
+   1. Click the **OK** button.
+
+1. To create the final contianer, follow the same steps as above but utilize the following values:
+
+   1. In the **Container id** field, enter the value **StateSales**
+
+   1. In the **Partition key** field, enter the value `/State`
+
+1. Once all three containers have been created, your Data Explorer should look like this:
+
+   ![All Containers Created](../media/08-comos-containers-created.png)
 
 ### Retrieve Account Credentials
 
@@ -60,235 +164,100 @@ _The .NET SDK requires credentials to connect to your Azure Cosmos DB account. Y
 
 1. On the left side of the **Azure Cosmos DB** blade, locate the **Settings** section and click the **Keys** link.
 
-   ![Keys pane](../media/03-keys_pane.jpg)
+   ![Keys pane](../media/08-comos-containers-created-keys.png)
 
 1. In the **Keys** pane, record the values in the **CONNECTION STRING**, **URI** and **PRIMARY KEY** fields. You will use these values later in this lab.
 
-   ![Credentials](../media/03-keys.jpg)
+## Build A .NET Console App to Generate Data
 
-### Import Lab Data Into Container
-
-You will use **Azure Data Factory (ADF)** to import the JSON array stored in the **students.json** file from Azure Blob Storage.
-
-1. On the left side of the portal, click the **Resource groups** link.
-
-   > To learn more about copying data to Cosmos DB with ADF, please read [ADF's documentation](https://docs.microsoft.com/en-us/azure/data-factory/connector-azure-cosmos-db).
-
-   ![Resource groups](../media/03-resource_groups.jpg)
-
-1. In the **Resource groups** blade, locate and select the **cosmosgroup-lab** _Resource Group_.
-
-3) Click **add** to add a new resource
-
-   ![Add adf](../media/03-add_adf.jpg)
-
-4) Search for **Data Factory** and select it
-
-   ![adf-search](../media/03-adf_search.png)
-
-5) Create a new **Data Factory**. You should name this data factory **importnutritiondata** with a unique number appended and select the relevant Azure subscription. You should ensure your existing **cosmosdblab-group** resource group is selected as well as a Version **V2**. Select **West US** as the region. Click **create**.
-
-   ![df](../media/03-adf_selections.jpg)
-
-6) After creation, open your newly created Data Factory. Select **Author & Monitor** and you will launch ADF. You should see a screen similar to the screenshot below. Select **Copy Data**. We will be using ADF for a one-time copy of data from a source JSON file on Azure Blob Storage to a database in Cosmos DB’s SQL API. ADF can also be used for more frequent data transfers from Cosmos DB to other data stores.
-   ![](../media/03-adf_author&monitor.jpg)
-   ![](../media/03-adf_copydata.jpg)
-
-7) Edit basic properties for this data copy. You should name the task **ImportNutrition** and select to **Run once now**
-
-   ![adf-properties](../media/03-adf_properties.jpg)
-
-8) **Create a new connection** and select **Azure Blob Storage**. We will import data from a json file on Azure Blob Storage. In addition to Blob Storage, you can use ADF to migrate from a wide variety of sources. We will not cover migration from these sources in this tutorial.
-
-   ![](../media/03-adf_blob.jpg)
-
-9) Name the source **NutritionJson** and select **Use SAS URI** as the Authentication method. Please use the following SAS URI for read-only access to this Blob Storage container: https://cosmoslabs.blob.core.windows.net/?sv=2018-03-28&ss=bfqt&srt=sco&sp=rl&se=2020-04-01T13:14:14Z&st=2018-11-06T06:14:14Z&spr=https&sig=8HltMx1smolMcSmOhfVdC3drxtmTkq2%2BfJ8574uK60A%3D
-
-   ![](../media/03-adf_connecttoblob.jpg)
-
-<!-- 10) Select the **students** folder
-
-    ![](../media/03-adf_choosestudents.jpg) -->
-
-12. Do not check **Copy file recursively** and **Binary Copy**. Also ensure that **Compression Type** is "none".
-
-    ![](../media/03-adf_source_next.jpg)
-
-13. ADF should auto-detect the file format to be JSON. You can also select the file format as **JSON format.** You should also make sure you select **Array of Objects** as the File pattern.
-
-    ![](../media/03-adf_source_dataset_format.jpg)
-
-14. You have now successfully connected the Blob Storage container with the NutritionData.json file. You should select **NutritionJson** as the source and click **Next**.
-
-    ![](../media/03-adf_SourceNext.JPG)
-
-15. Add the Cosmos DB target data store by selecting **Create new connection** and selecting **Azure Cosmos DB (SQL API)**.
-
-    ![](../media/03-adf_selecttarget.jpg)
-
-16. Name the linked service **targetcosmosdb** and select your Azure subscription and Cosmos DB account. You should also select the Cosmos DB database that you created earlier.
-
-    ![](../media/03-adf_selecttargetdb.jpg)
-
-17. Select your newly created **targetcosmosdb** connection as the Destination date store.
-
-    ![](../media/03-adf_destconnectionnext.jpg)
-
-18. Select your container from the drop-down menu. You will map your Blob storage file to the correct Cosmos DB container. Select **Skip column mapping for all tables** before continuing.
-
-    ![](../media/03-adf_correcttable.jpg)
-
-19. You should have selected to skip column mappings in a previous step. Click through this screen.
-
-    ![](../media/03-adf_destinationconnectionfinal.jpg)
-
-20. There is no need to change any settings. Click **next**.
-
-    ![](../media/03-adf_settings.jpg)
-
-21. After deployment is complete, select **Monitor**.
-
-    ![](../media/03-adf_deployment.jpg)
-
-22. After a few minutes, refresh the page and the status for the ImportStudents pipeline should be listed as **Succeeded**.
-
-    ![](../media/03-adf-succeeded.jpg)
-
-23. Once the import process has completed, close the ADF. You will now proceed to validate your imported data.
-
-## Executing Simple Queries
-
-_The Azure Cosmos DB Data Explorer allows you to view documents and run queries directly within the Azure Portal. In this exercise, you will use the Data Explorer to view the data stored in our container._
-
-### Validate Imported Data
-
-_You will validate that the data was successfully imported into your container using the **Items** view in the **Data Explorer**._
-
-1. Return to the **Azure Portal** (<http://portal.azure.com>).
-
-1. On the left side of the portal, click the **Resource groups** link.
-
-   ![Resource groups](../media/03-resource_groups.jpg)
-
-1. In the **Resource groups** blade, locate and select the **cosmosgroup-lab** _Resource Group_.
-
-   ![Lab resource group](../media/03-lab_resource_group.jpg)
-
-1. In the **cosmosgroup-lab** blade, select the **Azure Cosmos DB** account you recently created.
-
-   ![Cosmos resource](../media/03-cosmos_resource.jpg)
-
-1. In the **Azure Cosmos DB** blade, locate and click the **Data Explorer** link on the left side of the blade.
-
-   ![Data Explorer pane](../media/03-data_explorer_pane.jpg)
-
-1. In the **Data Explorer** section, expand the **NutritionDatabase** database node and then expand the **FoodContainer** container node.
-
-   ![Container node](../media/03-collection_node.jpg)
-
-1. Within the **FoodContainer** node, click the **Items** link to view a subset of the various documents in the container. Select a few of the documents and observe the properties and structure of the documents.
-
-   ![Documents](../media/03-documents.jpg)
-
-   ![Example document](../media/03-example_document.jpg)
-
-### Create a .NET Core Project
+_In order to simulate data flowing into our store, in the form of actions on an ecommerce website, we'll build a simple .NET Console App to generate and add documents to our Cosmos DB CartContainer_
 
 1. On your local machine, create a new folder that will be used to contain the content of your .NET Core project.
 
-1. In the new folder, right-click the folder and select the **Open with Code** menu option.
+1. Open a terminal window and navigate to the folder that you created in the previous step
 
-   ![Open with Visual Studio Code](../media/03-open_with_code.jpg)
-
-   > Alternatively, you can run a command prompt in your current directory and execute the `code .` command.
-
-1. In the Visual Studio Code window that appears, right-click the **Explorer** pane and select the **Open in Command Prompt** menu option.
-
-   ![Open in Command Prompt](../media/03-open_command_prompt.jpg)
-
-1. In the open terminal pane, enter and execute the following command:
+1. In the terminal window, enter and execute the following command:
 
    ```sh
-   dotnet new console --output .
+   dotnet new console -o DataGenerator
    ```
 
-   > This command will create a new .NET Core 2.1 project. The project will be a **console** project and the project will be created in the current directly since you used the `--output .` option.
+> This command will create a new .NET Core 2.1 project. This project will be a **console** project and the project will be crated in a new directory called **DataGenerator**
 
-1. Visual Studio Code will most likely prompt you to install various extensions related to **.NET Core** or **Azure Cosmos DB** development. None of these extensions are required to complete the labs.
+1.  Change directory to the **DataGenerator** folder
 
-1. In the terminal pane, enter and execute the following command:
+1.  In the terminal pane, enter and execute the following command:
 
-   ```sh
-   dotnet add package Microsoft.Azure.Cosmos --version 3.0.0
-   ```
+    ```sh
+    dotnet add package Microsoft.Azure.Cosmos --version 3.0.0.17-preview
+    ```
 
-   > This command will add the [Microsoft.Azure.Cosmos](https://www.nuget.org/packages/Microsoft.Azure.Cosmos/) NuGet package as a project dependency. The lab instructions have been tested using the `3.0.0` version of this NuGet package.
+    > This command will add the [Microsoft.Azure.Cosmos](https://www.nuget.org/packages/Microsoft.Azure.Cosmos/) NuGet package as a project dependency.
 
-1. In the terminal pane, enter and execute the following command:
+1.  In the terminal pane, enter and execute the following command:
 
-   ```sh
-   dotnet restore
-   ```
+    ```sh
+    dotnet add package Bogus --version 27.0.1
+    ```
 
-   > This command will restore all packages specified as dependencies in the project.
+    > This command will add the [Bogus]() NuGet package, which you'll use to generate randomized shopping data.
 
-1. In the terminal pane, enter and execute the following command:
+1.  Change directory back to your root folder
 
-   ```sh
-   dotnet build
-   ```
+1.  In the terminal pane, open Visual Studio code with the following command:
 
-   > This command will build the project.
+    ```sh
+    code .
+    ```
 
-1. Click the **🗙** symbol to close the terminal pane.
+1.  Observe the **Program.cs** and **DataGenerator.csproj** files created by the .NET Core CLI.
 
-1. Observe the **Program.cs** and **[folder name].csproj** files created by the .NET Core CLI.
+    ![Project files](../media/08-initial-project-files.png)
 
-   ![Project files](../media/03-project_files.jpg)
+1.  Double-click the **DataGenerator.csproj** link in the **Explorer** pane to open the file in the editor.
 
-1. Double-click the **[folder name].csproj** link in the **Explorer** pane to open the file in the editor.
+1.  Add a new **PropertyGroup** XML element to the project configuration within the **Project** element:
 
-1. Add a new **PropertyGroup** XML element to the project configuration within the **Project** element:
+    ```xml
+    <PropertyGroup>
+        <LangVersion>Latest</LangVersion>
+    </PropertyGroup>
+    ```
 
-   ```xml
-   <PropertyGroup>
-       <LangVersion>latest</LangVersion>
-   </PropertyGroup>
-   ```
+1.  Your new XML should look like this:
 
-1. Your new XML should look like this:
+        ```xml
+        <Project Sdk="Microsoft.NET.Sdk">
+            <PropertyGroup>
+                <OutputType>Exe</OutputType>
+                <TargetFramework>netcoreapp2.2</TargetFramework>
+            </PropertyGroup>
+            <PropertyGroup>
+                <LangVersion>Latest</LangVersion>
+            </PropertyGroup>
+            <ItemGroup>
+                <PackageReference Include="Bogus" Version="27.0.1" />
+                <PackageReference Include="Microsoft.Azure.Cosmos" Version="3.0.0.17-preview" />
+            </ItemGroup>
+        </Project>
+        ```
 
-   ```xml
-   <Project Sdk="Microsoft.NET.Sdk">
-       <PropertyGroup>
-           <LangVersion>latest</LangVersion>
-       </PropertyGroup>
-       <PropertyGroup>
-           <OutputType>Exe</OutputType>
-           <TargetFramework>netcoreapp2.0</TargetFramework>
-       </PropertyGroup>
-       <ItemGroup>
-           <PackageReference Include="Microsoft.Azure.DocumentDB.Core" Version="1.9.1" />
-       </ItemGroup>
-   </Project>
-   ```
+1.  Double-click the **Program.cs** link in the **Explorer** pane to open the file in the editor.
 
-1. Double-click the **Program.cs** link in the **Explorer** pane to open the file in the editor.
+    ![Open editor](../media/08-console-main-default.png)
 
-   ![Open editor](../media/03-program_editor.jpg)
+### Create Function to Add Documents to Cosmos DB
 
-### Create CosmosClient Instance
+_The key functionality of the console application is to add documents to our Cosmos DB to simulate activity on our ecommerce website. Here, you'll create a data definition for these documents and define a function to add them_
 
-_The CosmosClient class is the main "entry point" to using the SQL API in Azure Cosmos DB. We are going to create an instance of the **CosmosClient** class by passing in connection metadata as parameters of the class' constructor. We will then use this class instance throughout the lab_
-
-1. Within the **Program.cs** editor tab, Add the following using blocks to the top of the editor:
+1. Within the **Program.cs** editor tab, Add the following using blocks to the top of the editr:
 
    ```csharp
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Threading.Tasks;
-    using Microsoft.Azure.Cosmos;
-    using Newtonsoft.Json;
+   using System;
+   using System.Threading.Tasks;
+   using Microsoft.Azure.Cosmos;
+   using Newtonsoft.Json;
+   using Newtonsoft.Json.Converters;
    ```
 
 1. Locate the **Program** class and replace it with the following class:
@@ -305,21 +274,17 @@ _The CosmosClient class is the main "entry point" to using the SQL API in Azure 
 1. Within the **Program** class, add the following lines of code to create variables for your connection information:
 
    ```csharp
-   private static readonly string _endpointUri = "";
-   private static readonly string _primaryKey = "";
-   private static readonly string _databaseId = "NutritionDatabase";
-   private static readonly string _containerId = "FoodContainer";
+   private static readonly string _endpointUrl = "";
+   private static readonly string _priamryKey = "";
+   private static readonly string _databaseId = "StoreDatabase";
+   private static readonly string _containerId = "CartContainer"
    ```
 
-1. For the `_endpointUri` variable, replace the placeholder value with the **URI** value from your Azure Cosmos DB account that you recorded earlier in this lab:
+1. For the `_endpointUrl` variable, replace the placehodler value with the **URI** value for your Azure Cosmos DB account that you recorded earlier in this lab.
 
-   > For example, if your **uri** is `https://cosmosacct.documents.azure.com:443/`, your new variable assignment will look like this: `private static readonly Uri _endpointUri = new Uri("https://cosmosacct.documents.azure.com:443/");`.
+1. For the `_primaryKey` variable, replace the placeholder value with the **PRIMARY KEY** value from your Azure Cosmos DB account that you recorded earlier in this lab.
 
-1. For the `_primaryKey` variable, replace the placeholder value with the **PRIMARY KEY** value from your Azure Cosmos DB account that you recorded earlier in this lab:
-
-   > For example, if your **primary key** is `NAye14XRGsHFbhpOVUWB7CMG2MOTAigdei5eNjxHNHup7oaBbXyVYSLW2lkPGeKRlZrCkgMdFpCEnOjlHpz94g==`, your new variable assignment will look like this: `private static readonly string _primaryKey = "NAye14XRGsHFbhpOVUWB7CMG2MOTAigdei5eNjxHNHup7oaBbXyVYSLW2lkPGeKRlZrCkgMdFpCEnOjlHpz94g==";`.
-
-1. Locate the **Main** method:
+1. Location the **Main** method:
 
    ```csharp
    public static async Task Main(string[] args)
@@ -327,257 +292,365 @@ _The CosmosClient class is the main "entry point" to using the SQL API in Azure 
    }
    ```
 
-1. Within the **Main** method, add the following lines of code to author a using block that creates and disposes a **CosmosClient** instance:
+1. After the **Main** method, define the **CartAction** class and an enum called **ActionType**.
 
    ```csharp
-   using (CosmosClient client = new CosmosClient(_endpointUri, _primaryKey))
+   public enum ActionType
    {
+       Viewed,
+       Added,
+       Purchased
+   }
 
+   public class CartAction
+   {
+       [JsonProperty("id")]
+       public string Id {get; set;}
+       public int CartId {get; set;}
+       [JsonConverter(typeof(StringEnumConverter))]
+       public ActionType Action {get; set;}
+       public string Item {get; set;}
+       public double Price {get; set;}
+       public string BuyerState {get; set;}
+
+       public CartAction()
+       {
+           Id = Guid.NewGuid().ToString();
+       }
    }
    ```
 
-1. Your `Program` class definition should now look like this:
+   > The `id` property is required by Cosmos DB to be a string that is not greater than 255 chars and unique in the container. We auto-generate the id here in the constructor as a **GUID** to ensure uniqueness.
+
+1. In between the **Main** method and the class definitions, add the following function:
 
    ```csharp
-   public class Program
+   private static async Task AddItem(CartAction item)
    {
-       private static readonly string _endpointUri = ("<your uri>";
-       private static readonly string _primaryKey = "<your key>";
-       private static readonly string _databaseId = "NutritionDatabase";
-       private static readonly string _containerId = "FoodContainer";
-
-       public static async Task Main(string[] args)
+       using(var client = new CosmosClient(_endpointUrl, _primaryKey))
        {
-           using (CosmosClient client = new CosmosClient(_endpointUri, _primaryKey))
+           var db = _client.GetDatabase(_databaseId);
+           var container = db.GetContainer(_containerId);
+
+           await container.CreateItemAsync(item, new PartitionKey(item.Item));
+       }
+   }
+   ```
+
+   > The **CosmosClient** class is the main entry point to the API for Azure Cosmos DB. You'll see this pattern again any time we are communicating with our Cosmos DB throughout this lab.
+
+### Create a Function to Generate Random Shopping Data
+
+_Now that you have a function to add documents to Cosmos DB you'll need a way to generate those documents. We'll use the *Randomizer* class in the Bogus library to help with this step_
+
+1. Within the **Program.cs** editor tab, add the following using block to the top of the editor:
+
+   ```csharp
+   using Bogus;
+   using System.Collections.Generic;
+   ```
+
+1. The full list of using should now look like this:
+
+   ```csharp
+   using System;
+   using System.Threading.Tasks;
+   using Microsoft.Azure.Cosmos;
+   using Newtonsoft.Json;
+   using Newtonsoft.Json.Converters;
+   using Bogus;
+   using System.Collections.Generic;
+   ```
+
+1. In between the **Main** method and the **AddItem** function, add a new function:
+
+   ```csharp
+   private static List<CartAction> GenerateActions()
+   {
+       Randomizer random = new Randomizer();
+
+       var items = new string[]{};
+       var states = new string[]{};
+       var prices = new double[]{};
+
+       var actions = new List<CartAction>();
+
+       // create actions
+
+       return actions;
+   }
+   ```
+
+   > There are three collections in this function, `items`, `states` and `prices` that will be used to generate cart actions. The initial value of these collections are ommitted for now to make the code easier to read. We'll add them in a few steps.
+
+1. The next steps will focus on the lines where the comment `// create actions` is currently sitting.
+
+1. In order to generate a random item, we'll use Randomizer to select an item and state index for our new item, and create a CartAction based on those values. Add the following code after `// create actions`.
+
+   ```csharp
+   var itemIndex = random.Number(0, items.Length - 1);
+   var stateIndex = random.Number(0, states.Length - 1);
+
+   var action = new CartAction
+   {
+       CartId = random.Number(1000, 99999),
+       Action = random.Enum<ActionType>(),
+       Item = items[itemIndex],
+       Price = prices[itemIndex],
+       BuyerState = states[stateIndex]
+   };
+   ```
+
+1. If the action is anything other than **Viewed** we need to add the previous action(s) that led up to this action. To do that, add the following code snippet:
+
+   ```csharp
+   if(action.Action != ActionType.Viewed)
+   {
+       var previousActions = new List<ActionType> {ActionType.Viewed};
+
+       if(action.Action != ActionType.Purchased)
+       {
+           previousActions.Add(ActionType.Added);
+       }
+
+       foreach(var previousAction in previousActions)
+       {
+           var previous = new CartAction
            {
-           }
+               CartId = action.CartId,
+               Action = previousAction,
+               Item = action.Item,
+               Price = action.Price,
+               BuyerState = action.BuyerState
+           };
+
+           actions.push(previous);
        }
    }
+
    ```
 
-   > We are now going to implement a sample query to make sure our client connection code works.
-
-1. Locate the using block within the **Main** method:
+1. Finally, we'll add the new action to the list of actions, prior to returning:
 
    ```csharp
-   using (CosmosClient client = new CosmosClient(_endpointUri, _primaryKey))
+   actions.Add(action)
+   ```
+
+1. The **GenerateActions** function should now look like this:
+
+   ```csharp
+    private static List<CartAction> GenerateActions()
+    {
+        Randomizer random = new Randomizer();
+
+        var items = new string[]{};
+
+        var states = new string[]{};
+
+        var prices = new double[]{};
+
+        var actions = new List<CartAction>();
+
+        var itemIndex = random.Number(0, items.Length - 1);
+        var stateIndex = random.Number(0, states.Length - 1);
+
+        var action = new CartAction
+        {
+            CartId = random.Number(1000, 99999),
+            Action = random.Enum<ActionType>(),
+            Item = items[itemIndex],
+            Price = prices[itemIndex],
+            BuyerState = states[stateIndex]
+        };
+
+        if (action.Action != ActionType.Viewed)
+        {
+            var previousActions = new List<ActionType> { ActionType.Viewed };
+
+            if (action.Action == ActionType.Purchased)
+            {
+                previousActions.Add(ActionType.Added);
+            }
+
+            foreach (var previousAction in previousActions)
+            {
+                var previous = new CartAction
+                {
+                    CartId = action.CartId,
+                    Action = previousAction,
+                    Item = action.Item,
+                    Price = action.Price,
+                    BuyerState = action.BuyerState
+                };
+
+                actions.Add(previous);
+            }
+        }
+
+        actions.Add(action);
+        return actions;
+    }
+   ```
+
+1. In order to have actual data, you'll need to assign the values of `items`, `states` and `prices` to some test data. Modify those lines as follows:
+
+   ```csharp
+   var items = new string[]
+       {
+           "Unisex Socks", "Women's Earring", "Women's Necklace", "Unisex Beanie",
+           "Men's Baseball Hat", "Unisex Gloves", "Women's Flip Flop Shoes", "Women's Silver Necklace",
+           "Men's Black Tee", "Men's Black Hoodie", "Women's Blue Sweater", "Women's Sweatpants",
+           "Men's Athletic Shorts", "Women's Athletic Shorts", "Women's White Sweater", "Women's Green Sweater",
+           "Men's Windbreaker Jacket", "Women's Sandal", "Women's Rainjacket", "Women's Denim Shorts",
+           "Men's Fleece Jacket", "Women's Denim Jacket", "Men's Walking Shoes", "Women's Crewneck Sweater",
+           "Men's Button-Up Shirt", "Women's Flannel Shirt", "Women's Light Jeans", "Men's Jeans",
+           "Women's Dark Jeans", "Women's Red Top", "Men's White Shirt", "Women's Pant", "Women's Blazer Jacket", "Men's Puffy Jacket",
+           "Women's Puffy Jacket", "Women's Athletic Shoes", "Men's Athletic Shoes", "Women's Black Dress", "Men's Suit Jacket", "Men's Suit Pant",
+           "Women's High Heel Shoe", "Women's Cardigan Sweater", "Men's Dress Shoes", "Unisex Puffy Jacket", "Women's Red Dress", "Unisex Scarf",
+           "Women's White Dress", "Unisex Sandals", "Women's Bag"
+       };
+
+       var states = new string[]
+       {
+           "AL","AK","AS","AZ","AR","CA","CO","CT","DE","DC","FM","FL","GA","GU","HI","ID","IL","IN",
+           "IA","KS","KY","LA","ME","MH","MD","MA","MI","MN","MS","MO","MT","NE","NV","NH","NJ","NM",
+           "NY","NC","ND","MP","OH","OK","OR","PW","PA","PR","RI","SC","SD","TN","TX","UT","VT","VI",
+           "VA","WA","WV","WI","WY"
+       };
+
+       var prices = new double[]
+       {
+           3.75, 8.00, 12.00, 10.00,
+           17.00, 20.00, 14.00, 15.50,
+           9.00, 25.00, 27.00, 21.00, 22.50,
+           22.50, 32.00, 30.00, 49.99, 35.50,
+           55.00, 50.00, 65.00, 31.99, 79.99,
+           22.00, 19.99, 19.99, 80.00, 85.00,
+           90.00, 33.00, 25.20, 40.00, 87.50, 99.99,
+           95.99, 75.00, 70.00, 65.00, 92.00, 95.00,
+           72.00, 25.00, 120.00, 105.00, 130.00, 29.99,
+           84.99, 12.00, 37.50
+       };
+   ```
+
+### Putting it all together
+
+_At this point, all that is left is to call the function to generate the data from your console application, and pass the result to our AddItem function for persistence._
+
+1. Locate the **Main** method
+
+   ```csharp
+   static async Task Main(string[] args)
    {
-
    }
    ```
 
-1. Add the following lines of code to create a variable named `database` that references the **NutritionDatabase** and `container` that references the **FoodCollection**:
+1. Within the **Main** method, add the following code:
 
    ```csharp
-   CosmosDatabase database = client.GetDatabase(_databaseId);
-   CosmosContainer container = database.GetContainer(_containerName);
-   ```
+   Console.WriteLine("Press any key to stop the console app...");
 
-1. Add the following line of code to create a string variable named `querySpec` that contains a sample SQL query:
-
-   ```csharp
-   var querySpec = new CosmosSqlQueryDefinition("SELECT TOP 5 * from f");
-   ```
-
-   > This query will get the top 5 items from the **FoodCollection**
-
-1. After the closing bracket of your Main function, add the following class definitions:
-
-   ```csharp
-   internal sealed class Nutrient
-       {
-           [JsonProperty("id")]
-           public string Id { get; set; }
-           [JsonProperty("description")]
-           public string Description { get; set; }
-           [JsonProperty("nutritionValue")]
-           public decimal NutritionValue { get; set; }
-           [JsonProperty("units")]
-           public string Units { get; set; }
-       }
-
-       internal sealed class Serving
-       {
-           [JsonProperty("amount")]
-           public decimal Amount { get; set; }
-           [JsonProperty("description")]
-           public string Description { get; set; }
-           [JsonProperty("weightInGrams")]
-           public decimal WeightInGrams { get; set; }
-       }
-
-       internal sealed class Food
-       {
-           [JsonProperty("id")]
-           public string Id { get; set; }
-           [JsonProperty("description")]
-           public string Description { get; set; }
-           [JsonProperty("tags")]
-           public List<Tag> Tags { get; set; }
-           [JsonProperty("foodGroup")]
-           public string FoodGroup { get; set; }
-           [JsonProperty("nutrients")]
-           public List<Nutrient> Nutrients { get; set; }
-           [JsonProperty("servings")]
-           public List<Serving> Servings { get; set; }
-       }
-   ```
-
-1. Add the following line to create a FeedIterator for the query.
-
-   ```csharp
-   FeedIterator<Food> query = container.CreateItemQuery<Food>(querySpec, partitionKey: new PartiionKey("Baby Foods"));
-   ```
-
-1. Add the following lines of code to enumerate over the results and print the strings to the console:
-
-   ```csharp
-   while (query.HasMoreResults)
+   while(!Console.KeyAvailable)
    {
-       var resultSet = await query.FetchNextSetAsync();
-       var results = resultSet.ToList();
-
-       foreach (var result in results)
+       foreach(var action in GenerateActions())
        {
-           await Console.Out.WriteLineAsync(result.Description);
+           AddItem(action);
+           Console.Write("*");
        }
    }
    ```
 
-1. Your **Main** method should now look like this:
+   > This code uses the console to print an asterisk each time a record is written, just to help us keep track of progress. Pressing any key will stop the console app.
 
-   ```csharp
-   public static async Task Main(string[] args)
-   {
-       using (CosmosClient client = new CosmosClient(_endpointUri, _primaryKey))
-       {
-               CosmosDatabase database = client.GetDatabase(_databaseId);
-               CosmosContainer container = database.GetContainer(_containerName);
+### Run the Console App and Verify Functionality
 
-               var queryText = "SELECT TOP 5 * FROM f";
-               var querySpec = new CosmosSqlQueryDefinition(queryText);//.UseParameter("@description", "%formula%");
+_You're ready to run the console app, and in this step you'll take a look at you Cosmos DB account to ensure test data is being written as expected._
 
-               FeedIterator<Food> query = container.CreateItemQuery<Food>(querySpec, partitionKey: new PartitionKey("Baby Foods"));
+1. Open a terminal window, and navigate to the **DataGenerator** folder from the previous step.
 
-               while (query.HasMoreResults)
-               {
-                   var resultSet = await query.FetchNextSetAsync();
-                   var results = resultSet.ToList();
-
-                   foreach (var result in results)
-                   {
-                       await Console.Out.WriteLineAsync(result.Description);
-                   }
-               }
-           }
-       }
-   }
-   ```
-
-1. Save all of your open editor tabs.
-
-1. In the Visual Studio Code window, right-click the **Explorer** pane and select the **Open in Command Prompt** menu option.
-
-1. In the open terminal pane, enter and execute the following command:
+1. In the terminal pane, enter and execute the following command to run your console app:
 
    ```sh
    dotnet run
    ```
 
-   > This command will build and execute the console project.
+1. After a brief build process, you should begin to see the asterisks being printed as data is being generated and written to Cosmos DB.
 
-1. Observe the results of the console project.
+   ![Console Running](../media/08-console-running.png)
 
-   > You should see five descriptions printed to the console window.
+1. Let the console app run for a minute or two and then stop it by pressing any key in the console.
 
-1. Click the **🗙** symbol to close the terminal pane.
+1. Follow the previous steps to navigate back to your **cosmosdblab** Cosmos DB Account.
 
-1. Close all open editor tabs.
+1. From within the **Azure Cosmos DB** blade, select the **Data Explorer** tab on the left.
 
-### Install the Azure Functions Core Tools
+   ![Data Explorer](../media/08-cosmos-overview-final.png)
 
-1. Install [Node.js](https://docs.npmjs.com/getting-started/installing-node#osx-or-windows) which includes NPM. Ensure you are using Node.js version 8.5 or later.
+1. Expand the **StoreDatabase** then the **CartContainer** and select **Items** If all goes well, you should see something like the following screenshot.
 
-1. Close your terminal session and open a new one to ensure PATH variables are loaded for Node.js. Execute the following command:
+   _Note your data will be slightly different since it is random, the important thing is that there is data here at all_
+
+   ![Cosmos DB With Data](../media/08-cosmos-data-explorer-with-data.png)
+
+## Create an Azure Function to Consume Cosmos DB Change Feed
+
+_One of the more interesting features of Azure Cosmos DB is its change feed. The change feed provides support for many scenarios, three of which we'll investigate further in this lab._
+
+### Create a .NET Core Azure Functions Project
+
+_Azure Functions provide a quick and easy way to hook up with the Cosmos DB Change Feed in a way that is scalable out of the box. You'll start by setting up a.NET Core Azure Functions project_
+
+1. Open a terminal window and navigate to the root folder you created for this lab.
+
+1. To install command line support for Azure Functions, you'll need `node.js`. If you do not already have node, or you're using a version older than 8.5, [Download it here](https://docs.npmjs.com/getting-started/installing-node#osx-or-windows)
+
+1. In your terminal pane, enter and execute the following command:
 
    ```sh
    npm install -g azure-functions-core-tools
    ```
 
-### Create a new Azure Function
+   > If this command fails, refer to the previous step to setup node.js. You may need to restart your terminal window for these changes to take effect.
 
-1. On your local machine, create a new folder that will be used to contain the content of your .NET Core Function project.
-
-1. Navigate to this new folder in your open terminal pane.
-
-1. To create your new function project execute the following in the open terminal pane:
+1. In your terminal pane, enter and execute the following command:
 
    ```sh
-   func init CosmosDBChangeProj --output .
+   func init ChangeFeedFunctions
    ```
 
-1. From the menu, select the **dotnet** worker runtime option.
+   1. When prompted, choose the **dotnet** _worker runtime_
 
-1. Once creation is complete, open the project in Visual Studio Code by executing the following from the project folder:
+   > This command creates a new Azure Functions project
 
-   ```sh
-   code .
-   ```
+1. Change directory to the ChangeFeedFunctions directory created in the previous step
 
-1. Within the new project folder, modify the host.json file as follows:
-
-   ```json
-   {
-     "version": "2.0",
-     "extensionBundle": {
-       "id": "Microsoft.Azure.Functions.ExtensionBundle",
-       "version": "[1.*, 2.0.0)"
-     }
-   }
-   ```
-
-1. To create the new function, go back to the open terminal pane and execute the following command:
+1. In your terminal pane, enter and execute the following command:
 
    ```sh
    func new
    ```
 
-_If you have trouble getting func new to run, make sure that you have switched directories to the new project directory_
+   1. When prompted, select **CosmosDBTrigger** from the list of templates
 
-1. From the menu select the **CosmosDBTrigger** option.
+   2. When prompted, enter the name **MigrationFunction** for the function
 
-1. Give the function a meaningful name, for example _NutritionDataChangeFunction_
+1. In your terminal pane, enter and execute the following command:
 
-### Test your change feed function manually
-
-1. Take a look at the templated function created by this step in Visual Studio Code. It should look like this:
-
-   ```csharp
-   public static class NutritionDataChangeFunction
-   {
-       [FunctionName("FoodDataChangeFunction")]
-       public static void Run([CosmosDBTrigger(
-           databaseName: "databaseName",
-           collectionName: "collectionName",
-           ConnectionStringSetting = "",
-           LeaseCollectionName = "leases")]IReadOnlyList<Document> input, ILogger log)
-       {
-           if (input != null && input.Count > 0)
-           {
-               log.LogInformation("Documents modified " + input.Count);
-               log.LogInformation("First document Id " + input[0].Id);
-           }
-       }
-   }
+   ```sh
+   dotnet add package Microsoft.Azure.Cosmos --version 3.0.0.17-preview
    ```
 
-1. Change the databaseName and collectionName values to match those that you setup earlier for the FoodDatabase.
+1. Your first Azure Function has been created, switch back to Visual Studio Code and note the new **ChangeFeedFunctions** folder, expand it and note **local.settings.json**, and the **MigrationFunction.cs**.
 
-1. Set the value of **ConnectionStringSetting** to `DBConnection`
+   ![VS Code WIth Change Feed](../media/08-code-change-feed-create.png)
 
-1. Add an additional parameter to the Run function for **CreateLeaseCollectionIfNotExists** and set it to `true`.
+### Create an Azure Function for Live Migration using Cosmos DB Change Feed
 
-1. Open the `local.settings.json` file and add a new setting value for your database connection using the values you retrieved earlier:
+_The first use case we'll explore for Cosmos DB Change Feed is Live Migration. A common concern when designing a Cosmos DB container is proper selection of a partition key. You'll recall that we created our CartContainer with a partition key of /Item. What if we find out later this key is wrong? Or what if writes work better with /Item while reads work better with /BuyerState as the partition key? We can avoid analysis paralysis by using Cosmos DB Change Feed to migrate our data in real time to a second container with a different partition key!_
+
+1. Locate the **local.settings.json** file and double click it to open it in the editor.
+
+1. Add a new value **DBConnection** using the **ConnectionString** parameter from your Cosmos DB account collected earlier in this lab. The **local.settings.json** file should like this:
 
    ```json
    {
@@ -590,50 +663,307 @@ _If you have trouble getting func new to run, make sure that you have switched d
    }
    ```
 
-1. Your function should now look similar to this:
+1. Now locate the **MigrationFunction.cs** file and double click on it to open it in the editor. You'll see that an Azure Function template has already been created for you with Cosmos DB as the trigger.
+
+   ![VS Code with MigrationFunction](../media/08-vscode-migration-function.png)
+
+   > The **databaseName**, **collectionName** and **ConnectionStringSetting** refer to the source Cosmos DB account that the function is listening for changes on.
+
+1. Change the **databaseName** value to `StoreDatabase`
+
+1. Change the **collectionName** value to `CartContainer`
+
+1. Replace the **ConnectionStringSetting** placeholder with the new setting you added earlier **DBConnection**
 
    ```csharp
-   public static class NutritionDataChangeFunction
+   ConnectionStringSetting = "DBConnection"",
+   ```
+
+1. Between **ConnectionStringSetting** and **LeaseCollectionName** add the following line:
+
+   ```csharp
+   CreateLeaseCollectionIfNotExists = true,
+   ```
+
+1. Change the **LeaseCollectionName** value to `migrationLeases`
+
+   > Lease collections are a critical part of the Cosmos DB Change Feed. They allow multiple instances of a function to operate over a collection and serve as a virtual _bookmark_ for where the function last left off.
+
+1. Your **Run** function should now look like this:
+
+   ```csharp
+   [FunctionName("MigrationFunction")]
+   public static void Run([CosmosDBTrigger(
+       databaseName: "StoreDatabase",
+       collectionName: "CartContainer",
+       ConnectionStringSetting = "DBConnection",
+       CreateLeaseCollectionIfNotExists = true,
+       LeaseCollectionName = "migrationLeases")]IReadOnlyList<Document> input, ILogger log)
    {
-       [FunctionName("FoodDataChangeFunction")]
-       public static void Run([CosmosDBTrigger(
-           databaseName: "NutritionDatabase",
-           collectionName: "FoodCollection",
-           ConnectionStringSetting = "DBConnection",
-           CreateLeaseCollectionIfNotExists = true,
-           LeaseCollectionName = "leases")]IReadOnlyList<Document> input, ILogger log)
+       if (input != null && input.Count > 0)
        {
-           if (input != null && input.Count > 0)
-           {
-               log.LogInformation("Documents modified " + input.Count);
-               log.LogInformation("First document Id " + input[0].Id);
-           }
+           log.LogInformation("Documents modified " + input.Count);
+           log.LogInformation("First document Id " + input[0].Id);
        }
    }
    ```
 
-1. You are now ready to test your function. From the terminal pane, run the following command to start a host for your function:
+> The function works by polling your container on an interval and checking for changes since the last lease time. Each turn of the function may result in multiple documents that have changed, which is why the input is an IReadOnlyList of Documents.
+
+### Create a Shared Project to Share Data Definitions
+
+_The MigrationFunction we just created is going to need access to the defintions of the CartAction and ActionType enum that we defined in our console app. To promote sharing, you'll create a new Shared class library and move the data definitions there._
+
+1. Open your terminal window, and change director to the root folder you created for this lab.
+
+1. In the terminal pane, enter and execute the following command:
+
+   ```sh
+   dotnet new classlib -o Shared
+   ```
+
+1. Add a reference to **Shared** from the **DataGenerator** project by entering and executing the following command:
+
+   ```sh
+   dotnet add DataGenerator\\DataGenerator.csproj reference shared\\shared.csproj
+   ```
+
+1. Add a refernece to **Shared** from the **ChangeFeedFunctions** project by entering and executing the following command:
+
+   ```sh
+   dotnet add ChangeFeedFunctions\\ChangeFeedFunctions.csproj reference shared\\shared.csproj
+   ```
+
+1. Change directory to the new Shared project
+
+1. In the open terminal pane, enter and execute the following command
+
+   ```sh
+   dotnet add package Newtonsoft.Json --version 11.0.2
+   ```
+
+1. Return to Visual Studio Code and note the new **Shared** folder.
+
+1. Rename the generated **Class1.cs** file under **Shared** to **DataModels.cs**
+
+1. Open the **DataModels.cs** class and add the following usings:
+
+   ```csharp
+   using Newtonsoft.Json;
+   using Newtonsoft.Json.Converters;
+   ```
+
+1. Open the **Program.cs** file from the **DataGenerator** folder and cut the **ActionType** enum and **CartAction** class definitions.
+
+1. Paste those class definitions into the **DataModels.cs** file overwiting the **Class1** definition. **DataModels.cs** should now look like this:
+
+   ```csharp
+    using System;
+    using Newtonsoft.Json;
+    using Newtonsoft.Json.Converters;
+
+    namespace Shared
+    {
+        public enum ActionType
+            {
+                Viewed,
+                Added,
+                Purchased
+            }
+
+            public class CartAction
+            {
+                [JsonProperty("id")]
+                public string Id { get; set; }
+
+                public int CartId { get; set; }
+                [JsonConverter(typeof(StringEnumConverter))]
+                public ActionType Action { get; set; }
+                public string Item { get; set; }
+                public double Price { get; set; }
+                public string BuyerState { get; set; }
+
+                public CartAction()
+                {
+                    Id = Guid.NewGuid().ToString();
+                }
+
+            }
+    }
+   ```
+
+1. Return to **Program.cs** and add the following using:
+
+   ```csharp
+   using Shared;
+   ```
+
+   > You may also remove the usings for Newtonsoft.Json and Newtonsoft.Json.Converters
+
+### Modify the Azure Function to do Live Data Migration
+
+1. Open the **MigrationFunction.cs** file in the editor, and add the following using to the top of the file:
+
+   ```csharp
+   using System;
+   using System.Threading.Tasks;
+   using Shared;
+   using Microsoft.Azure.Cosmos;
+   using Newtonsoft.Json;
+   ```
+
+1. Remember the **CartContainerByState** container that we made earlier in this lab? We're going to use that as the destination of our migration. Add the following lines to the top of the **MigrationFunction** class:
+
+   ```csharp
+   private static readonly string _endpointUrl = "<your-endpoint-url>";
+   private static readonly string _primaryKey = "<your-primary-key>";
+   private static readonly string _databaseId = "StoreDatabase";
+   private static readonly string _containerId_ = "CartContainerByState";
+   ```
+
+   > The \_endpointUrl, \_primaryKey and \_databaseId will all be the same in our case, but they don't have to be. You could be migrating this data to a Cosmos DB located in any account, any database and any container!
+
+1. Modify the signature of the **Run** function to be async, like this:
+
+   ```csharp
+   public static async Task Run([CosmosDBTrigger(
+           databaseName: "StoreDatabase",
+           collectionName: "CartContainer",
+           ConnectionStringSetting = "DBConnection",
+           CreateLeaseCollectionIfNotExists = true,
+           LeaseCollectionName = "migrationLeases")]IReadOnlyList<Document> input, ILogger log)
+   ```
+
+1. Locate the following section within the **MigrationFunction.cs** file:
+
+   ```csharp
+   if (input != null && input.Count > 0)
+   {
+       log.LogInformation("Documents modified " + input.Count);
+       log.LogInformation("First document Id " + input[0].Id);
+   }
+   ```
+
+1. Remove the two log.LogInformation lines and replace them with our now familiar recipe for accessing a Cosmos DB container:
+
+   ```csharp
+   if(input != null && input.count > 0)
+   {
+       using(var client = new CosmosClient(_endpointUrl, _primaryKey))
+       {
+           var db = client.GetDatabase(_databaseId);
+           var container = db.GetContainer(_containerId);
+
+           // todo: Next steps
+       }
+   }
+   ```
+
+1. The **input** variable contains a list of _Documents_ that have changed. We'll iterate through that list, deserialize those objects to CartActions and write them to the destination Cosmos DB account. Like this:
+
+   ```csharp
+   foreach(var doc in input){
+       var cartAction = JsonConvert.DeserializeObject<CartAction>(doc.ToString());
+
+       if(cartAction == null) continue;
+
+       await container.CreateItemAsync(cartAction, new Microsoft.Azure.Cosmos.PartitionKey(cartAction.BuyerState));
+   }
+   ```
+
+   > Take note of the lack of error handling here. If something happens during this process, the changes will be lost. It is highly recommended that you create your function logic within a try/catch and write actions out to a queue in the case of an error.
+
+1. Thats it, you should now have a **MigrationFunction** that looks like the following:
+
+   ```csharp
+    using System;
+    using System.Collections.Generic;
+    using Microsoft.Azure.Documents;
+    using Microsoft.Azure.WebJobs;
+    using Microsoft.Azure.WebJobs.Host;
+    using Microsoft.Extensions.Logging;
+    using Newtonsoft.Json;
+    using shared;
+    using Microsoft.Azure.Cosmos;
+    using System.Threading.Tasks;
+
+   namespace ChangeFeedFunctions
+   {
+       public static class MigrationFunction
+       {
+           private static readonly string _endpointUrl = "<your-endpoint-url>";
+           private static readonly string _primaryKey = "<your-primary-key>";
+           private static readonly string _databaseId = "StoreDatabase";
+           private static readonly string _containerId = "CartContainerByState";
+
+           [FunctionName("MigrationFunction")]
+           public static async Task Run([CosmosDBTrigger(
+               databaseName: "StoreDatabase",
+               collectionName: "CartContainer",
+               ConnectionStringSetting = "DBConnection",
+               CreateLeaseCollectionIfNotExists = true,
+               LeaseCollectionName = "migrationLeases")]IReadOnlyList<Document> input, ILogger log)
+           {
+               if (input != null && input.Count > 0)
+               {
+                   using (var client = new CosmosClient(_endpointUrl, _primaryKey))
+                   {
+                       var db = client.GetDatabase(_databaseId);
+                       var container = db.GetContainer(_containerId);
+
+                       foreach (var doc in input)
+                       {
+                           var cartAction = JsonConvert.DeserializeObject<CartAction>(doc.ToString());
+
+                           if (cartAction == null) continue;
+
+                           log.LogInformation("Writing Migration Data");
+                           await container.CreateItemAsync(cartAction, new Microsoft.Azure.Cosmos.PartitionKey(cartAction.BuyerState));
+                       }
+                   }
+               }
+           }
+       }
+   }
+
+   ```
+
+   > Note the addition of the log.LogInformation call just so that we get some feedback in the console that the function is running.
+
+### Test to Confirm the Change Feed Function Works
+
+_Now that we have our first Change Feed consumer, we're ready to run a test and confirm that it works_
+
+1. Open a **second** terminal window and navigate to the **ChangeFeedFunctions** folder
+
+1. Start up your **MigrationFunction** by running the following command in the **second** terminal window:
 
    ```sh
    func host start
    ```
 
-1. Once the host is running, navigate to the **Data Explorer** associated with your CosmosDB instance.
+1. Once the function starts running you'll see a message like this in the console window:
 
-1. Expand the **NutritionDatabase** node
+   ![First Function Running](../media/08-first-func-running.png)
 
-1. Expand the **FoodCollection** node
+1. In the **first** terminal window, navigate to the **DataGenerator** folder
 
-1. Choose **items** from the list
+1. Start the **DataGenerator** again by running the following command in the **first** terminal window
 
-1. Select any item in the **Items** pane and make a small change to it. For example, add the following to the **tags** array:
-
-   ```json
-   {
-     "name": "testing-data-change-feed"
-   }
+   ```sh
+   dotnet run
    ```
 
-1. At the top of the **Data Explorer** select **Update**
+1. You should see the asterisks start to appear again as the data is being written.
 
-1. Watch your running terminal pane, and note that the change is quickly received and processed by your function. For now, this just results in a simple log message that a change has occurred.
+1. Soon after data starts being written, if you added the LogInformation line to your function you should start to see it writing migration data.
+
+1. After a few minutes, navigate to the **cosmosdblab** Data Explorer and expand **StoreDatabase** then **CartContainerByState** and click **Items**. You should see items populating there, and note that the Partition Key this time is /BuyerState.
+
+   ![Cart Container By State](../media/08-cart-container-by-state.png)
+
+1. Press any key in the **first** terminal to stop data generation
+
+1. Let the **MigrationFunction** finish running (it shouldn't take very long). You'll know it's done when it stops writing new log messages. Stop the function with Ctrl+C in the **second** terminal window.
+
+> You've now written your first Azure Function that reads from the Cosmos DB Change Feed and writes live data to a new collection. Congrats! In the next steps we'll write two more functions to explore some additional uses cases for the Cosmos DB Change Feed.
