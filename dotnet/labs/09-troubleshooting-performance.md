@@ -175,10 +175,10 @@ https://cosmoslabs.blob.core.windows.net/?sv=2018-03-28&ss=bfqt&srt=sco&sp=rl&se
 1. In the terminal pane, enter and execute the following command:
 
     ```sh
-    dotnet add package Microsoft.Azure.DocumentDB.Core --version 1.9.1
+    dotnet add package Microsoft.Azure.Cosmos --version 3.0.0.17-preview
     ```
 
-    > This command will add the [Microsoft.Azure.DocumentDB.Core](https://www.nuget.org/packages/Microsoft.Azure.DocumentDB.Core/) NuGet package as a project dependency. The lab instructions have been tested using the ``1.9.1`` version of this NuGet package.
+    > This command will add the [Microsoft.Azure.Cosmos](https://www.nuget.org/packages/Microsoft.Azure.Cosmos/) NuGet package as a project dependency. The lab instructions have been tested using the ``3.0.0.17-preview`` version of this NuGet package.
 
 1. In the terminal pane, enter and execute the following command:
 
@@ -229,11 +229,11 @@ https://cosmoslabs.blob.core.windows.net/?sv=2018-03-28&ss=bfqt&srt=sco&sp=rl&se
         </PropertyGroup>
         <PropertyGroup>
             <OutputType>Exe</OutputType>
-            <TargetFramework>netcoreapp2.0</TargetFramework>
+            <TargetFramework>netcoreapp2.2</TargetFramework>
         </PropertyGroup>
         <ItemGroup>
             <PackageReference Include="Bogus" Version="22.0.8" />
-            <PackageReference Include="Microsoft.Azure.DocumentDB.Core" Version="1.9.1" />
+            <PackageReference Include="Microsoft.Azure.Cosmos" Version="3.0.0.17-preview" />
         </ItemGroup>
     </Project>
     ```
@@ -242,9 +242,9 @@ https://cosmoslabs.blob.core.windows.net/?sv=2018-03-28&ss=bfqt&srt=sco&sp=rl&se
 
     ![Open editor](../media/05-program_editor.jpg)
 
-### Create DocumentClient Instance
+### Create CosmosClient Instance
 
-*The DocumentClient class is the main "entry point" to using the SQL API in Azure Cosmos DB. We are going to create an instance of the **DocumentClient** class by passing in connection metadata as parameters of the class' constructor. We will then use this class instance throughout the lab.*
+*The CosmosClient class is the main "entry point" to using the SQL API in Azure Cosmos DB. We are going to create an instance of the **CosmosClient** class by passing in connection metadata as parameters of the class' constructor. We will then use this class instance throughout the lab.*
 
 1. Within the **Program.cs** editor tab, Add the following using blocks to the top of the editor:
 
@@ -255,9 +255,7 @@ https://cosmoslabs.blob.core.windows.net/?sv=2018-03-28&ss=bfqt&srt=sco&sp=rl&se
     using System.Linq;
     using System.Net;
     using System.Threading.Tasks;
-    using Microsoft.Azure.Documents;
-    using Microsoft.Azure.Documents.Client;
-    using Microsoft.Azure.Documents.Linq;
+    using Microsoft.Azure.Cosmos;
     ```
 
 1. Locate the **Program** class and replace it with the following class:
@@ -274,15 +272,15 @@ https://cosmoslabs.blob.core.windows.net/?sv=2018-03-28&ss=bfqt&srt=sco&sp=rl&se
 1. Within the **Program** class, add the following lines of code to create variables for your connection information:
 
     ```csharp
-    private static readonly Uri _endpointUri = new Uri("");
+    private static readonly string _endpointUri = "";
     private static readonly string _primaryKey = "";
-    private static readonly string _databaseId = "FinancialDatabase";
-    private static readonly string _containerId = "PeopleCollection";  
+    private static readonly string _databaseId = "NutritionDatabase";
+    private static readonly string _containerId = "FoodCollection";  
     ```
 
 1. For the ``_endpointUri`` variable, replace the placeholder value with the **URI** value from your Azure Cosmos DB account that you recorded earlier in this lab: 
 
-    > For example, if your **uri** is ``https://cosmosacct.documents.azure.com:443/``, your new variable assignment will look like this: ``private static readonly Uri _endpointUri = new Uri("https://cosmosacct.documents.azure.com:443/");``.
+    > For example, if your **uri** is ``https://cosmosacct.documents.azure.com:443/``, your new variable assignment will look like this: ``private static readonly string _endpointUri = "https://cosmosacct.documents.azure.com:443/";``.
 
 1. For the ``_primaryKey`` variable, replace the placeholder value with the **PRIMARY KEY** value from your Azure Cosmos DB account that you recorded earlier in this lab: 
 
@@ -296,28 +294,13 @@ https://cosmoslabs.blob.core.windows.net/?sv=2018-03-28&ss=bfqt&srt=sco&sp=rl&se
     }
     ```
 
-1. Within the **Main** method, add the following lines of code to author a using block that creates and disposes a **DocumentClient** instance:
+1. Within the **Main** method, add the following lines of code to author a using block that creates and disposes a **CosmosClient** instance:
 
     ```csharp
-    using (DocumentClient client = new DocumentClient(_endpointUri, _primaryKey))
+    using (CosmosClient client = new CosmosClient(_endpointUri, _primaryKey))
     {
         
     }
-    ```
-
-1. Locate the using block within the **Main** method:
-
-    ```csharp
-    using (DocumentClient client = new DocumentClient(_endpointUri, _primaryKey))
-    {
-                        
-    }
-    ```
-
-1. Add the following line of code to create a variable named ``collectionLink`` that references the *self-link* Uri for the collection:
-
-    ```csharp
-    Uri collectionLink = UriFactory.CreateDocumentCollectionUri(_databaseId, _collectionId);
     ```
 
 1. Your ``Program`` class definition should now look like this:
@@ -327,14 +310,14 @@ https://cosmoslabs.blob.core.windows.net/?sv=2018-03-28&ss=bfqt&srt=sco&sp=rl&se
     { 
         private static readonly Uri _endpointUri = new Uri("<your uri>");
         private static readonly string _primaryKey = "<your key>";
-        private static readonly string _databaseId = "FinancialDatabase";
-        private static readonly string _collectionId = "PeopleCollection";
+        private static readonly string _databaseId = "NutritionDatabase";
+        private static readonly string _containerId = "FoodCollection";
 
         public static async Task Main(string[] args)
         {    
-            using (DocumentClient client = new DocumentClient(_endpointUri, _primaryKey))
+            using (CosmosClient client = new CosmosClient(_endpointUri, _primaryKey))
             {
-                Uri collectionLink = UriFactory.CreateDocumentCollectionUri(_databaseId, _collectionId);
+
             }     
         }
     }
@@ -353,10 +336,6 @@ https://cosmoslabs.blob.core.windows.net/?sv=2018-03-28&ss=bfqt&srt=sco&sp=rl&se
     ```
 
     > This command will build the console project.
-
-1. Click the **🗙** symbol to close the terminal pane.
-
-1. Close all open editor tabs.
 
 ## Examining Response Headers
 

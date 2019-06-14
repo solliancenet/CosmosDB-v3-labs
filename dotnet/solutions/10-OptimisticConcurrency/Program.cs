@@ -12,22 +12,32 @@ public class Program
     private static readonly string _endpointUri = "";
     private static readonly string _primaryKey = "";
     private static readonly string _databaseId = "NutritionDatabase";
-    private static readonly string _collectionId = "FoodCollection";
+    private static readonly string _containerId = "FoodCollection";
 
     public static async Task Main(string[] args)
     {
         using (CosmosClient client = new CosmosClient(_endpointUri, _primaryKey))
         {
             var database = client.GetDatabase(_databaseId);
-            var container = database.GetContainer(_collectionId);
+            var container = database.GetContainer(_containerId);
 
             ItemResponse<Food> response = await container.ReadItemAsync<Food>(new PartitionKey("Fast Foods"), "21083");
-            await Console.Out.WriteLineAsync($"Existing eTag:\t{response.ETag}");
+            await Console.Out.WriteLineAsync($"Existing ETag:\t{response.ETag}");
 
             ItemRequestOptions requestOptions = new ItemRequestOptions { IfMatchEtag = response.ETag };
             response.Resource.tags.Add(new Tag { name = "Demo" });
             response = await container.UpsertItemAsync(response.Resource, requestOptions: requestOptions);
-            await Console.Out.WriteLineAsync($"New eTag:\t{response.ETag}");
+            await Console.Out.WriteLineAsync($"New ETag:\t{response.ETag}");
+
+            response.Resource.tags.Add(new Tag { name = "Failure" });
+            try
+            {
+                response = await container.UpsertItemAsync(response.Resource, requestOptions: requestOptions);
+            }
+            catch (Exception ex)
+            {
+                await Console.Out.WriteLineAsync($"Update error:\t{ex.Message}");
+            }
         }
     }
 
