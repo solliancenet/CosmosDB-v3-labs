@@ -38,7 +38,7 @@ _You will create an azure resource group to allow for easy management of the res
 
    1. Set the Region to one that is closest to your location
 
-   [!Resource Groups](../media/08-create-resource-group.jpg)
+   ![Resource Groups](../media/08-create-resource-group.jpg)
 
 1. At the bottom of the window, click **Review + Create**
 
@@ -56,7 +56,7 @@ _You will now create an Azure Cosmos DB account._
 
 1. In the **Resource groups** blade, locate and select the **cosmosdblab-group** _Resource Group_.
 
-   ![Lab resource group](../media/08-cosmos-in-resources.jpg")
+   ![Lab resource group](../media/08-cosmos-in-resources.jpg)
 
 1. In the **cosmosdblab-group** blade, click the **Add** button
 
@@ -98,7 +98,7 @@ _You will now create a database and several containers within your Azure Cosmos 
 
 1. In the **Resource groups** blade, locate and select the **cosmosdblab-group** _Resource Group_.
 
-   ![Lab resource group](../media/08-cosmos-in-resources.jpg")
+   ![Lab resource group](../media/08-cosmos-in-resources.jpg)
 
 1. In the **cosmosdblab-group** blade, select the Cosmos DB Account that you just created.
 
@@ -1327,7 +1327,7 @@ _This step is optional, if you do not wish to follow the lab to creating the das
 
 1. In the **Resource groups** blade, locate and select the **cosmosdblab-group** _Resource Group_.
 
-   ![Lab resource group](../media/08-cosmos-in-resources.jpg")
+   ![Lab resource group](../media/08-cosmos-in-resources.jpg)
 
 1. In the **cosmosdblab-group** blade, click the **Add** button
 
