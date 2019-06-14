@@ -56,7 +56,7 @@ _You will now create an Azure Cosmos DB account._
 
 1. In the **Resource groups** blade, locate and select the **cosmosdblab-group** _Resource Group_.
 
-   ![Lab resource group](../media/08-cosmos-resource.jpg")
+   ![Lab resource group](../media/08-cosmos-in-resources.jpg")
 
 1. In the **cosmosdblab-group** blade, click the **Add** button
 
@@ -98,7 +98,7 @@ _You will now create a database and several containers within your Azure Cosmos 
 
 1. In the **Resource groups** blade, locate and select the **cosmosdblab-group** _Resource Group_.
 
-   ![Lab resource group](../media/08-cosmos-resource.jpg")
+   ![Lab resource group](../media/08-cosmos-in-resources.jpg")
 
 1. In the **cosmosdblab-group** blade, select the Cosmos DB Account that you just created.
 
@@ -164,7 +164,11 @@ _The .NET SDK requires credentials to connect to your Azure Cosmos DB account. Y
 
 1. On the left side of the **Azure Cosmos DB** blade, locate the **Settings** section and click the **Keys** link.
 
-1. In the **Keys** pane, record the values in the **CONNECTION STRING**, **URI** and **PRIMARY KEY** fields. You will use these values later in this lab.
+   ![Cosmos DB Keys](../media/08-cosmos-keys.jpg)
+
+1. In the **Keys** pane, record the values in the **PRIMARY CONNECTION STRING**, **URI** and **PRIMARY KEY** fields. You will use these values later in this lab.
+
+   ![Cosmos DB Keys to Copy](../media/08-cosmos-keys-to-copy.jpg)
 
 ## Build A .NET Console App to Generate Data
 
@@ -224,21 +228,21 @@ _In order to simulate data flowing into our store, in the form of actions on an 
 
 1.  Your new XML should look like this:
 
-        ```xml
-        <Project Sdk="Microsoft.NET.Sdk">
-            <PropertyGroup>
-                <OutputType>Exe</OutputType>
-                <TargetFramework>netcoreapp2.2</TargetFramework>
-            </PropertyGroup>
-            <PropertyGroup>
-                <LangVersion>Latest</LangVersion>
-            </PropertyGroup>
-            <ItemGroup>
-                <PackageReference Include="Bogus" Version="27.0.1" />
-                <PackageReference Include="Microsoft.Azure.Cosmos" Version="3.0.0.17-preview" />
-            </ItemGroup>
-        </Project>
-        ```
+    ```xml
+    <Project Sdk="Microsoft.NET.Sdk">
+        <PropertyGroup>
+            <OutputType>Exe</OutputType>
+            <TargetFramework>netcoreapp2.2</TargetFramework>
+        </PropertyGroup>
+        <PropertyGroup>
+            <LangVersion>Latest</LangVersion>
+        </PropertyGroup>
+        <ItemGroup>
+            <PackageReference Include="Bogus" Version="27.0.1" />
+            <PackageReference Include="Microsoft.Azure.Cosmos" Version="3.0.0.17-preview" />
+        </ItemGroup>
+    </Project>
+    ```
 
 1.  Double-click the **Program.cs** link in the **Explorer** pane to open the file in the editor.
 
@@ -248,10 +252,9 @@ _In order to simulate data flowing into our store, in the form of actions on an 
 
 _The key functionality of the console application is to add documents to our Cosmos DB to simulate activity on our ecommerce website. Here, you'll create a data definition for these documents and define a function to add them_
 
-1. Within the **Program.cs** editor tab, Add the following using blocks to the top of the editr:
+1. Within the **Program.cs** editor tab, Add the following using blocks to the top of the editor:
 
    ```csharp
-   using System;
    using System.Threading.Tasks;
    using Microsoft.Azure.Cosmos;
    using Newtonsoft.Json;
@@ -273,9 +276,9 @@ _The key functionality of the console application is to add documents to our Cos
 
    ```csharp
    private static readonly string _endpointUrl = "";
-   private static readonly string _priamryKey = "";
+   private static readonly string _primaryKey = "";
    private static readonly string _databaseId = "StoreDatabase";
-   private static readonly string _containerId = "CartContainer"
+   private static readonly string _containerId = "CartContainer";
    ```
 
 1. For the `_endpointUrl` variable, replace the placehodler value with the **URI** value for your Azure Cosmos DB account that you recorded earlier in this lab.
@@ -327,7 +330,7 @@ _The key functionality of the console application is to add documents to our Cos
    {
        using(var client = new CosmosClient(_endpointUrl, _primaryKey))
        {
-           var db = _client.GetDatabase(_databaseId);
+           var db = client.GetDatabase(_databaseId);
            var container = db.GetContainer(_containerId);
 
            await container.CreateItemAsync(item, new PartitionKey(item.Item));
@@ -422,7 +425,7 @@ _Now that you have a function to add documents to Cosmos DB you'll need a way to
                BuyerState = action.BuyerState
            };
 
-           actions.push(previous);
+           actions.Add(previous);
        }
    }
 
@@ -431,7 +434,7 @@ _Now that you have a function to add documents to Cosmos DB you'll need a way to
 1. Finally, we'll add the new action to the list of actions, prior to returning:
 
    ```csharp
-   actions.Add(action)
+   actions.Add(action);
    ```
 
 1. The **GenerateActions** function should now look like this:
@@ -648,7 +651,7 @@ _The first use case we'll explore for Cosmos DB Change Feed is Live Migration. A
 
 1. Locate the **local.settings.json** file and double click it to open it in the editor.
 
-1. Add a new value **DBConnection** using the **ConnectionString** parameter from your Cosmos DB account collected earlier in this lab. The **local.settings.json** file should like this:
+1. Add a new value **DBConnection** using the **Primary Connection String** parameter from your Cosmos DB account collected earlier in this lab. The **local.settings.json** file should like this:
 
    ```json
    {
@@ -674,7 +677,7 @@ _The first use case we'll explore for Cosmos DB Change Feed is Live Migration. A
 1. Replace the **ConnectionStringSetting** placeholder with the new setting you added earlier **DBConnection**
 
    ```csharp
-   ConnectionStringSetting = "DBConnection"",
+   ConnectionStringSetting = "DBConnection",
    ```
 
 1. Between **ConnectionStringSetting** and **LeaseCollectionName** add the following line:
@@ -712,7 +715,7 @@ _The first use case we'll explore for Cosmos DB Change Feed is Live Migration. A
 
 _The MigrationFunction we just created is going to need access to the defintions of the CartAction and ActionType enum that we defined in our console app. To promote sharing, you'll create a new Shared class library and move the data definitions there._
 
-1. Open your terminal window, and change director to the root folder you created for this lab.
+1. Open your terminal window, and change directory to the root folder you created for this lab.
 
 1. In the terminal pane, enter and execute the following command:
 
@@ -803,7 +806,6 @@ _The MigrationFunction we just created is going to need access to the defintions
 1. Open the **MigrationFunction.cs** file in the editor, and add the following using to the top of the file:
 
    ```csharp
-   using System;
    using System.Threading.Tasks;
    using Shared;
    using Microsoft.Azure.Cosmos;
@@ -816,7 +818,7 @@ _The MigrationFunction we just created is going to need access to the defintions
    private static readonly string _endpointUrl = "<your-endpoint-url>";
    private static readonly string _primaryKey = "<your-primary-key>";
    private static readonly string _databaseId = "StoreDatabase";
-   private static readonly string _containerId_ = "CartContainerByState";
+   private static readonly string _containerId = "CartContainerByState";
    ```
 
    > The \_endpointUrl, \_primaryKey and \_databaseId will all be the same in our case, but they don't have to be. You could be migrating this data to a Cosmos DB located in any account, any database and any container!
@@ -881,7 +883,7 @@ _The MigrationFunction we just created is going to need access to the defintions
     using Microsoft.Azure.WebJobs.Host;
     using Microsoft.Extensions.Logging;
     using Newtonsoft.Json;
-    using shared;
+    using Shared;
     using Microsoft.Azure.Cosmos;
     using System.Threading.Tasks;
 
@@ -1321,7 +1323,7 @@ _This step is optional, if you do not wish to follow the lab to creating the das
 
 1. In the **Resource groups** blade, locate and select the **cosmosdblab-group** _Resource Group_.
 
-   ![Lab resource group](../media/08-cosmos-resource.jpg")
+   ![Lab resource group](../media/08-cosmos-in-resources.jpg")
 
 1. In the **cosmosdblab-group** blade, click the **Add** button
 
@@ -1349,7 +1351,7 @@ _This step is optional, if you do not wish to follow the lab to creating the das
 
    1. Click **Create**
 
-   ![Create Event Hub Settings](../media/08-create-event-hub-ns.jpg);
+   ![Create Event Hub Settings](../media/08-create-event-hub-ns.jpg)
 
    > The Event Hub may take several moments to finish creation. When it is done, proceed to the next steps.
 
@@ -1755,7 +1757,7 @@ _With all of the configuration out of the way, you'll see how simple it is to wr
 
 1. Confirm the data generator is running and that the Azure Functions are firing before proceeding to the next steps
 
-1. Return to the **CartStreamProcessor** overview screen and click the **Start** button at the top to start the processor. This may take several minutes.
+1. Return to the **CartStreamProcessor** overview screen and click the **Start** button at the top to start the processor. When prompted choose to start the output **now**. Starting the processor may take several minutes.
 
    ![Start Processor](../media/08-start-processor.jpg)
 
