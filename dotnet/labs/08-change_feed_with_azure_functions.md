@@ -24,7 +24,7 @@ _You will create an azure resource group to allow for easy management of the res
 
 1. On the left side of the portal, click the **Resource Groups** link.
 
-   ![Resource Groups](../media/08-select-resource-groups.png)
+   ![Resource Groups](../media/08-select-resource-groups.jpg)
 
 1. In the **Resource Groups** blade, select **Add**
 
