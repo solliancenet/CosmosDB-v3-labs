@@ -551,14 +551,18 @@ _At this point, all that is left is to call the function to generate the data fr
    ```csharp
    Console.WriteLine("Press any key to stop the console app...");
 
+   var tasks = new List<Task>();
+
    while(!Console.KeyAvailable)
    {
        foreach(var action in GenerateActions())
        {
-           AddItem(action);
+           tasks.Add(AddItem(action));
            Console.Write("*");
        }
    }
+
+   await Task.WhenAll(tasks);
    ```
 
    > This code uses the console to print an asterisk each time a record is written, just to help us keep track of progress. Pressing any key will stop the console app.

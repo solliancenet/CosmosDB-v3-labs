@@ -21,6 +21,8 @@ namespace DataGenerator
         {
             Console.WriteLine("Press any key to stop the console app...");
 
+            var tasks = new List<Task>();
+
             while (!Console.KeyAvailable)
             {
                 foreach (var action in GenerateActions())
@@ -29,6 +31,8 @@ namespace DataGenerator
                     Console.Write("*");
                 }
             }
+
+            await Task.WhenAll(tasks);
         }
 
         private static List<CartAction> GenerateActions()
