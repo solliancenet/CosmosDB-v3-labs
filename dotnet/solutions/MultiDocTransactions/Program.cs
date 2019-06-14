@@ -1,23 +1,24 @@
 ﻿using System;
 using Bogus;
 using System.Threading.Tasks;
-using Microsoft.Azure.Documents;
-using Microsoft.Azure.Documents.Client;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.Azure.Cosmos;
+using Microsoft.Azure.Cosmos.Scripts;
 
 public class Program
 {
-    private static readonly Uri _endpointUri = new Uri("");
+    private static readonly string _endpointUri = "";
     private static readonly string _primaryKey = "";
 
     public static async Task Main(string[] args)
     {
-        using (DocumentClient client = new DocumentClient(_endpointUri, _primaryKey))
+        using (CosmosClient client = new CosmosClient(_endpointUri, _primaryKey))
         {
-            await client.OpenAsync();
+            CosmosDatabase database = client.GetDatabase("NutritionDatabase");
+            CosmosContainer container = database.GetContainer("FoodCollection");
+            CosmosScripts scripts = container.GetScripts();
 
-            Uri sprocLinkUpload = UriFactory.CreateStoredProcedureUri("FinancialDatabase", "InvestorCollection", "bulkUpload");
             List<Person> people = new Faker<Person>()
                 .RuleFor(p => p.firstName, f => f.Name.FirstName())
                 .RuleFor(p => p.lastName, f => f.Name.LastName())
@@ -26,8 +27,7 @@ public class Program
             int pointer = 0;
             while (pointer < people.Count)
             {
-                RequestOptions options = new RequestOptions { PartitionKey = new PartitionKey("contosofinancial") };
-                StoredProcedureResponse<int> result = await client.ExecuteStoredProcedureAsync<int>(sprocLinkUpload, options, people.Skip(pointer));
+                var result = await scripts.ExecuteStoredProcedureAsync<int, Person>(new PartitionKey("contosofinancial"), "bulkUpload", people.Skip(pointer));
                 pointer += result.Response;
                 await Console.Out.WriteLineAsync($"{pointer} Total Documents\t{result.Response} Documents Uploaded in this Iteration");
             }
@@ -38,7 +38,7 @@ public class Program
             {
                 RequestOptions options = new RequestOptions { PartitionKey = new PartitionKey("contosofinancial") };
                 string query = "SELECT * FROM investors i WHERE i.company = 'contosofinancial'";
-                StoredProcedureResponse<DeleteStatus> result = await client.ExecuteStoredProcedureAsync<DeleteStatus>(sprocLinkDelete, options, query);
+                StoredProcedureResponse<DeleteStatus> result = await scripts.ExecuteStoredProcedureAsync<DeleteStatus>(sprocLinkDelete, options, query);
                 await Console.Out.WriteLineAsync($"Batch Delete Completed.\tDeleted: {result.Response.Deleted}\tContinue: {result.Response.Continuation}");
                 resume = result.Response.Continuation;
             }
