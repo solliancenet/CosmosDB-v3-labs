@@ -4,21 +4,7 @@ using Newtonsoft.Json.Converters;
 
 namespace Shared
 {
-    public class StateCount
-    {
-        [JsonProperty("id")]
-        public string Id { get; set; }
-        public string State { get; set; }
-        public int Count { get; set; }
-        public double TotalSales { get; set; }
-
-        public StateCount()
-        {
-            Id = Guid.NewGuid().ToString();
-        }
-    }
-
-    public enum Action
+    public enum ActionType
     {
         Viewed,
         Added,
@@ -32,7 +18,7 @@ namespace Shared
 
         public int CartId { get; set; }
         [JsonConverter(typeof(StringEnumConverter))]
-        public Action Action { get; set; }
+        public ActionType Action { get; set; }
         public string Item { get; set; }
         public double Price { get; set; }
         public string BuyerState { get; set; }
@@ -41,6 +27,19 @@ namespace Shared
         {
             Id = Guid.NewGuid().ToString();
         }
+    }
 
+    public class StateCount
+    {
+        [JsonProperty("id")]
+        public string Id { get; set; }
+        public string State { get; set; }
+        public int Count { get; set; }
+        public double TotalSales { get; set; }
+
+        public StateCount()
+        {
+            Id = Guid.NewGuid().ToString();
+        }
     }
 }

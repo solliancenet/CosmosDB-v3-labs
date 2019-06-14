@@ -3,24 +3,38 @@ using System.Threading.Tasks;
 using Microsoft.Azure.Cosmos;
 using Bogus;
 using System.Collections.Generic;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
 using Shared;
 
 namespace DataGenerator
 {
-    public class Program
+    class Program
     {
-        private static readonly string _endpointUrl = "<your-cosmosdb-endpoint-url>";
-        private static readonly string _primaryKey = "<your-cosmosdb-primary-key>";
+        private static readonly string _endpointUrl = "<your-cosmos-db-endpoint>";
+        private static readonly string _primaryKey = "<your-cosmos-db-primary-key>";
         private static readonly string _databaseId = "StoreDatabase";
-        private static readonly string _containerName = "CartContainer";
+        private static readonly string _containerId = "CartContainer";
 
-        private static async Task Main(string[] args)
+        private Randomizer _random = new Randomizer();
+
+
+        static async Task Main(string[] args)
         {
             Console.WriteLine("Press any key to stop the console app...");
 
+            while (!Console.KeyAvailable)
+            {
+                foreach (var action in GenerateActions())
+                {
+                    AddItem(action);
+                    Console.Write("*");
+                }
+            }
+        }
+
+        private static List<CartAction> GenerateActions()
+        {
             Randomizer random = new Randomizer();
+
             var items = new string[]
             {
                 "Unisex Socks", "Women's Earring", "Women's Necklace", "Unisex Beanie",
@@ -58,50 +72,46 @@ namespace DataGenerator
                 84.99, 12.00, 37.50
             };
 
-            Console.WriteLine("Starting Data Generation");
+            var actions = new List<CartAction>();
 
-            while (!Console.KeyAvailable)
+            var itemIndex = random.Number(0, items.Length - 1);
+            var stateIndex = random.Number(0, states.Length - 1);
+
+            var action = new CartAction
             {
-                var itemIndex = random.Number(0, items.Length - 1);
-                var stateIndex = random.Number(0, states.Length - 1);
+                CartId = random.Number(1000, 99999),
+                Action = random.Enum<ActionType>(),
+                Item = items[itemIndex],
+                Price = prices[itemIndex],
+                BuyerState = states[stateIndex]
+            };
 
-                var item = new CartAction
+            if (action.Action != ActionType.Viewed)
+            {
+                var previousActions = new List<ActionType> { ActionType.Viewed };
+
+                if (action.Action == ActionType.Purchased)
                 {
-                    CartId = random.Number(1000, 99999),
-                    Action = random.Enum<Shared.Action>(),
-                    Item = items[itemIndex],
-                    Price = prices[itemIndex],
-                    BuyerState = states[stateIndex]
-                };
-
-                if (item.Action != Shared.Action.Viewed)
-                {
-                    var previousActions = new List<Shared.Action> { Shared.Action.Viewed };
-
-                    if (item.Action == Shared.Action.Purchased)
-                    {
-                        previousActions.Add(Shared.Action.Added);
-                    }
-
-                    foreach (var action in previousActions)
-                    {
-                        var previousItem = new CartAction
-                        {
-                            CartId = item.CartId,
-                            Action = action,
-                            Item = item.Item,
-                            Price = item.Price,
-                            BuyerState = item.BuyerState
-                        };
-
-                        AddItem(previousItem);
-                        Console.Write("*");
-                    }
+                    previousActions.Add(ActionType.Added);
                 }
 
-                AddItem(item);
-                Console.Write("*");
+                foreach (var previousAction in previousActions)
+                {
+                    var previous = new CartAction
+                    {
+                        CartId = action.CartId,
+                        Action = previousAction,
+                        Item = action.Item,
+                        Price = action.Price,
+                        BuyerState = action.BuyerState
+                    };
+
+                    actions.Add(previous);
+                }
             }
+
+            actions.Add(action);
+            return actions;
         }
 
         private static async Task AddItem(CartAction item)
@@ -109,7 +119,7 @@ namespace DataGenerator
             using (var client = new CosmosClient(_endpointUrl, _primaryKey))
             {
                 var db = client.GetDatabase(_databaseId);
-                var container = db.GetContainer(_containerName);
+                var container = db.GetContainer(_containerId);
 
                 await container.CreateItemAsync(item, new PartitionKey(item.Item));
             }

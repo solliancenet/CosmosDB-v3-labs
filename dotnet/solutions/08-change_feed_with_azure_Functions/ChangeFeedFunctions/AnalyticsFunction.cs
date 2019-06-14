@@ -11,7 +11,7 @@ namespace ChangeFeedFunctions
 {
     public static class AnalyticsFunction
     {
-        private static readonly string _eventHubConnection = "<your-event-hub-namespace-connection-string>";
+        private static readonly string _eventHubConnection = "<your-event-hub-connection>";
         private static readonly string _eventHubName = "carteventhub";
 
         [FunctionName("AnalyticsFunction")]
@@ -39,7 +39,7 @@ namespace ChangeFeedFunctions
 
                     var eventData = new EventData(Encoding.UTF8.GetBytes(json));
 
-                    log.LogInformation(json);
+                    log.LogInformation("Writing to Event Hub");
                     tasks.Add(eventHubClient.SendAsync(eventData));
                 }
 
