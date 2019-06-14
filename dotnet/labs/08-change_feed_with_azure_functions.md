@@ -28,7 +28,7 @@ _You will create an azure resource group to allow for easy management of the res
 
 1. In the **Resource Groups** blade, select **Add**
 
-   ![Resource Groups](../media/08-resources-blade.png)
+   ![Resource Groups](../media/08-resources-blade.jpg)
 
 1. In the **Create a resource group** window, create a new resource
 
@@ -38,7 +38,7 @@ _You will create an azure resource group to allow for easy management of the res
 
    1. Set the Region to one that is closest to your location
 
-   [!Resource Groups](../media/08-create-resource-group.png)
+   [!Resource Groups](../media/08-create-resource-group.jpg)
 
 1. At the bottom of the window, click **Review + Create**
 
@@ -52,21 +52,21 @@ _You will now create an Azure Cosmos DB account._
 
 1. On the left side of the portal, click the **Resource groups** link.
 
-   ![Resource Groups](../media/08-select-resource-groups.png)
+   ![Resource Groups](../media/08-select-resource-groups.jpg)
 
 1. In the **Resource groups** blade, locate and select the **cosmosdblab-group** _Resource Group_.
 
-   ![Lab resource group](../media/08-cosmos-resource.png")
+   ![Lab resource group](../media/08-cosmos-resource.jpg")
 
 1. In the **cosmosdblab-group** blade, click the **Add** button
 
-   ![Cosmos resource](../media/08-resources-add.png)
+   ![Cosmos resource](../media/08-resources-add.jpg)
 
 1. In the **Get Started** blade that opens, type _Azure Cosmos DB_ into the search bar and select the first result.
 
 1. In the new window, click **Create**
 
-   ![Create Azure Cosmos DB](../media/08-create-cosmos.png)
+   ![Create Azure Cosmos DB](../media/08-create-cosmos.jpg)
 
 1. In the **Create Azure Cosmos DB Account** window, complete the following configuration.
 
@@ -82,7 +82,7 @@ _You will now create an Azure Cosmos DB account._
 
 1. Click **Review + Create**
 
-   ![Azure Cosmos DB Config](../media/08-cosmos-db-config.png)
+   ![Azure Cosmos DB Config](../media/08-cosmos-db-config.jpg)
 
 1. When you're ready, in the review window click **Create**
 
@@ -94,23 +94,23 @@ _You will now create a database and several containers within your Azure Cosmos 
 
 1. On the left side of the portal, click the **Resource groups** link.
 
-   ![Resource Groups](../media/08-select-resource-groups.png)
+   ![Resource Groups](../media/08-select-resource-groups.jpg)
 
 1. In the **Resource groups** blade, locate and select the **cosmosdblab-group** _Resource Group_.
 
-   ![Lab resource group](../media/08-cosmos-resource.png")
+   ![Lab resource group](../media/08-cosmos-resource.jpg")
 
 1. In the **cosmosdblab-group** blade, select the Cosmos DB Account that you just created.
 
-   ![Cosmos DB in Resource Blade](../media/08-cosmos-in-resources.png)
+   ![Cosmos DB in Resource Blade](../media/08-cosmos-in-resources.jpg)
 
 1. In the **Azure Cosmos DB** blade, locate and click the **Overview** link on the left side of the blade.
 
-   ![Overview pane](../media/08-cosmos-overview.png)
+   ![Overview pane](../media/08-cosmos-overview.jpg)
 
 1. At the top of the **Azure Cosmos DB** blade, click the **Add Container** button.
 
-   ![Add container](../media/08-add-container.png)
+   ![Add container](../media/08-add-container.jpg)
 
 1. In the **Add Container** popup, perform the following actions:
 
@@ -128,13 +128,13 @@ _You will now create a database and several containers within your Azure Cosmos 
 
    1. Click the **OK** button.
 
-   ![Add container](../media/08-add-database.png)
+   ![Add container](../media/08-add-database.jpg)
 
 1. Wait for the creation of the new **database** and **container** to finish before moving on with this lab.
 
 1. You need to create two additional **containers** for this lab. For each, you can utilize the **New Container** but at the top of the **Data Explorer** window, or return to the **Overview** tab.
 
-   ![Additional Containers](../media/08-add-additional-containers.png)
+   ![Additional Containers](../media/08-add-additional-containers.jpg)
 
 1. For the first additional container, utilize the following values
 
@@ -156,15 +156,13 @@ _You will now create a database and several containers within your Azure Cosmos 
 
 1. Once all three containers have been created, your Data Explorer should look like this:
 
-   ![All Containers Created](../media/08-comos-containers-created.png)
+   ![All Containers Created](../media/08-comos-containers-created.jpg)
 
 ### Retrieve Account Credentials
 
 _The .NET SDK requires credentials to connect to your Azure Cosmos DB account. You will collect and store these credentials for use throughout the lab._
 
 1. On the left side of the **Azure Cosmos DB** blade, locate the **Settings** section and click the **Keys** link.
-
-   ![Keys pane](../media/08-comos-containers-created-keys.png)
 
 1. In the **Keys** pane, record the values in the **CONNECTION STRING**, **URI** and **PRIMARY KEY** fields. You will use these values later in this lab.
 
@@ -212,7 +210,7 @@ _In order to simulate data flowing into our store, in the form of actions on an 
 
 1.  Observe the **Program.cs** and **DataGenerator.csproj** files created by the .NET Core CLI.
 
-    ![Project files](../media/08-initial-project-files.png)
+    ![Project files](../media/08-initial-project-files.jpg)
 
 1.  Double-click the **DataGenerator.csproj** link in the **Explorer** pane to open the file in the editor.
 
@@ -244,7 +242,7 @@ _In order to simulate data flowing into our store, in the form of actions on an 
 
 1.  Double-click the **Program.cs** link in the **Explorer** pane to open the file in the editor.
 
-    ![Open editor](../media/08-console-main-default.png)
+    ![Open editor](../media/08-console-main-default.jpg)
 
 ### Create Function to Add Documents to Cosmos DB
 
@@ -576,7 +574,7 @@ _You're ready to run the console app, and in this step you'll take a look at you
 
 1. After a brief build process, you should begin to see the asterisks being printed as data is being generated and written to Cosmos DB.
 
-   ![Console Running](../media/08-console-running.png)
+   ![Console Running](../media/08-console-running.jpg)
 
 1. Let the console app run for a minute or two and then stop it by pressing any key in the console.
 
@@ -584,13 +582,13 @@ _You're ready to run the console app, and in this step you'll take a look at you
 
 1. From within the **Azure Cosmos DB** blade, select the **Data Explorer** tab on the left.
 
-   ![Data Explorer](../media/08-cosmos-overview-final.png)
+   ![Data Explorer](../media/08-cosmos-overview-final.jpg)
 
 1. Expand the **StoreDatabase** then the **CartContainer** and select **Items** If all goes well, you should see something like the following screenshot.
 
    _Note your data will be slightly different since it is random, the important thing is that there is data here at all_
 
-   ![Cosmos DB With Data](../media/08-cosmos-data-explorer-with-data.png)
+   ![Cosmos DB With Data](../media/08-cosmos-data-explorer-with-data.jpg)
 
 ## Create an Azure Function to Consume Cosmos DB Change Feed
 
@@ -642,7 +640,7 @@ _Azure Functions provide a quick and easy way to hook up with the Cosmos DB Chan
 
 1. Your first Azure Function has been created, switch back to Visual Studio Code and note the new **ChangeFeedFunctions** folder, expand it and note **local.settings.json**, and the **MigrationFunction.cs**.
 
-   ![VS Code WIth Change Feed](../media/08-code-change-feed-create.png)
+   ![VS Code WIth Change Feed](../media/08-code-change-feed-create.jpg)
 
 ### Create an Azure Function for Live Migration using Cosmos DB Change Feed
 
@@ -665,7 +663,7 @@ _The first use case we'll explore for Cosmos DB Change Feed is Live Migration. A
 
 1. Now locate the **MigrationFunction.cs** file and double click on it to open it in the editor. You'll see that an Azure Function template has already been created for you with Cosmos DB as the trigger.
 
-   ![VS Code with MigrationFunction](../media/08-vscode-migration-function.png)
+   ![VS Code with MigrationFunction](../media/08-vscode-migration-function.jpg)
 
    > The **databaseName**, **collectionName** and **ConnectionStringSetting** refer to the source Cosmos DB account that the function is listening for changes on.
 
@@ -944,7 +942,7 @@ _Now that we have our first Change Feed consumer, we're ready to run a test and 
 
 1. Once the function starts running you'll see a message like this in the console window:
 
-   ![First Function Running](../media/08-first-func-running.png)
+   ![First Function Running](../media/08-first-func-running.jpg)
 
 1. In the **first** terminal window, navigate to the **DataGenerator** folder
 
@@ -960,7 +958,7 @@ _Now that we have our first Change Feed consumer, we're ready to run a test and 
 
 1. After a few minutes, navigate to the **cosmosdblab** Data Explorer and expand **StoreDatabase** then **CartContainerByState** and click **Items**. You should see items populating there, and note that the Partition Key this time is /BuyerState.
 
-   ![Cart Container By State](../media/08-cart-container-by-state.png)
+   ![Cart Container By State](../media/08-cart-container-by-state.jpg)
 
 1. Press any key in the **first** terminal to stop data generation
 
@@ -1297,7 +1295,7 @@ _The Materialized View pattern is used to generate pre-populated views of data i
 
 1. You should see data being populated in the container by state, click on an item to see the contents of the data.
 
-   ![Comos DB StateSales](../media/08-cosmos-state-sales.png)
+   ![Comos DB StateSales](../media/08-cosmos-state-sales.jpg)
 
 1. In the **first** terminal window, press any key to stop data generation
 
@@ -1319,21 +1317,21 @@ _This step is optional, if you do not wish to follow the lab to creating the das
 
 1. On the left side of the portal, click the **Resource groups** link.
 
-   ![Resource Groups](../media/08-select-resource-groups.png)
+   ![Resource Groups](../media/08-select-resource-groups.jpg)
 
 1. In the **Resource groups** blade, locate and select the **cosmosdblab-group** _Resource Group_.
 
-   ![Lab resource group](../media/08-cosmos-resource.png")
+   ![Lab resource group](../media/08-cosmos-resource.jpg")
 
 1. In the **cosmosdblab-group** blade, click the **Add** button
 
-   ![Cosmos resource](../media/08-resources-add.png)
+   ![Cosmos resource](../media/08-resources-add.jpg)
 
 1. Enter the term `Event Hubs` in the search bar and choose the first result
 
 1. In the **Event Hubs** create window, click **Create**
 
-   ![Create Event Hub](../media/08-create-event-hub.png)
+   ![Create Event Hub](../media/08-create-event-hub.jpg)
 
 1. In the **Create Namespace** blade, enter the following values:
 
@@ -1351,13 +1349,13 @@ _This step is optional, if you do not wish to follow the lab to creating the das
 
    1. Click **Create**
 
-   ![Create Event Hub Settings](../media/08-create-event-hub-ns.png);
+   ![Create Event Hub Settings](../media/08-create-event-hub-ns.jpg);
 
    > The Event Hub may take several moments to finish creation. When it is done, proceed to the next steps.
 
 1. Return to the **cosmosdblab-group** resource blade, and select the Event Hub account you just created
 
-   ![Select Event Hub](../media/08-cosmos-select-hub.png)
+   ![Select Event Hub](../media/08-cosmos-select-hub.jpg)
 
 1. In the **Event Hub** blade, find **Shared Access Policies** under **Settings** and select it
 
@@ -1365,13 +1363,13 @@ _This step is optional, if you do not wish to follow the lab to creating the das
 
 1. In the panel that appears, copy the value for **Connection string-primary key** and save it for use later in this lab.
 
-   ![Event Hub Keys](../media/08-event-hub-keys.png)
+   ![Event Hub Keys](../media/08-event-hub-keys.jpg)
 
 1. In the left sidebar find **Event Hubs** under the **Entities** section and select it
 
 1. In the **Event Hubs** blade, click the **Event Hub** button at the top of the screen
 
-   ![Adding Event Hub](../media/08-adding-hub.png)
+   ![Adding Event Hub](../media/08-adding-hub.jpg)
 
 1. In the **Create Event Hub** blade that appears, enter the following values:
 
@@ -1381,7 +1379,7 @@ _This step is optional, if you do not wish to follow the lab to creating the das
 
    1. Click **Create**
 
-   ![Create CartEventHub](../media/08-create-carteventhub.png)
+   ![Create CartEventHub](../media/08-create-carteventhub.jpg)
 
 ### Create an Azure Stream Analytics Job
 
@@ -1391,7 +1389,7 @@ _This step is optional, if you do not wish to follow the lab to creating the das
 
 1. In the **Create Stream Analytics Job** blade that appears select **Create**
 
-   ![Create Stream Analytics](../media/08-create-stream-analytics.png)
+   ![Create Stream Analytics](../media/08-create-stream-analytics.jpg)
 
 1. In the **New Stream Analytics Job** blade, enter the following information
 
@@ -1409,21 +1407,21 @@ _This step is optional, if you do not wish to follow the lab to creating the das
 
    1. Click **Create**
 
-   ![Stream Analytics Config](../media/08-stream-analytics-config.png)
+   ![Stream Analytics Config](../media/08-stream-analytics-config.jpg)
 
    > Wait for the Stream Analytics Job to be Created and Proceed to the Next Step
 
 1. Return to the **cosmosdblab-group** resource blade and select the stream analytics job you just created
 
-   ![Select Stream Analytics](../media/08-select-stream-processor.png)
+   ![Select Stream Analytics](../media/08-select-stream-processor.jpg)
 
 1. Select **Inputs** from the **Overview** screen
 
-   ![Stream Processor Overview](../media/08-stream-processor-overview.png)
+   ![Stream Processor Overview](../media/08-stream-processor-input.jpg)
 
 1. Click **Add stream input**
 
-   ![Add Stream Input](../media/08-click-add-stream-input.png)
+   ![Add Stream Input](../media/08-click-add-stream-input.jpg)
 
 1. Select **Event Hub**
 
@@ -1449,15 +1447,17 @@ _This step is optional, if you do not wish to follow the lab to creating the das
 
    1. Click **Save**
 
-   ![Event Hub Input Setup](../media/08-input-setup.png)
+   ![Event Hub Input Setup](../media/08-input-setup.jpg)
 
    > Wait for the Input setup to be completed then proceed to the next step
 
 1. Return to the **CartStreamProcessor** Overview Screen and select **Outputs**
 
+   ![Stream Processor Overview](../media/08-stream-processor-output.jpg)
+
 1. At the top of the **Outputs** page, select **Add** and choose **Power BI**
 
-   ![Choose Power BI](../media/08-add-power-bi.png)
+   ![Choose Power BI](../media/08-add-power-bi.jpg)
 
 1. In the window that appears enter the following data
 
@@ -1471,7 +1471,7 @@ _This step is optional, if you do not wish to follow the lab to creating the das
 
    1. Click **Save**
 
-   ![Adding Output](../media/08-adding-output.png)
+   ![Adding Output](../media/08-adding-output.jpg)
 
 1. Repeat the previous step to add a second output
 
@@ -1511,7 +1511,7 @@ _This step is optional, if you do not wish to follow the lab to creating the das
 
 1. Once you've completed these steps, the **Outputs** blade should look like this:
 
-   ![Outputs Blade](../media/08-outputs-blade.png)
+   ![Outputs Blade](../media/08-outputs-blade.jpg)
 
 1. Return to the **CartStreamProcess** Overview page and click the **Edit query** button on the right of the screen.
 
@@ -1563,7 +1563,7 @@ _This step is optional, if you do not wish to follow the lab to creating the das
    GROUP BY Action, TumblingWindow(second,30)
    ```
 
-   ![Save Query](../media/08-save-query.png)
+   ![Save Query](../media/08-save-query.jpg)
 
 ### Create an Azure Function to write data to the Event Hub
 
@@ -1757,7 +1757,7 @@ _With all of the configuration out of the way, you'll see how simple it is to wr
 
 1. Return to the **CartStreamProcessor** overview screen and click the **Start** button at the top to start the processor. This may take several minutes.
 
-   ![Start Processor](../media/08-start-processor.png)
+   ![Start Processor](../media/08-start-processor.jpg)
 
    > Wait for the processor to start before continuing
 
@@ -1765,21 +1765,21 @@ _With all of the configuration out of the way, you'll see how simple it is to wr
 
 1. Sign in, and choose **My Workspace** from the left hand section
 
-   ![Power BI](../media/08-power-bi.png)
+   ![Power BI](../media/08-power-bi.jpg)
 
 1. In the top right of the screen select **Create** and choose **Dashboard** give the dashbaord any _Name_
 
 1. In the **Dashboard** screen, select **Add tile** from the top
 
-   ![Power BI Add Tile](../media/08-power-bi-add-tile.png)
+   ![Power BI Add Tile](../media/08-power-bi-add-title.jpg)
 
 1. Choose **Custom Streaming Data** and hit **Next**
 
-   ![Power BI Custom Streaming Data](../media/08-pbi-custom-streaming-data.png)
+   ![Power BI Custom Streaming Data](../media/08-pbi-custom-streaming-data.jpg)
 
 1. Choose **averagePrice** from the **Add custom sreaming data tile** window
 
-   ![Power BI averagePrice](../media/08-add-averageprice-pbi.png)
+   ![Power BI averagePrice](../media/08-add-averageprice-pbi.jpg)
 
 1. From _Visualization Type_ select **Clustered bar char**
 
@@ -1789,7 +1789,7 @@ _With all of the configuration out of the way, you'll see how simple it is to wr
 
    1. Click **Next**
 
-   ![Power BI Tile](../media/08-power-bi-first-tile.png)
+   ![Power BI Tile](../media/08-power-bi-first-tile.jpg)
 
    1. Give it a name like `Average Price` and click **Apply**
 
@@ -1803,4 +1803,4 @@ _With all of the configuration out of the way, you'll see how simple it is to wr
 
 1. When complete, you'll have a dashboard that looks like the image below, updating in real time!
 
-   ![Power BI Final Dashboard](../media/08-power-bi-dashboard.png)
+   ![Power BI Final Dashboard](../media/08-power-bi-dashboard.jpg)
