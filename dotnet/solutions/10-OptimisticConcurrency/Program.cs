@@ -25,7 +25,7 @@ public class Program
             await Console.Out.WriteLineAsync($"Existing eTag:\t{response.ETag}");
 
             ItemRequestOptions requestOptions = new ItemRequestOptions { IfMatchEtag = response.ETag };
-            response.Resource.tags.Add(new Tag{ name = "Demo" });
+            response.Resource.tags.Add(new Tag { name = "Demo" });
             response = await container.UpsertItemAsync(response.Resource, requestOptions: requestOptions);
             await Console.Out.WriteLineAsync($"New eTag:\t{response.ETag}");
         }
