@@ -11,6 +11,8 @@ public class Program
     private static readonly string _endpointUri = "";
     private static readonly string _primaryKey = "";
 
+    const string FoodGroup = "Snacks";
+
     public static async Task Main(string[] args)
     {
         using (CosmosClient client = new CosmosClient(_endpointUri, _primaryKey))
@@ -19,38 +21,38 @@ public class Program
             CosmosContainer container = database.GetContainer("FoodCollection");
             CosmosScripts scripts = container.GetScripts();
 
-            List<Person> people = new Faker<Person>()
-                .RuleFor(p => p.firstName, f => f.Name.FirstName())
-                .RuleFor(p => p.lastName, f => f.Name.LastName())
-                .RuleFor(p => p.company, f => "contosofinancial")
+            List<Food> people = new Faker<Food>()
+                .RuleFor(p => p.Id, f => f.Random.Int().ToString())
+                .RuleFor(p => p.Description, f => f.Commerce.ProductName())
+                .RuleFor(p => p.ManufacturerName, f => f.Company.CompanyName())
+                .RuleFor(p => p.FoodGroup, f => FoodGroup)
                 .Generate(25000);
             int pointer = 0;
             while (pointer < people.Count)
             {
-                var result = await scripts.ExecuteStoredProcedureAsync<int, Person>(new PartitionKey("contosofinancial"), "bulkUpload", people.Skip(pointer));
-                pointer += result.Response;
-                await Console.Out.WriteLineAsync($"{pointer} Total Documents\t{result.Response} Documents Uploaded in this Iteration");
+                StoredProcedureExecuteResponse<int> result = await scripts.ExecuteStoredProcedureAsync<IEnumerable<Food>, int>(new PartitionKey(FoodGroup), "bulkUpload", people.Skip(pointer));
+                pointer += result.Resource;
+                await Console.Out.WriteLineAsync($"{pointer} Total Items\t{result.Resource} Items Uploaded in this Iteration");
             }
 
-            Uri sprocLinkDelete = UriFactory.CreateStoredProcedureUri("FinancialDatabase", "InvestorCollection", "bulkDelete");
             bool resume = true;
             do
             {
-                RequestOptions options = new RequestOptions { PartitionKey = new PartitionKey("contosofinancial") };
-                string query = "SELECT * FROM investors i WHERE i.company = 'contosofinancial'";
-                StoredProcedureResponse<DeleteStatus> result = await scripts.ExecuteStoredProcedureAsync<DeleteStatus>(sprocLinkDelete, options, query);
-                await Console.Out.WriteLineAsync($"Batch Delete Completed.\tDeleted: {result.Response.Deleted}\tContinue: {result.Response.Continuation}");
-                resume = result.Response.Continuation;
+                string query = $"SELECT * FROM investors i WHERE i.company = '{FoodGroup}'";
+                StoredProcedureExecuteResponse<DeleteStatus> result = await scripts.ExecuteStoredProcedureAsync<string, DeleteStatus>(new PartitionKey(FoodGroup), "bulkDelete", query);
+                await Console.Out.WriteLineAsync($"Batch Delete Completed.\tDeleted: {result.Resource.Deleted}\tContinue: {result.Resource.Continuation}");
+                resume = result.Resource.Continuation;
             }
             while (resume);
         }
     }
 
-    public class Person
+    public class Food
     {
-        public string firstName { get; set; }
-        public string lastName { get; set; }
-        public string company { get; set; }
+        public string Id { get; set; }
+        public string Description { get; set; }
+        public string ManufacturerName { get; set; }
+        public string FoodGroup { get; set; }
     }
 
     public class DeleteStatus

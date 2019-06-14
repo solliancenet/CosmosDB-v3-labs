@@ -64,8 +64,8 @@ In this lab, you will author and execute multiple stored procedures within your 
 
     ```js
     function bulkUpload(docs) {
-        var collection = getContext().getCollection();
-        var collectionLink = collection.getSelfLink();
+        var container = getContext().getCollection();
+        var containerLink = container.getSelfLink();
         var count = 0;
         if (!docs) throw new Error("The array is undefined or null.");
         var docsLength = docs.length;
@@ -75,7 +75,7 @@ In this lab, you will author and execute multiple stored procedures within your 
         }
         tryCreate(docs[count], callback);
         function tryCreate(doc, callback) {
-            var isAccepted = collection.createDocument(collectionLink, doc, callback);
+            var isAccepted = container.createDocument(containerLink, doc, callback);
             if (!isAccepted) getContext().getResponse().setBody(count);
         }
         function callback(err, doc, options) {
@@ -104,8 +104,8 @@ In this lab, you will author and execute multiple stored procedures within your 
 
     ```js
     function bulkDelete(query) {
-        var collection = getContext().getCollection();
-        var collectionLink = collection.getSelfLink();
+        var container = getContext().getCollection();
+        var containerLink = container.getSelfLink();
         var response = getContext().getResponse();
         var responseBody = {
             deleted: 0,
@@ -115,7 +115,7 @@ In this lab, you will author and execute multiple stored procedures within your 
         tryQueryAndDelete();
         function tryQueryAndDelete(continuation) {
             var requestOptions = {continuation: continuation};
-            var isAccepted = collection.queryDocuments(collectionLink, query, requestOptions, function (err, retrievedDocs, responseOptions) {
+            var isAccepted = container.queryDocuments(containerLink, query, requestOptions, function (err, retrievedDocs, responseOptions) {
                 if (err) throw err;
                 if (retrievedDocs.length > 0) {
                     tryDelete(retrievedDocs);
@@ -132,7 +132,7 @@ In this lab, you will author and execute multiple stored procedures within your 
         }
         function tryDelete(documents) {
             if (documents.length > 0) {
-                var isAccepted = collection.deleteDocument(documents[0]._self, {}, function (err, responseOptions) {
+                var isAccepted = container.deleteDocument(documents[0]._self, {}, function (err, responseOptions) {
                     if (err) throw err;
                     responseBody.deleted++;
                     documents.shift();
