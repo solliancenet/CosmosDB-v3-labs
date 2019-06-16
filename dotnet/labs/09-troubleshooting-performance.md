@@ -1,14 +1,14 @@
 # Troubleshooting Azure Cosmos DB Performance
 
-In this lab, you will use the .NET SDK to tune an Azure Cosmos DB request to optimize performance of your application.
+In this lab, you will use the .NET SDK to tune Azure Cosmos DB requests to optimize the performance and cost of your application.
 
 ## Setup
 
-> Before you start this lab, you will need to create an Azure Cosmos DB database and container that you will use throughout the lab. You will also use the **Azure Data Factory** to import existing data into your container.
+> Before you start this lab, you will need to create an Azure Cosmos DB database and container that you will use throughout the lab.
 
-### Create Azure Cosmos DB Database and Container
+### Create Azure Cosmos DB Database and Containers
 
-*You will now create a database and container within your Azure Cosmos DB account.*
+*You will now create a database and containers within your Azure Cosmos DB account.*
 
 1. On the left side of the portal, click the **Resource groups** link.
 
@@ -30,15 +30,13 @@ In this lab, you will use the .NET SDK to tune an Azure Cosmos DB request to opt
 
     1. In the **Container id** field, enter the value **TransactionCollection**.
 
-    1. In the **Storage capacity** section, select the **Unlimited** option.
-
     1. In the **Partition key** field, enter the value ``/costCenter``.
 
     1. In the **Throughput** field, enter the value ``10000``.
 
     1. Click the **OK** button.
 
-1. Wait for the creation of the new **database** and **container** to finish before moving on with this lab.
+1. Wait for the creation of the new **database** and **container** to finish before moving on.
 
 1. At the top of the **Azure Cosmos DB** blade, click the **Add Container** button.
 
@@ -48,9 +46,9 @@ In this lab, you will use the .NET SDK to tune an Azure Cosmos DB request to opt
 
     1. In the **Container id** field, enter the value **PeopleCollection**.
 
-    1. In the **Storage capacity** section, select the **Fixed-Size** option.
+    1. In the **Partition key** field, enter the value ``/accountHolder/lastName``.
 
-    1. In the **Throughput** field, enter the value ``1000``.
+    1. In the **Throughput** field, enter the value ``400``.
 
     1. Click the **OK** button.
 
@@ -67,86 +65,6 @@ In this lab, you will use the .NET SDK to tune an Azure Cosmos DB request to opt
 1. In the **Keys** pane, record the values in the **CONNECTION STRING**, **URI** and **PRIMARY KEY** fields. You will use these values later in this lab.
 
     ![Credentials](../media/05-keys.jpg)
-
-### Import Lab Data Into Container
-
-You will use **Azure Data Factory (ADF)** to import the JSON array stored in the **students.json** file from Azure Blob Storage.
-
-1. On the left side of the portal, click the **Resource groups** link.
-
-   > To learn more about copying data to Cosmos DB with ADF, please read [ADF's documentation](https://docs.microsoft.com/en-us/azure/data-factory/connector-azure-cosmos-db). 
-
-   ![Resource groups](../media/03-resource_groups.jpg)
-
-2. In the **Resource groups** blade, locate and select the **cosmosgroup-lab** *Resource Group*.
-
-3. Click **add** to add a new resource
-
-![Add adf](../media/03-add_adf.jpg)
-
-4. Search for **Data Factory** and select it
-
-![adf-search](../media/03-adf_search.png)
-
-5. Create a new **Data Factory**. You should name this data factory **importtransactions** and select the relevant Azure subscription. You should ensure your existing **cosmosdblab-group** resource group is selected as well as a Version **V2**. Select **East US** as the region. Click **create**.
-
-![df](../media/05-adf_selections.jpg)
-
-6. Select **Copy Data**. We will be using ADF for a one-time copy of data from a source JSON file on Azure Blob Storage to a database in Cosmos DB's SQL API. ADF can also be used for more frequent data transfer from Cosmos DB to other data stores.
-
-![](../media/03-adf_copydata.jpg)
-
-7. Edit basic properties for this data copy. You should name the task **ImportTransactionsData** and select to **Run once now**.
-
-![adf-properties](../media/05-adf_properties.jpg)
-
-8. Create a **new connection** and select **Azure Blob Storage**. We will import data from a json file on Azure Blob Storage. In addition to Blob Storage, you can use ADF to migrate from a wide variety of sources. We will not cover migration from these sources in this tutorial.
-
-9. Name the source **TransactionsJson** and select **Use SAS URI** as the Authentication method. Please use the following SAS URI for read-only access to this Blob Storage container:  
-
-https://cosmoslabs.blob.core.windows.net/?sv=2018-03-28&ss=bfqt&srt=sco&sp=rl&se=2020-04-01T13:14:14Z&st=2018-11-06T06:14:14Z&spr=https&sig=8HltMx1smolMcSmOhfVdC3drxtmTkq2%2BfJ8574uK60A%3D
-
-![adf-properties](../media/05-adf_newlinkedservice.jpg)
-
-10. Select the **transactions** folder.
-
-![adf-properties](../media/05-adf_transactions.jpg)
-
-11. Ensure that **Copy file recursively** and **Binary Copy** are not checked off. Also ensure that **Compression Type** is "none".
-
-12. ADF should auto-detect the file format to be JSON. You can also select the file format as **JSON format.** You should also make sure you select **Array of Objects**  as the File pattern.
-
-13. You have now successfully connected the Blob Storage container with the transactions.json file. You should select **TransactionsJson** as the source and click **Next**.
-
-14. Add the Cosmos DB target data store by selecting **Create new connection** and selecting **Azure Cosmos DB**.
-
-![](../media/03-adf_selecttarget.jpg)
-
-15. Name the linked service **targetcosmosdb** and select your Azure subscription and Cosmos DB account. You should also select the Cosmos DB database that you created earlier.
-
-![](../media/03-adf_selecttargetdb.jpg)
-
-16. Select your newly created **targetcosmosdb** connection as the Destination date store.
-
-17. Select your container from the drop-down menu. You will map your Blob storage file to the correct Cosmos DB container.
-
-![](../media/03-adf_correcttable.jpg)
-
-18. You should have selected to skip column mappings in a previous step. Click through this screen.
-
-![](../media/03-adf_destinationconnectionfinal.jpg)
-
-19. There is no need to change any settings. Click **next**.
-
-![](../media/03-adf_settings.jpg)
-
-20. After deployment is complete, select **Monitor**.
-
-![](../media/03-adf_deployment.jpg)
-
-21. After a few minutes, refresh the page and the status for the **ImportTransactions** pipeline should be listed as **Succeeded**.
-
-22. Once the import process has completed, close the ADF. You will now proceed to execute simple queries on your imported data. 
 
 ### Create a .NET Core Project
 
@@ -168,25 +86,33 @@ https://cosmoslabs.blob.core.windows.net/?sv=2018-03-28&ss=bfqt&srt=sco&sp=rl&se
     dotnet new console --output .
     ```
 
-    > This command will create a new .NET Core 2.1 project. The project will be a **console** project and the project will be created in the current directly since you used the ``--output .`` option.
+    > This command will create a new .NET Core 2.2 project. The project will be a **console** project and the project will be created in the current directly since you used the ``--output .`` option.
 
 1. Visual Studio Code will most likely prompt you to install various extensions related to **.NET Core** or **Azure Cosmos DB** development. None of these extensions are required to complete the labs.
 
-1. In the terminal pane, enter and execute the following command:
+1. Observe the **Program.cs** and **[folder name].csproj** files created by the .NET Core CLI.
 
-    ```sh
-    dotnet add package Microsoft.Azure.Cosmos --version 3.0.0.17-preview
+    ![Project files](../media/05-project_files.jpg)
+
+1. Double-click the **[folder name].csproj** link in the **Explorer** pane to open the file in the editor.
+
+1. Delete and replace the content of your **.csproj** file with the following XML and then save the file:
+
+    ```xml
+    <Project Sdk="Microsoft.NET.Sdk">
+        <PropertyGroup>
+            <LangVersion>latest</LangVersion>
+        </PropertyGroup>
+        <PropertyGroup>
+            <OutputType>Exe</OutputType>
+            <TargetFramework>netcoreapp2.2</TargetFramework>
+        </PropertyGroup>
+        <ItemGroup>
+            <PackageReference Include="Bogus" Version="22.0.8" />
+            <PackageReference Include="Microsoft.Azure.Cosmos" Version="3.0.0.17-preview" />
+        </ItemGroup>
+    </Project>
     ```
-
-    > This command will add the [Microsoft.Azure.Cosmos](https://www.nuget.org/packages/Microsoft.Azure.Cosmos/) NuGet package as a project dependency. The lab instructions have been tested using the ``3.0.0.17-preview`` version of this NuGet package.
-
-1. In the terminal pane, enter and execute the following command:
-
-    ```sh
-    dotnet add package Bogus --version 22.0.8
-    ```
-
-    > This command will add the [Bogus](https://www.nuget.org/packages/Bogus/) NuGet package as a project dependency. This library will allow us to quickly generate test data using a fluent syntax and minimal code. We will use this library to generate test documents to upload to our Azure Cosmos DB instance. The lab instructions have been tested using the ``22.0.8`` version of this NuGet package.
 
 1. In the terminal pane, enter and execute the following command:
 
@@ -206,76 +132,64 @@ https://cosmoslabs.blob.core.windows.net/?sv=2018-03-28&ss=bfqt&srt=sco&sp=rl&se
 
 1. Click the **🗙** symbol to close the terminal pane.
 
-1. Observe the **Program.cs** and **[folder name].csproj** files created by the .NET Core CLI.
-
-    ![Project files](../media/05-project_files.jpg)
-
-1. Double-click the **[folder name].csproj** link in the **Explorer** pane to open the file in the editor.
-
-1. Add a new **PropertyGroup** XML element to the project configuration within the **Project** element:
-
-    ```xml
-    <PropertyGroup>
-        <LangVersion>latest</LangVersion>
-    </PropertyGroup>
-    ```
-
-1. Your new XML should look like this:
-
-    ```xml
-    <Project Sdk="Microsoft.NET.Sdk">
-        <PropertyGroup>
-            <LangVersion>latest</LangVersion>
-        </PropertyGroup>
-        <PropertyGroup>
-            <OutputType>Exe</OutputType>
-            <TargetFramework>netcoreapp2.2</TargetFramework>
-        </PropertyGroup>
-        <ItemGroup>
-            <PackageReference Include="Bogus" Version="22.0.8" />
-            <PackageReference Include="Microsoft.Azure.Cosmos" Version="3.0.0.17-preview" />
-        </ItemGroup>
-    </Project>
-    ```
-
 1. Double-click the **Program.cs** link in the **Explorer** pane to open the file in the editor.
 
     ![Open editor](../media/05-program_editor.jpg)
 
-### Create CosmosClient Instance
+### Add Lab Starting Code
 
-*The CosmosClient class is the main "entry point" to using the SQL API in Azure Cosmos DB. We are going to create an instance of the **CosmosClient** class by passing in connection metadata as parameters of the class' constructor. We will then use this class instance throughout the lab.*
-
-1. Within the **Program.cs** editor tab, Add the following using blocks to the top of the editor:
+1. Within the **Program.cs** editor tab, delete the existing content and replace with the following code:
 
     ```csharp
+    using System;
     using System.Collections.Generic;
     using System.Collections.ObjectModel;
     using System.Diagnostics;
     using System.Linq;
-    using System.Net;
     using System.Threading.Tasks;
+    using Bogus;
     using Microsoft.Azure.Cosmos;
-    ```
 
-1. Locate the **Program** class and replace it with the following class:
-
-    ```csharp
     public class Program
     {
+        private static readonly string _endpointUri = "";
+        private static readonly string _primaryKey = "";
+        private static readonly string _databaseId = "FinancialDatabase";
+        private static readonly string _peopleCollectionId = "PeopleCollection";
+        private static readonly string _transactionCollectionId = "TransactionCollection";
+
         public static async Task Main(string[] args)
-        {         
+        {
+            using (CosmosClient client = new CosmosClient(_endpointUri, _primaryKey))
+            {
+                var database = client.GetDatabase(_databaseId);
+                var peopleContainer = database.GetContainer(_peopleCollectionId);
+                var transactionContainer = database.GetContainer(_transactionCollectionId);
+
+            }
         }
     }
-    ```
 
-1. Within the **Program** class, add the following lines of code to create variables for your connection information:
+    public class Member
+    {
+        public string id { get; set; } = Guid.NewGuid().ToString();
+        public Person accountHolder { get; set; }
+        public Family relatives { get; set; }
+    }
 
-    ```csharp
-    private static readonly string _endpointUri = "";
-    private static readonly string _primaryKey = "";
-    private static readonly string _databaseId = "NutritionDatabase";
-    private static readonly string _containerId = "FoodCollection";  
+    public class Family
+    {
+        public Person spouse { get; set; }
+        public IEnumerable<Person> children { get; set; }
+    }
+
+    public class Transaction
+    {
+        public double amount { get; set; }
+        public bool processed { get; set; }
+        public string paidBy { get; set; }
+        public string costCenter { get; set; }
+    }
     ```
 
 1. For the ``_endpointUri`` variable, replace the placeholder value with the **URI** value from your Azure Cosmos DB account that you recorded earlier in this lab: 
@@ -286,43 +200,6 @@ https://cosmoslabs.blob.core.windows.net/?sv=2018-03-28&ss=bfqt&srt=sco&sp=rl&se
 
     > For example, if your **primary key** is ``NAye14XRGsHFbhpOVUWB7CMG2MOTAigdei5eNjxHNHup7oaBbXyVYSLW2lkPGeKRlZrCkgMdFpCEnOjlHpz94g==``, your new variable assignment will look like this: ``private static readonly string _primaryKey = "NAye14XRGsHFbhpOVUWB7CMG2MOTAigdei5eNjxHNHup7oaBbXyVYSLW2lkPGeKRlZrCkgMdFpCEnOjlHpz94g==";``.
     
-1. Locate the **Main** method:
-
-    ```csharp
-    public static async Task Main(string[] args)
-    { 
-    }
-    ```
-
-1. Within the **Main** method, add the following lines of code to author a using block that creates and disposes a **CosmosClient** instance:
-
-    ```csharp
-    using (CosmosClient client = new CosmosClient(_endpointUri, _primaryKey))
-    {
-        
-    }
-    ```
-
-1. Your ``Program`` class definition should now look like this:
-
-    ```csharp
-    public class Program
-    { 
-        private static readonly Uri _endpointUri = new Uri("<your uri>");
-        private static readonly string _primaryKey = "<your key>";
-        private static readonly string _databaseId = "NutritionDatabase";
-        private static readonly string _containerId = "FoodCollection";
-
-        public static async Task Main(string[] args)
-        {    
-            using (CosmosClient client = new CosmosClient(_endpointUri, _primaryKey))
-            {
-
-            }     
-        }
-    }
-    ```
-
     > We will now execute build the application to make sure our code compiles successfully.
 
 1. Save all of your open editor tabs.
@@ -346,15 +223,15 @@ https://cosmoslabs.blob.core.windows.net/?sv=2018-03-28&ss=bfqt&srt=sco&sp=rl&se
 1. Locate the using block within the **Main** method:
 
     ```csharp
-    using (DocumentClient client = new DocumentClient(_endpointUri, _primaryKey))
+    using (CosmosClient client = new CosmosClient(_endpointUri, _primaryKey))
     {                        
     }
     ```
     
-1. After the last line of code in the using block, add a new line of code to create a new object and store it in a variable named **doc**:
+1. After the last line of code in the using block, add a new line of code to create a new object and store it in a variable named **member**:
 
     ```csharp
-    object doc = new Bogus.Person();
+    object member = new Member { accountHolder = new Bogus.Person() };
     ```
 
     > The **Bogus** library has a special helper class (``Bogus.Person``) that will generate a fictional person with randomized properties. Here's an example of a fictional person JSON document:
@@ -389,12 +266,12 @@ https://cosmoslabs.blob.core.windows.net/?sv=2018-03-28&ss=bfqt&srt=sco&sp=rl&se
     }
     ```
 
-1. Add a new line of code to invoke the **CreateDocumentAsync** method of the **DocumentClient** instance using the **collectionLink** and **doc** variables as parameters:
+1. Add a new line of code to invoke the **CreateItemAsync** method of the **CosmosContainer** instance using the **member** variable as a parameter:
 
     ```csharp
-    ResourceResponse<Document> response = await client.CreateDocumentAsync(collectionLink, doc);
+    ItemResponse<object> response = await peopleContainer.CreateItemAsync(member);
     ```
-1. After the last line of code in the using block, add a new line of code to print out the value of the **RequestCharge** property of the **ResourceResponse<>** instance:
+1. After the last line of code in the using block, add a new line of code to print out the value of the **RequestCharge** property of the **ItemResponse<>** instance:
 
     ```csharp
     await Console.Out.WriteLineAsync($"{response.RequestCharge} RUs");
@@ -405,13 +282,15 @@ https://cosmoslabs.blob.core.windows.net/?sv=2018-03-28&ss=bfqt&srt=sco&sp=rl&se
     ```csharp
     public static async Task Main(string[] args)
     {
-        using (DocumentClient client = new DocumentClient(_endpointUri, _primaryKey))
+        using (CosmosClient client = new CosmosClient(_endpointUri, _primaryKey))
         {
-            Uri collectionLink = UriFactory.CreateDocumentCollectionUri(_databaseId, _collectionId);
-            object doc = new Bogus.Person();
-            ResourceResponse<Document> response = await client.CreateDocumentAsync(collectionLink, doc);
+            var database = client.GetDatabase(_databaseId);
+            var peopleContainer = database.GetContainer(_peopleCollectionId);
+            var transactionContainer = database.GetContainer(_transactionCollectionId);
+            object member = new Member { accountHolder = new Bogus.Person() };
+            ItemResponse<object> response = await peopleContainer.CreateItemAsync(member);
             await Console.Out.WriteLineAsync($"{response.RequestCharge} RUs");
-        }   
+        }
     }
     ```
 
@@ -443,7 +322,7 @@ https://cosmoslabs.blob.core.windows.net/?sv=2018-03-28&ss=bfqt&srt=sco&sp=rl&se
 
 1. In the **Azure Cosmos DB** blade, locate and click the **Data Explorer** link on the left side of the blade.
 
-1. In the **Data Explorer** section, expand the **FinancialDatabase** database node and then observe select the **PeopleCollection** node.
+1. In the **Data Explorer** section, expand the **FinancialDatabase** database node and then select the **PeopleCollection** node.
 
 1. Click the **New SQL Query** button at the top of the **Data Explorer** section.
 
@@ -463,14 +342,14 @@ https://cosmoslabs.blob.core.windows.net/?sv=2018-03-28&ss=bfqt&srt=sco&sp=rl&se
 
 1. In the Visual Studio Code window, double-click the **Program.cs** file to open an editor tab for the file.
 
-1. To view the RU charge for inserting a very large document, we will use the **Bogus** library to create a fictional family. To create a fictional family, we will generate two fictional parents and an array of 4 fictional children:
+1. To view the RU charge for inserting a very large document, we will use the **Bogus** library to create a fictional family on our Member object. To create a fictional family, we will generate a spouse and an array of 4 fictional children:
 
     ```js
     {
-        "Person":  { ... }, 
-        "Relatives": {
-            "Spouse": { ... }, 
-            "Children": [
+        "accountHolder":  { ... }, 
+        "relatives": {
+            "spouse": { ... }, 
+            "children": [
                 { ... }, 
                 { ... }, 
                 { ... }, 
@@ -487,19 +366,19 @@ https://cosmoslabs.blob.core.windows.net/?sv=2018-03-28&ss=bfqt&srt=sco&sp=rl&se
 1. Within the **Main** method, locate the following line of code: 
 
     ```csharp
-    object doc = new Bogus.Person();
+    object member = new Member { accountHolder = new Bogus.Person() };
     ```
 
     Replace that line of code with the following code:
 
     ```csharp
-    object doc = new
+    object member = new Member
     {
-        Person = new Bogus.Person(),
-        Relatives = new
+        accountHolder = new Bogus.Person(),
+        relatives = new Family
         {
-            Spouse = new Bogus.Person(), 
-            Children = Enumerable.Range(0, 4).Select(r => new Bogus.Person())
+            spouse = new Bogus.Person(),
+            children = Enumerable.Range(0, 4).Select(r => new Bogus.Person())
         }
     };
     ```
@@ -534,14 +413,14 @@ https://cosmoslabs.blob.core.windows.net/?sv=2018-03-28&ss=bfqt&srt=sco&sp=rl&se
 
 1. In the **Azure Cosmos DB** blade, locate and click the **Data Explorer** link on the left side of the blade.
 
-1. In the **Data Explorer** section, expand the **FinancialDatabase** database node and then observe select the **PeopleCollection** node.
+1. In the **Data Explorer** section, expand the **FinancialDatabase** database node and then select the **PeopleCollection** node.
 
 1. Click the **New SQL Query** button at the top of the **Data Explorer** section.
 
 1. In the query tab, replace the contents of the *query editor* with the following SQL query:
 
     ```sql
-    SELECT * FROM coll WHERE IS_DEFINED(coll.Relatives)
+    SELECT * FROM coll WHERE IS_DEFINED(coll.relatives)
     ```
 
     > This query will return the only item in your container with a property named **Children**.
@@ -583,13 +462,17 @@ https://cosmoslabs.blob.core.windows.net/?sv=2018-03-28&ss=bfqt&srt=sco&sp=rl&se
                 ]
             }
         ],
-        "excludedPaths": []
+        "excludedPaths": [
+            {
+                "path":"/\"_etag\"/?"
+            }
+        ]
     }
     ```
 
     > This policy will index all paths in your JSON document. This policy implements maximum percision (-1) for both numbers (max 8) and strings (max 100) paths. This policy will also index spatial data.
 
-1. Replace the indexing policy with a new policy that removes the ``/Relatives/*`` path from the index:
+1. Replace the indexing policy with a new policy that removes the ``/relatives/*`` path from the index:
 
     ```js
     {
@@ -614,13 +497,16 @@ https://cosmoslabs.blob.core.windows.net/?sv=2018-03-28&ss=bfqt&srt=sco&sp=rl&se
         ],
         "excludedPaths": [
             {
-                "path":"/Relatives/*"
+                "path":"/\"_etag\"/?"
+            },
+            {
+                "path":"/relatives/*"
             }
         ]
     }
     ```
 
-    > This new policy will exclude the ``/Relatives/*`` path from indexing effectively removing the **Children** property of your large JSON document from the index.
+    > This new policy will exclude the ``/relatives/*`` path from indexing effectively removing the **Children** property of your large JSON document from the index.
 
 1. Click the **Save** button at the top of the section to persist your new indexing policy and "kick off" a transformation of the container's index.
 
@@ -629,22 +515,22 @@ https://cosmoslabs.blob.core.windows.net/?sv=2018-03-28&ss=bfqt&srt=sco&sp=rl&se
 1. In the query tab, replace the contents of the *query editor* with the following SQL query:
 
     ```sql
-    SELECT * FROM coll WHERE IS_DEFINED(coll.Relatives)
+    SELECT * FROM coll WHERE IS_DEFINED(coll.relatives)
     ```
 
 1. Click the **Execute Query** button in the query tab to run the query. 
 
-    > You will see immediately that you can still determine if the **/Relatives** path is defined.
+    > You will see immediately that you can still determine if the **/relatives** path is defined.
 
 1. In the query tab, replace the contents of the *query editor* with the following SQL query:
 
     ```sql
-    SELECT * FROM coll WHERE IS_DEFINED(coll.Relatives) ORDER BY coll.Relatives.Spouse.FirstName
+    SELECT * FROM coll WHERE IS_DEFINED(coll.relatives) ORDER BY coll.relatives.Spouse.FirstName
     ```
 
 1. Click the **Execute Query** button in the query tab to run the query. 
 
-    > This query will fail immediately since this property is not indexed.
+    > This query will fail immediately since this property is not indexed. Keep in mind when defining indexes that only indexed properties can be used in query conditions. 
 
 1. Return to the currently open **Visual Studio Code** editor containing your .NET Core project.
 
@@ -661,305 +547,6 @@ https://cosmoslabs.blob.core.windows.net/?sv=2018-03-28&ss=bfqt&srt=sco&sp=rl&se
 1. Observe the results of the console project.
 
     > You should see a difference in the number of RUs required to create this item. This is due to the indexer skipping the paths you excluded.
-
-1. Click the **🗙** symbol to close the terminal pane.
-
-1. Return to the **Azure Portal** (<http://portal.azure.com>).
-
-1. On the left side of the portal, click the **Resource groups** link.
-
-1. In the **Resource groups** blade, locate and select the **cosmosgroup-lab** *Resource Group*.
-
-1. In the **cosmosgroup-lab** blade, select the **Azure Cosmos DB** account you recently created.
-
-1. In the **Azure Cosmos DB** blade, locate and click the **Data Explorer** link on the left side of the blade.
-
-1. In the **Data Explorer** section, expand the **FinancialDatabase** database node, expand the **PeopleCollection** node, and then select the **Scale & Settings** option.
-
-1. In the **Settings** section, locate the **Indexing Policy** field and replace the indexing policy with a new policy:
-
-    ```js
-    {
-        "indexingMode": "consistent",
-        "automatic": true,
-        "includedPaths": [
-            {
-                "path":"/*",
-                "indexes":[
-                    {
-                        "kind": "Range",
-                        "dataType": "String",
-                        "precision": -1
-                    },
-                    {
-                        "kind": "Range",
-                        "dataType": "Number",
-                        "precision": -1
-                    }
-                ]
-            }
-        ]
-    }
-    ```
-
-    > This new policy removes the ``/Relatives/*`` path from the excluded path list so that the path can be indexed again.
-
-1. Click the **Save** button at the top of the section to persist your new indexing policy and "kick off" a transformation of the container's index.
-
-1. Click the **New SQL Query** button at the top of the **Data Explorer** section.
-
-1. In the query tab, replace the contents of the *query editor* with the following SQL query:
-
-    ```sql
-    SELECT * FROM coll WHERE IS_DEFINED(coll.Relatives) ORDER BY coll.Relatives.Spouse.FirstName
-    ```
-
-1. Click the **Execute Query** button in the query tab to run the query. 
-
-    > This query should now work. If you see an empty result set, this is because the indexer has not finished indexing all of the items in the container. Simply rerun the query until you see a non-empty result set.
-
-### Implement Upsert using Response Status Codes
-
-1. Return to the currently open **Visual Studio Code** editor containing your .NET Core project.
-
-1. In the Visual Studio Code window, double-click the **Program.cs** file to open an editor tab for the file.
-
-1. Within the **Program.cs** editor tab, locate the **Main** method.
-
-1. Within the **Main** method, locate the following line of code: 
-
-    ```csharp
-    Uri collectionLink = UriFactory.CreateDocumentCollectionUri(_databaseId, _collectionId);
-    ```
-
-    Replace that line of code with the following code:
-
-    ```csharp
-    Uri documentLink = UriFactory.CreateDocumentUri(_databaseId, _collectionId, "example.document");
-    ```
-
-    > Instead of having a Uri that references a container, we will create a Uri that references a specific item. To create this Uri, you will need a third parameter specifying the unique string identifier for the item. In this example, our string id is ``example.document``.
-
-1. Locate the following block of code:
-
-    ```csharp
-    object doc = new
-    {
-        Person = new Bogus.Person(),
-        Relatives = new
-        {
-            Spouse = new Bogus.Person(), 
-            Children = Enumerable.Range(0, 4).Select(r => new Bogus.Person())
-        }
-    };
-    ```
-
-    Replace that line of code with the following code:
-
-    ```csharp
-    object doc = new {
-        id = "example.document",
-        FirstName = "Example",
-        LastName = "Person"
-    };
-    ```
-
-    > Here we are creating a new item that has an **id** property set to a value of ``example.document``.
-
-1. Locate the following line of code:
-
-    ```csharp
-    ResourceResponse<Document> response = await client.CreateDocumentAsync(collectionLink, doc);
-    ```
-
-    Replace that line of code with the following code:
-
-    ```csharp
-    ResourceResponse<Document> readResponse = await client.ReadDocumentAsync(documentLink);
-    ```
-
-    > We will now use the **ReadDocumentAsync** method of the **DocumentClient** class to retrieve an item using the unique id.
-
-1. Locate the following line of code:
-
-    ```csharp
-    await Console.Out.WriteLineAsync($"{response.RequestCharge} RUs");
-    ```
-
-    Replace that line of code with the following code:
-
-    ```csharp
-    await Console.Out.WriteLineAsync($"{readResponse.StatusCode}");
-    ```
-
-    > This will print out the status code that was returned as a response for your operation.
-
-1. Your ``Main`` method should now look like this:
-
-    ```csharp
-    public static async Task Main(string[] args)
-    {    
-        using (DocumentClient client = new DocumentClient(_endpointUri, _primaryKey))
-        {
-            Uri documentLink = UriFactory.CreateDocumentUri(_databaseId, _collectionId, "example.document");
-            object doc = new {
-                id = "example.document",
-                FirstName = "Example",
-                LastName = "Person"
-            };
-            ResourceResponse<Document> readResponse = await client.ReadDocumentAsync(documentLink);
-            await Console.Out.WriteLineAsync($"{readResponse.StatusCode}");
-        }  
-    }
-    ```
-
-1. Save all of your open editor tabs.
-
-1. In the Visual Studio Code window, right-click the **Explorer** pane and select the **Open in Command Prompt** menu option.
-
-1. In the open terminal pane, enter and execute the following command:
-
-    ```sh
-    dotnet run
-    ```
-
-    > This command will build and execute the console project.
-
-1. Observe the exception message.
-
-    > You should see that an exception was thrown since an item was not found that matches the specified id.
-
-1. Click the **🗙** symbol to close the terminal pane.
-
-1. Within the **Main** method, locate the following block of code: 
-
-    ```csharp
-    ResourceResponse<Document> readResponse = await client.ReadDocumentAsync(documentLink);
-    await Console.Out.WriteLineAsync($"{readResponse.StatusCode}");
-    ```
-
-    Replace that line of code with the following code:
-
-    ```csharp
-    try
-    {
-        ResourceResponse<Document> readResponse = await client.ReadDocumentAsync(documentLink);
-        await Console.Out.WriteLineAsync($"Success: {readResponse.StatusCode}");
-    }
-    catch (DocumentClientException dex)
-    {
-        await Console.Out.WriteLineAsync($"Exception: {dex.StatusCode}");
-    }
-    ```
-
-    > This try-catch block will handle a **DocumentClientException** throw by printing out the status code related to the exception.
-
-1. Your ``Main`` method should now look like this:
-
-    ```csharp
-    public static async Task Main(string[] args)
-    {    
-        using (DocumentClient client = new DocumentClient(_endpointUri, _primaryKey))
-        {
-            Uri documentLink = UriFactory.CreateDocumentUri(_databaseId, _collectionId, "example.document");
-            object doc = new {
-                id = "example.document",
-                FirstName = "Example",
-                LastName = "Person"
-            };
-            try
-            {
-                ResourceResponse<Document> readResponse = await client.ReadDocumentAsync(documentLink);
-                await Console.Out.WriteLineAsync($"Success: {readResponse.StatusCode}");
-            }
-            catch (DocumentClientException dex)
-            {
-                await Console.Out.WriteLineAsync($"Exception: {dex.StatusCode}");
-            }
-        }  
-    }
-    ```
-
-1. Save all of your open editor tabs.
-
-1. In the Visual Studio Code window, right-click the **Explorer** pane and select the **Open in Command Prompt** menu option.
-
-1. In the open terminal pane, enter and execute the following command:
-
-    ```sh
-    dotnet run
-    ```
-
-    > This command will build and execute the console project.
-
-1. Observe the exception message.
-
-    > You should see a status code indicating that an item was not found. The catch block worked successfully.
-
-1. Click the **🗙** symbol to close the terminal pane.
-
-    > While you could manually implement upsert logic, the .NET SDK contains a useful method to implement this logic for you.
-
-1. Within the **Main** method, locate the following line of code: 
-
-    ```csharp
-    Uri documentLink = UriFactory.CreateDocumentUri(_databaseId, _collectionId, "example.document");
-    ```
-
-    Replace that line of code with the following code:
-
-    ```csharp
-    Uri collectionLink = UriFactory.CreateDocumentCollectionUri(_databaseId, _collectionId);
-    ```
-
-1. Locate the following block of code: 
-
-    ```csharp
-    try
-    {
-        ResourceResponse<Document> readResponse = await client.ReadDocumentAsync(documentLink);
-        await Console.Out.WriteLineAsync($"Success: {readResponse.StatusCode}");
-    }
-    catch (DocumentClientException dex)
-    {
-        await Console.Out.WriteLineAsync($"Exception: {dex.StatusCode}");
-    }
-    ```
-
-    Replace that line of code with the following code:
-
-    ```csharp
-    ResourceResponse<Document> readResponse = await client.UpsertDocumentAsync(collectionLink, doc);
-    await Console.Out.WriteLineAsync($"{readResponse.StatusCode}");
-    ```
-
-1. Save all of your open editor tabs.
-
-1. In the Visual Studio Code window, right-click the **Explorer** pane and select the **Open in Command Prompt** menu option.
-
-1. In the open terminal pane, enter and execute the following command:
-
-    ```sh
-    dotnet run
-    ```
-
-    > This command will build and execute the console project.
-
-1. Observe the message.
-
-    > Since we are "upserting" a document with a unique **id**, the server-side operation will be to create a new item. You should see the status code ``Created`` indicating that the create operation was completed successfully.
-
-1. In the open terminal pane, enter and execute the following command:
-
-    ```sh
-    dotnet run
-    ```
-
-    > This command will build and execute the console project.
-
-1. Observe the message.
-
-    > Since we are "upserting" a document with the same **id**, the server-side operation will be to update the existing item with the same **id**. You should see the status code ``OK`` indicating that the update operation was completed successfully.
 
 1. Click the **🗙** symbol to close the terminal pane.
 
@@ -981,9 +568,9 @@ https://cosmoslabs.blob.core.windows.net/?sv=2018-03-28&ss=bfqt&srt=sco&sp=rl&se
 
 1. In the **Data Explorer** section, expand the **FinancialDatabase** database node, expand the **TransactionCollection** node, and then select the **Scale & Settings** option.
 
-1. In the **Settings** section, locate the **Throughput** field and update it's value to **1000**.
+1. In the **Settings** section, locate the **Throughput** field and update it's value to **400**.
 
-    > This is the minimum throughput that you can allocate to an *unlimited* container.
+    > This is the minimum throughput that you can allocate to a container.
 
 1. Click the **Save** button at the top of the section to persist your new throughput allocation.
 
@@ -1175,7 +762,7 @@ https://cosmoslabs.blob.core.windows.net/?sv=2018-03-28&ss=bfqt&srt=sco&sp=rl&se
     }  
     ```
 
-    > We are going to attempt to run as many of these creation tasks in parallel as possible. Remember, our  is configured at 1,000 RU/s.
+    > We are going to attempt to run as many of these creation tasks in parallel as possible. Remember, our container is configured at 400 RU/s.
 
 1. Your **Main** method should look like this:
 
