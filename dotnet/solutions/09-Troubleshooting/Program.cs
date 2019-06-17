@@ -7,15 +7,15 @@ using System.Threading.Tasks;
 using Bogus;
 using Microsoft.Azure.Cosmos;
 
-public partial class Program
+public class Program
 {
-    //private static readonly string _endpointUri = "";
-    //private static readonly string _primaryKey = "";
+    private static readonly string _endpointUri = "";
+    private static readonly string _primaryKey = "";
     private static readonly string _databaseId = "FinancialDatabase";
     private static readonly string _peopleCollectionId = "PeopleCollection";
     private static readonly string _transactionCollectionId = "TransactionCollection";
 
-    public static async Task Main(string[] args)
+    internal static async Task Main(string[] args)
     {
         using (CosmosClient client = new CosmosClient(_endpointUri, _primaryKey))
         {
@@ -23,19 +23,6 @@ public partial class Program
             var peopleContainer = database.GetContainer(_peopleCollectionId);
             var transactionContainer = database.GetContainer(_transactionCollectionId);
 
-            int maxItemCount = 100;
-            int maxDegreeOfParallelism = 1;
-            int maxBufferedItemCount = 0;
-
-            var options = new QueryRequestOptions
-            {
-                MaxItemCount = maxItemCount,
-                MaxBufferedItemCount = maxBufferedItemCount
-            };
-
-            await Console.Out.WriteLineAsync($"MaxItemCount:\t{maxItemCount}");
-            await Console.Out.WriteLineAsync($"MaxDegreeOfParallelism:\t{maxDegreeOfParallelism}");
-            await Console.Out.WriteLineAsync($"MaxBufferedItemCount:\t{maxBufferedItemCount}");
         }
     }
 
@@ -54,7 +41,7 @@ public partial class Program
         await Console.Out.WriteLineAsync($"{response.RequestCharge} RUs");
     }
 
-    private static async Task ObserveThrottling(CosmosContainer transactionContainer, CosmosClient client)
+    private static async Task ObserveThrottling(CosmosContainer transactionContainer)
     {
         var transactions = new Bogus.Faker<Transaction>()
             .RuleFor(t => t.id, (fake) => Guid.NewGuid().ToString())
@@ -86,6 +73,47 @@ public partial class Program
         FeedIterator<Transaction> query = transactionContainer.CreateItemQuery<Transaction>(sql, 1);
         var result = await query.FetchNextSetAsync();
         await Console.Out.WriteLineAsync($"Request Charge: {result.RequestCharge} RUs");
+    }
+
+    private static async Task QueryOptions(CosmosContainer transactionContainer)
+    {
+        int maxItemCount = 1000;
+        int maxDegreeOfParallelism = -1;
+        int maxBufferedItemCount = 50000;
+
+        QueryRequestOptions options = new QueryRequestOptions
+        {
+            MaxItemCount = maxItemCount,
+            MaxBufferedItemCount = maxBufferedItemCount
+        };
+
+        await Console.Out.WriteLineAsync($"MaxItemCount:\t{maxItemCount}");
+        await Console.Out.WriteLineAsync($"MaxDegreeOfParallelism:\t{maxDegreeOfParallelism}");
+        await Console.Out.WriteLineAsync($"MaxBufferedItemCount:\t{maxBufferedItemCount}");
+
+        string sql = "SELECT * FROM c WHERE c.processed = true ORDER BY c.amount DESC";
+
+        Stopwatch timer = Stopwatch.StartNew();
+
+        FeedIterator<Transaction> query = transactionContainer.CreateItemQuery<Transaction>(sql, maxDegreeOfParallelism, requestOptions: options);
+        while (query.HasMoreResults)
+        {
+            var result = await query.FetchNextSetAsync();
+        }
+        timer.Stop();
+        await Console.Out.WriteLineAsync($"Elapsed Time:\t{timer.Elapsed.TotalSeconds}");
+    }
+
+    private static async Task DirectQuery(CosmosContainer peopleContainer)
+    {
+        string sql = "SELECT TOP 1 * FROM c WHERE c.id = 'example.document'";
+        FeedIterator<object> query = peopleContainer.CreateItemQuery<object>(sql, -1);
+        FeedResponse<object> response = await query.FetchNextSetAsync();
+        await Console.Out.WriteLineAsync($"{response.RequestCharge} RUs");
+        await Console.Out.WriteLineAsync($"{response.Resource.First()}");
+
+        ItemResponse<object> itemResponse = await peopleContainer.ReadItemAsync<object>(new PartitionKey("Cremin"), "example.document");
+        await Console.Out.WriteLineAsync($"{itemResponse.RequestCharge} RUs");
     }
 }
 

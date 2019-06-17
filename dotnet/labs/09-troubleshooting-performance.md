@@ -288,7 +288,7 @@ In this lab, you will use the .NET SDK to tune Azure Cosmos DB requests to optim
             var database = client.GetDatabase(_databaseId);
             var peopleContainer = database.GetContainer(_peopleCollectionId);
             var transactionContainer = database.GetContainer(_transactionCollectionId);
-            object member = new Member { accountHolder = new Bogus.Person() };
+            object member = new Member { id = "example.document", accountHolder = new Bogus.Person() };
             ItemResponse<object> response = await peopleContainer.CreateItemAsync(member);
             await Console.Out.WriteLineAsync($"{response.RequestCharge} RUs");
         }
@@ -789,6 +789,58 @@ In this lab, you will use the .NET SDK to tune Azure Cosmos DB requests to optim
 
 1. Click the **🗙** symbol to close the terminal pane.
 
+### Increasing R/U Throughput to Reduce Throttling
+
+1. Return to the **Azure Portal** (<http://portal.azure.com>).
+
+1. On the left side of the portal, click the **Resource groups** link.
+
+1. In the **Resource groups** blade, locate and select the **cosmosgroup-lab** *Resource Group*.
+
+1. In the **cosmosgroup-lab** blade, select the **Azure Cosmos DB** account you recently created.
+
+1. In the **Azure Cosmos DB** blade, locate and click the **Data Explorer** link on the left side of the blade.
+
+1. In the **Data Explorer** section, expand the **FinancialDatabase** database node, expand the **TransactionCollection** node, and then select the **Scale & Settings** option.
+
+1. In the **Settings** section, locate the **Throughput** field and update it's value to **10000**.
+
+1. Click the **Save** button at the top of the section to persist your new throughput allocation.
+
+1. Back in the code editor tab, locate the following line of code:
+
+    ```csharp
+    .GenerateLazy(5000);
+    ```
+
+    Replace that line of code with the following code:
+
+    ```csharp
+    .GenerateLazy(50000);
+    ```
+
+    > We are going to try creating 50000 items in parallel against the new higher throughput limit.
+
+1. Save all of your open editor tabs.
+
+1. In the Visual Studio Code window, right-click the **Explorer** pane and select the **Open in Command Prompt** menu option.
+
+1. In the open terminal pane, enter and execute the following command:
+
+    ```sh
+    dotnet run
+    ```
+
+    > This command will build and execute the console project.
+
+1. Observe that the application will complete after some time.
+
+1. Click the **🗙** symbol to close the terminal pane.
+
+1. Return to the **Settings** section in the **Azure Portal** and change the **Throughput** value back to **400**.
+
+1. Click the **Save** button at the top of the section to persist your new throughput allocation.
+
 ## Tuning Queries and Reads
 
 *You will now tune your requests to Azure Cosmos DB by manipulating the SQL query and properties of the **RequestOptions** class in the .NET SDK.*
@@ -959,42 +1011,30 @@ In this lab, you will use the .NET SDK to tune Azure Cosmos DB requests to optim
     }
     ```
 
-1. Add the following code to the method to create an asynchronous connection:
+1. Add the following lines of code to create variables to configure query options:
 
     ```csharp
-    await client.OpenAsync();
-    ```
-    
-1. Add the following line of code to create a variable named ``collectionLink`` that is a reference (self-link) to an existing collection:
-
-    ```csharp
-    Uri collectionLink = UriFactory.CreateDocumentCollectionUri(_databaseId, _collectionId);
+    int maxItemCount = 100;
+    int maxDegreeOfParallelism = 1;
+    int maxBufferedItemCount = 0;
     ```
 
-1. Add the following line of code to create a high-precision timer:
+1. Add the following lines of code to configure options for a query from the variables:
 
     ```csharp
-    Stopwatch timer = new Stopwatch();
-    ```
-
-1. Add the following lines of code to configure options for a query:
-
-    ```csharp
-    FeedOptions options = new FeedOptions
+    QueryRequestOptions options = new QueryRequestOptions
     {
-        EnableCrossPartitionQuery = true,
-        MaxItemCount = 100,
-        MaxDegreeOfParallelism = 1,
-        MaxBufferedItemCount = 0
-    }; 
+        MaxItemCount = maxItemCount,
+        MaxBufferedItemCount = maxBufferedItemCount
+    };
     ```
 
 1. Add the following lines of code to write various values to the console window:
 
     ```csharp
-    await Console.Out.WriteLineAsync($"MaxItemCount:\t{options.MaxItemCount}");
-    await Console.Out.WriteLineAsync($"MaxDegreeOfParallelism:\t{options.MaxDegreeOfParallelism}");
-    await Console.Out.WriteLineAsync($"MaxBufferedItemCount:\t{options.MaxBufferedItemCount}");
+    await Console.Out.WriteLineAsync($"MaxItemCount:\t{maxItemCount}");
+    await Console.Out.WriteLineAsync($"MaxDegreeOfParallelism:\t{maxDegreeOfParallelism}");
+    await Console.Out.WriteLineAsync($"MaxBufferedItemCount:\t{maxBufferedItemCount}");
     ```
 
 1. Add the following line of code that will store a SQL query in a string variable:
@@ -1005,16 +1045,16 @@ In this lab, you will use the .NET SDK to tune Azure Cosmos DB requests to optim
 
     > This query will perform a cross-partition ORDER BY on a filtered result set.
 
-1. Add the following line of code to start the timer:
+1. Add the following line of code to create and start new a high-precision timer:
 
     ```csharp
-    timer.Start();
+    Stopwatch timer = Stopwatch.StartNew();
     ```
 
 1. Add the following line of code to create a item query instance:
 
     ```csharp
-    IDocumentQuery<Document> query = client.CreateDocumentQuery<Document>(collectionLink, sql, options).AsDocumentQuery();
+    FeedIterator<Transaction> query = transactionContainer.CreateItemQuery<Transaction>(sql, maxDegreeOfParallelism, requestOptions: options);
     ```
 
 1. Add the following lines of code to enumerate the result set.
@@ -1022,11 +1062,11 @@ In this lab, you will use the .NET SDK to tune Azure Cosmos DB requests to optim
     ```csharp
     while (query.HasMoreResults)  
     {
-        var result = await query.ExecuteNextAsync<Document>();
+        var result = await query.FetchNextSetAsync();
     }
     ```
 
-    > Since the results are paged, we will need to call the ``ExecuteNextAsync`` method multiple times in a while loop.
+    > Since the results are paged, we will need to call the ``FetchNextSetAsync`` method multiple times in a while loop.
 
 1. Add the following line of code stop the timer:
 
@@ -1059,28 +1099,16 @@ In this lab, you will use the .NET SDK to tune Azure Cosmos DB requests to optim
 1. Back in the code editor tab, locate the following line of code:
 
     ```csharp
-    FeedOptions options = new FeedOptions
-    {
-        EnableCrossPartitionQuery = true,
-        MaxItemCount = 100,
-        MaxDegreeOfParallelism = 1,
-        MaxBufferedItemCount = 0
-    }; 
+    int maxDegreeOfParallelism = 1;
     ```
 
-    Replace that line of code with the following code:
+    Replace that line of code with the following:
 
     ```csharp
-    FeedOptions options = new FeedOptions
-    {
-        EnableCrossPartitionQuery = true,
-        MaxItemCount = 100,
-        MaxDegreeOfParallelism = 5,
-        MaxBufferedItemCount = 0
-    };   
+    int maxDegreeOfParallelism = 5;
     ```
 
-    > Setting the ``MaxDegreeOfParallelism`` property to a value of ``1`` effectively creates eliminates parallelism. Here we "bump up" the parallelism to a value of ``5``.
+    > Setting the ``maxConcurrency`` query parameter to a value of ``1`` effectively eliminates parallelism. Here we "bump up" the parallelism to a value of ``5``.
 
 1. Save all of your open editor tabs.
 
@@ -1096,30 +1124,18 @@ In this lab, you will use the .NET SDK to tune Azure Cosmos DB requests to optim
 
 1. Observe the output of the console application.
 
-    > You shouldn't see a slight difference considering you now have some form of parallelism.
+    > You should see a slight difference considering you now have some form of parallelism.
 
 1. Back in the code editor tab, locate the following line of code:
 
     ```csharp
-    FeedOptions options = new FeedOptions
-    {
-        EnableCrossPartitionQuery = true,
-        MaxItemCount = 100,
-        MaxDegreeOfParallelism = 5,
-        MaxBufferedItemCount = 0
-    }; 
+    int maxBufferedItemCount = 0;
     ```
 
     Replace that line of code with the following code:
 
     ```csharp
-    FeedOptions options = new FeedOptions
-    {
-        EnableCrossPartitionQuery = true,
-        MaxItemCount = 100,
-        MaxDegreeOfParallelism = 5,
-        MaxBufferedItemCount = -1
-    };   
+    int maxBufferedItemCount = -1;
     ```
 
     > Setting the ``MaxBufferedItemCount`` property to a value of ``-1`` effectively tells the SDK to manage this setting.
@@ -1142,28 +1158,16 @@ In this lab, you will use the .NET SDK to tune Azure Cosmos DB requests to optim
 1. Back in the code editor tab, locate the following line of code:
 
     ```csharp
-    FeedOptions options = new FeedOptions
-    {
-        EnableCrossPartitionQuery = true,
-        MaxItemCount = 100,
-        MaxDegreeOfParallelism = 5,
-        MaxBufferedItemCount = -1
-    }; 
+    int maxDegreeOfParallelism = 5;
     ```
 
     Replace that line of code with the following code:
 
     ```csharp
-    FeedOptions options = new FeedOptions
-    {
-        EnableCrossPartitionQuery = true,
-        MaxItemCount = 100,
-        MaxDegreeOfParallelism = -1,
-        MaxBufferedItemCount = -1
-    };   
+    int maxDegreeOfParallelism = -1;
     ```
 
-    > Parallel query works by querying multiple partitions in parallel. However, data from an individual partitioned collect is fetched serially with respect to the query Setting the ``MaxDegreeOfParallelism`` property to a value of ``-1`` effectively tells the SDK to manage this setting. Setting the **MaxDegreeOfParallelism** to the number of partitions has the maximum chance of achieving the most performant query, provided all other system conditions remain the same.
+    > Parallel query works by querying multiple partitions in parallel. However, data from an individual partitioned container is fetched serially with respect to the query setting the ``maxConcurrency`` property to a value of ``-1`` effectively tells the SDK to manage this setting. Setting the **MaxDegreeOfParallelism** to the number of partitions has the maximum chance of achieving the most performant query, provided all other system conditions remain the same.
 
 1. Save all of your open editor tabs.
 
@@ -1184,25 +1188,13 @@ In this lab, you will use the .NET SDK to tune Azure Cosmos DB requests to optim
 1. Back in the code editor tab, locate the following line of code:
 
     ```csharp
-    FeedOptions options = new FeedOptions
-    {
-        EnableCrossPartitionQuery = true,
-        MaxItemCount = 100,
-        MaxDegreeOfParallelism = -1,
-        MaxBufferedItemCount = -1
-    };     
+    int maxItemCount = 100;
     ```
 
     Replace that line of code with the following code:
 
     ```csharp
-    FeedOptions options = new FeedOptions
-    {
-        EnableCrossPartitionQuery = true,
-        MaxItemCount = 500,
-        MaxDegreeOfParallelism = -1,
-        MaxBufferedItemCount = -1
-    };   
+    int maxItemCount = 500;
     ```
 
     > We are increasing the amount of items returned per "page" in an attempt to improve the performance of the query.
@@ -1226,25 +1218,13 @@ In this lab, you will use the .NET SDK to tune Azure Cosmos DB requests to optim
 1. Back in the code editor tab, locate the following line of code:
 
     ```csharp
-    FeedOptions options = new FeedOptions
-    {
-        EnableCrossPartitionQuery = true,
-        MaxItemCount = 500,
-        MaxDegreeOfParallelism = -1,
-        MaxBufferedItemCount = -1
-    };   
+    int maxItemCount = 500;
     ```
 
     Replace that line of code with the following code:
 
     ```csharp
-    FeedOptions options = new FeedOptions
-    {
-        EnableCrossPartitionQuery = true,
-        MaxItemCount = 1000,
-        MaxDegreeOfParallelism = -1,
-        MaxBufferedItemCount = -1
-    }; 
+    int maxItemCount = 1000;
     ```
 
     > For large queries, it is recommended that you increase the page size up to a value of 1000.
@@ -1268,25 +1248,13 @@ In this lab, you will use the .NET SDK to tune Azure Cosmos DB requests to optim
 1. Back in the code editor tab, locate the following line of code:
 
     ```csharp
-    FeedOptions options = new FeedOptions
-    {
-        EnableCrossPartitionQuery = true,
-        MaxItemCount = 1000,
-        MaxDegreeOfParallelism = -1,
-        MaxBufferedItemCount = -1
-    }; 
+    int maxBufferedItemCount = -1;
     ```
 
     Replace that line of code with the following code:
 
     ```csharp
-    FeedOptions options = new FeedOptions
-    {
-        EnableCrossPartitionQuery = true,
-        MaxItemCount = 1000,
-        MaxDegreeOfParallelism = -1,
-        MaxBufferedItemCount = 50000
-    };  
+    int maxBufferedItemCount = 50000;
     ```
 
     > Parallel query is designed to pre-fetch results while the current batch of results is being processed by the client. The pre-fetching helps in overall latency improvement of a query. **MaxBufferedItemCount** is the parameter to limit the number of pre-fetched results. Setting MaxBufferedItemCount to the expected number of results returned (or a higher number) allows the query to receive maximum benefit from pre-fetching.
@@ -1311,27 +1279,16 @@ In this lab, you will use the .NET SDK to tune Azure Cosmos DB requests to optim
 
 ### Reading and Querying Items
 
-1. Locate the *using* block within the **Main** method and delete any existing code:
+1. Locate the *using* block within the **Main** method and delete all code added in the previous section:
 
     ```csharp
-    public static async Task Main(string[] args)
-    {    
-        using (DocumentClient client = new DocumentClient(_endpointUri, _primaryKey))
-        {
-        }
+    using (CosmosClient client = new CosmosClient(_endpointUri, _primaryKey))
+    {
+        var database = client.GetDatabase(_databaseId);
+        var peopleContainer = database.GetContainer(_peopleCollectionId);
+        var transactionContainer = database.GetContainer(_transactionCollectionId);
+
     }
-    ```
-
-1. Add the following code to the method to create an asynchronous connection:
-
-    ```csharp
-    await client.OpenAsync();
-    ```
-    
-1. Add the following line of code to create a variable named ``collectionLink`` that is a reference (self-link) to an existing collection:
-
-    ```csharp
-    Uri collectionLink = UriFactory.CreateDocumentCollectionUri(_databaseId, _collectionId);
     ```
 
 1. Add the following line of code that will store a SQL query in a string variable:
@@ -1345,21 +1302,22 @@ In this lab, you will use the .NET SDK to tune Azure Cosmos DB requests to optim
 1. Add the following line of code to create a item query instance:
 
     ```csharp
-    IDocumentQuery<Document> query = client.CreateDocumentQuery<Document>(collectionLink, sql).AsDocumentQuery();
+    FeedIterator<object> query = peopleContainer.CreateItemQuery<object>(sql, -1);
     ```
 
 1. Add the following line of code to get the first page of results and then store them in a variable of type **FeedResponse<>**:
 
     ```csharp
-    FeedResponse<Document> response = await query.ExecuteNextAsync<Document>();
+    FeedResponse<object> response = await query.FetchNextSetAsync();
     ```
 
     > We only need to retrieve a single page since we are getting the ``TOP 1`` items from the .
 
-1. Add the following line of code to print out the value of the **RequestCharge** property of the **ResourceResponse<>** instance:
+1. Add the following lines of code to print out the value of the **RequestCharge** property of the **FeedResponse<>** instance and then the content of the retrieved item:
 
     ```csharp
-    await Console.Out.WriteLineAsync($"{response.RequestCharge} RUs");    
+    await Console.Out.WriteLineAsync($"{response.RequestCharge} RUs for ");    
+    await Console.Out.WriteLineAsync($"{response.Resource.First()}");
     ```
 
 1. Save all of your open editor tabs.
@@ -1376,40 +1334,28 @@ In this lab, you will use the .NET SDK to tune Azure Cosmos DB requests to optim
 
 1. Observe the output of the console application.
 
-    > You should see the amount of RUs used to query for the item in your .
+    > You should see the amount of RUs used to query for the item. Make note of the **LastName** object property value as you will use it in the next step.
 
 1. Click the **🗙** symbol to close the terminal pane.
 
-1. Locate the *using* block within the **Main** method and delete any existing code:
+1. Locate the *using* block within the **Main** method and delete the previously added code:
 
     ```csharp
-    public static async Task Main(string[] args)
-    {    
-        using (DocumentClient client = new DocumentClient(_endpointUri, _primaryKey))
-        {
-        }
+    using (CosmosClient client = new CosmosClient(_endpointUri, _primaryKey))
+    {
+        var database = client.GetDatabase(_databaseId);
+        var peopleContainer = database.GetContainer(_peopleCollectionId);
+        var transactionContainer = database.GetContainer(_transactionCollectionId);
     }
     ```
 
-1. Add the following code to the method to create an asynchronous connection:
+1. Add the following code to use the **ReadItemAsync** method of the **CosmosContainer** class to retrieve an item using the unique id and the partition key set to the last name from the previous step:
 
     ```csharp
-    await client.OpenAsync();
+    ItemResponse<object> response = await peopleContainer.ReadItemAsync<object>(new PartitionKey("<Last Name>"), "example.document");
     ```
 
-1. Add the following code to create a Uri referencing the item you wish to search for:
-
-    ```csharp
-    Uri documentLink = UriFactory.CreateDocumentUri(_databaseId, _collectionId, "example.document");   
-    ```
-
-1. Add the following code to use the **ReadDocumentAsync** method of the **DocumentClient** class to retrieve an item using the unique id:
-
-    ```csharp
-    ResourceResponse<Document> response = await client.ReadDocumentAsync(documentLink);
-    ```
-
-1. Add the following line of code to print out the value of the **RequestCharge** property of the **ResourceResponse<>** instance:
+1. Add the following line of code to print out the value of the **RequestCharge** property of the **ItemResponse<>** instance:
 
     ```csharp
     await Console.Out.WriteLineAsync($"{response.RequestCharge} RUs");    
