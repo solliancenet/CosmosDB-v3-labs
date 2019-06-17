@@ -28,6 +28,7 @@ public class Program
 
     private static async Task IndexTuning(CosmosContainer peopleContainer)
     {
+        //object member = new Member { id = "example.document", accountHolder = new Bogus.Person() };
         object member = new Member
         {
             accountHolder = new Bogus.Person(),
@@ -108,12 +109,28 @@ public class Program
     {
         string sql = "SELECT TOP 1 * FROM c WHERE c.id = 'example.document'";
         FeedIterator<object> query = peopleContainer.CreateItemQuery<object>(sql, -1);
-        FeedResponse<object> response = await query.FetchNextSetAsync();
-        await Console.Out.WriteLineAsync($"{response.RequestCharge} RUs");
-        await Console.Out.WriteLineAsync($"{response.Resource.First()}");
+        FeedResponse<object> queryResponse = await query.FetchNextSetAsync();
+        await Console.Out.WriteLineAsync($"{queryResponse.RequestCharge} RUs");
+        await Console.Out.WriteLineAsync($"{queryResponse.Resource.First()}");
 
-        ItemResponse<object> itemResponse = await peopleContainer.ReadItemAsync<object>(new PartitionKey("Cremin"), "example.document");
-        await Console.Out.WriteLineAsync($"{itemResponse.RequestCharge} RUs");
+        ItemResponse<object> response = await peopleContainer.ReadItemAsync<object>(new PartitionKey("Koepp"), "example.document");
+        await Console.Out.WriteLineAsync($"{response.RequestCharge} RUs");
+
+        object member = new Member { accountHolder = new Bogus.Person() };
+        ItemResponse<object> createResponse = await peopleContainer.CreateItemAsync(member);
+        await Console.Out.WriteLineAsync($"{createResponse.RequestCharge} RUs");
+
+        int expectedWritesPerSec = 200;
+        int expectedReadsPerSec = 800;
+
+        await Console.Out.WriteLineAsync($"Estimated load: {response.RequestCharge * expectedReadsPerSec + createResponse.RequestCharge * expectedWritesPerSec} RU per sec");
+    }
+
+    private static async Task ThroughputSettings(CosmosContainer peopleContainer)
+    {
+        int? current = await peopleContainer.ReadProvisionedThroughputAsync();
+        await Console.Out.WriteLineAsync($"{current} RU per sec");
+        await peopleContainer.ReplaceProvisionedThroughputAsync(1000);
     }
 }
 

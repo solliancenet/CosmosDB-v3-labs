@@ -1379,3 +1379,125 @@ In this lab, you will use the .NET SDK to tune Azure Cosmos DB requests to optim
 
 1. Click the **🗙** symbol to close the terminal pane.
 
+## Setting Throughput for Expected Workloads
+
+*Using appropriate RU settings for container or database throughput can allow you to meet desired performance at minimal cost. Deciding on a good baseline and varying settings based on expected usage patterns are both strategies that can help.*
+
+### Estimating Throughput Needs
+
+1. Locate the *using* block within the **Main** method:
+
+    ```csharp
+    using (CosmosClient client = new CosmosClient(_endpointUri, _primaryKey))
+    {
+    }
+    ```
+
+1. Add the following code to use the **CreateItemAsync** method of the **CosmosContainer** class to add a new item and print out the value of the **RequestCharge** property of the **ItemResponse<>** instance:
+
+    ```csharp
+    ItemResponse<object> createResponse = await peopleContainer.CreateItemAsync(member);
+    await Console.Out.WriteLineAsync($"{createResponse.RequestCharge} RUs");
+    ```
+
+1. Add the following lines of code to create variables to represent the estimated workload for our application:
+
+    ```csharp
+    int expectedWritesPerSec = 200;
+    int expectedReadsPerSec = 800;
+    ```
+
+    > These types of numbers could come from planning a new application or tracking actual usage of an existing one. Details of determining workload are outside the scope of this lab.
+
+1. Add the following line of code to print out the estimated throughput needs of our application based on our test queries:
+
+    ```csharp
+    await Console.Out.WriteLineAsync($"Estimated load: {response.RequestCharge * expectedReadsPerSec + createResponse.RequestCharge * expectedWritesPerSec} RU per sec");
+    ```
+
+1. Save all of your open editor tabs.
+
+1. In the Visual Studio Code window, right-click the **Explorer** pane and select the **Open in Command Prompt** menu option.
+
+1. In the open terminal pane, enter and execute the following command:
+
+    ```sh
+    dotnet run
+    ```
+
+    > This command will build and execute the console project.
+
+1. Observe the output of the console application.
+
+    > You should see the total throughput needed for our application based on our estimates, which can then be used to guide our provisioned throughput setting.
+
+1. Click the **🗙** symbol to close the terminal pane.
+
+### Adjusting for Usage Patterns
+
+*Many applications have workloads that vary over time in a predictable way. For example, business applications that have a heavy workload during a 9-5 business day but minimal usage outside of those hours. Cosmos throughput settings can also be varied to match this type of usage pattern.*
+
+1. Locate the *using* block within the **Main** method and delete the code added for the previous section:
+
+    ```csharp
+    using (CosmosClient client = new CosmosClient(_endpointUri, _primaryKey))
+    {
+        var database = client.GetDatabase(_databaseId);
+        var peopleContainer = database.GetContainer(_peopleCollectionId);
+        var transactionContainer = database.GetContainer(_transactionCollectionId);
+    }
+    ```
+
+1. Add the following code to retrieve the current RU/sec setting for the container:
+
+    ```csharp
+    int? current = await peopleContainer.ReadProvisionedThroughputAsync();
+    ```
+
+    > Note that the return type is a nullable value. Provisioned throughput can be set either at the container or database level. If set at the database level, this method on the **CosmosContainer** will return null. When set at the container level, the same method on **CosmosDatabase** will return null.
+
+1. Add the following line of code to print out the provisioned throughput value:
+
+    ```csharp
+    await Console.Out.WriteLineAsync($"{current} RU per sec");
+    ```
+
+1. Add the following code to update the RU/sec setting for the container:
+
+    ```csharp
+    await peopleContainer.ReplaceProvisionedThroughputAsync(1000);
+    ```
+
+    > Although the overall minimum throughput that can be set is 400 RU/s, specific containers or databases may have higher limits depending on size of stored data, previous maximum throughput settings, or number of containers in a database. Trying to set a value below the available minimum will cause an exception here.
+
+1. Save all of your open editor tabs.
+
+1. In the Visual Studio Code window, right-click the **Explorer** pane and select the **Open in Command Prompt** menu option.
+
+1. In the open terminal pane, enter and execute the following command:
+
+    ```sh
+    dotnet run
+    ```
+
+    > This command will build and execute the console project.
+
+1. Observe the output of the console application.
+
+    > You should see the initial provisioned value before changing to **1000**.
+
+1. Click the **🗙** symbol to close the terminal pane.
+
+1. Return to the **Azure Portal** (<http://portal.azure.com>).
+
+1. On the left side of the portal, click the **Resource groups** link.
+
+1. In the **Resource groups** blade, locate and select the **cosmosgroup-lab** *Resource Group*.
+
+1. In the **cosmosgroup-lab** blade, select the **Azure Cosmos DB** account you recently created.
+
+1. In the **Azure Cosmos DB** blade, locate and click the **Data Explorer** link on the left side of the blade.
+
+1. In the **Data Explorer** section, expand the **FinancialDatabase** database node, expand the **PeopleCollection** node, and then select the **Scale & Settings** option.
+
+1. In the **Settings** section, locate the **Throughput** field and note that is is now set to **1000**.
