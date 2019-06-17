@@ -185,6 +185,7 @@ In this lab, you will use the .NET SDK to tune Azure Cosmos DB requests to optim
 
     public class Transaction
     {
+        public string id { get; set; }
         public double amount { get; set; }
         public bool processed { get; set; }
         public string paidBy { get; set; }
@@ -578,80 +579,19 @@ In this lab, you will use the .NET SDK to tune Azure Cosmos DB requests to optim
 
 1. Return to the currently open **Visual Studio Code** editor containing your .NET Core project.
 
-1. In the Visual Studio Code window, right-click the **Explorer** pane and select the **New File** menu option.
-
-    ![New File](../media/05-new_file.jpg)
-
-1. Name the new file **Transaction.cs** . The editor tab will automatically open for the new file.
-
-1. Paste in the following code for the ``Transaction`` class:
-
-    ```csharp
-    public class Transaction
-    {
-        public double amount { get; set; }
-        public bool processed { get; set; }
-        public string paidBy { get; set; }
-        public string costCenter { get; set; }
-    }
-    ```
-
-1. Save all of your open editor tabs.
-
-1. In the Visual Studio Code window, right-click the **Explorer** pane and select the **Open in Command Prompt** menu option.
-
-1. In the open terminal pane, enter and execute the following command:
-
-    ```sh
-    dotnet build
-    ```
-
-    > This command will build the console project.
-
-1. Click the **🗙** symbol to close the terminal pane.
-
-1. Close all open editor tabs.
-
 1. Double-click the **Program.cs** link in the **Explorer** pane to open the file in the editor.
 
-1. Locate the following line of code that identifies the container that will be used by the application:
+1. Locate the *using* block within the **Main** method and delete the code added for the previous section:
 
     ```csharp
-    private static readonly string _collectionId = "PeopleCollection";  
-    ```
+    using (CosmosClient client = new CosmosClient(_endpointUri, _primaryKey))
+    {
+        var database = client.GetDatabase(_databaseId);
+        var peopleContainer = database.GetContainer(_peopleCollectionId);
+        var transactionContainer = database.GetContainer(_transactionCollectionId);
 
-    Replace the line of code with the following line of code:
-
-    ```csharp
-    private static readonly string _collectionId = "TransactionCollection";
-    ```
-
-    > We will use a different container for the next section of the lab.
-
-1. Locate the *using* block within the **Main** method and delete any existing code:
-
-    ```csharp
-    public static async Task Main(string[] args)
-    {    
-        using (DocumentClient client = new DocumentClient(_endpointUri, _primaryKey))
-        {
-        }
     }
     ```
-
-1. Add the following code to the method to create an asynchronous connection:
-
-    ```csharp
-    await client.OpenAsync();
-    ```
-    
-1. Add the following line of code to create a variable named ``collectionLink`` that is a reference (self-link) to an existing collection:
-
-    ```csharp
-    Uri collectionLink = UriFactory.CreateDocumentCollectionUri(_databaseId, _collectionId);
-    ```
-
-1. Observe the code in the **Main** method.
 
     > For the next few instructions, we will use the **Bogus** library to create test data. This library allows you to create a collection of objects with fake data set on each object's property. For this lab, our intent is to **focus on Azure Cosmos DB** instead of this library. With that intent in mind, the next set of instructions will expedite the process of creating test data.
 
@@ -659,6 +599,7 @@ In this lab, you will use the .NET SDK to tune Azure Cosmos DB requests to optim
 
     ```csharp
     var transactions = new Bogus.Faker<Transaction>()
+        .RuleFor(t => t.id, (fake) => Guid.NewGuid().ToString())
         .RuleFor(t => t.amount, (fake) => Math.Round(fake.Random.Double(5, 500), 2))
         .RuleFor(t => t.processed, (fake) => fake.Random.Bool(0.6f))
         .RuleFor(t => t.paidBy, (fake) => $"{fake.Name.FirstName().ToLower()}.{fake.Name.LastName().ToLower()}")
@@ -666,9 +607,9 @@ In this lab, you will use the .NET SDK to tune Azure Cosmos DB requests to optim
         .GenerateLazy(100);
     ```
 
-    > As a reminder, the Bogus library generates a set of test data. In this example, you are creating 100 items using the Bogus library and the rules listed above. The **GenerateLazy** method tells the Bogus library to prepare for a request of 1000 items by returning a variable of type **IEnumerable<Transaction>**. Since LINQ uses deferred execution by default, the items aren't actually created until the collection is iterated.
+    > As a reminder, the Bogus library generates a set of test data. In this example, you are creating 100 items using the Bogus library and the rules listed above. The **GenerateLazy** method tells the Bogus library to prepare for a request of 100 items by returning a variable of type **IEnumerable<Transaction>**. Since LINQ uses deferred execution by default, the items aren't actually created until the collection is iterated.
     
-1. Add the following foreach block to iterate over the ``PurchaseFoodOrBeverage`` instances:
+1. Add the following foreach block to iterate over the ``Transaction`` instances:
 
     ```csharp
     foreach(var transaction in transactions)
@@ -676,47 +617,49 @@ In this lab, you will use the .NET SDK to tune Azure Cosmos DB requests to optim
     }
     ```
 
-1. Within the ``foreach`` block, add the following line of code to asynchronously create a document and save the result of the creation task to a variable:
+1. Within the ``foreach`` block, add the following line of code to asynchronously create an item and save the result of the creation task to a variable:
 
     ```csharp
-    ResourceResponse<Document> result = await client.CreateDocumentAsync(collectionLink, transaction);
+    ItemResponse<Transaction> result = await transactionContainer.CreateItemAsync(transaction);
     ```
 
-    > The ``CreateDocumentAsync`` method of the ``DocumentClient`` class takes in a self-link for a collection and an object that you would like to serialize into JSON and store as an item within the specified collection.
+    > The ``CreateItemAsync`` method of the ``CosmosContainer`` class takes in an object that you would like to serialize into JSON and store as an item within the specified collection.
 
 1. Still within the ``foreach`` block, add the following line of code to write the value of the newly created resource's ``id`` property to the console:
 
     ```csharp
-    await Console.Out.WriteLineAsync($"Document Created\t{result.Resource.Id}");
+    await Console.Out.WriteLineAsync($"Item Created\t{result.Resource.id}");
     ```
 
-    > The ``ResourceResponse`` type has a property named ``Resource`` that can give you access to interesting data about a item such as it's unique id, time-to-live value, self-link, ETag, timestamp,  and attachments.
+    > The ``ItemResponse`` type has a property named ``Resource`` that can give you access to the item instance resulting from the operation.
 
 1. Your **Main** method should look like this:
 
     ```csharp
     public static async Task Main(string[] args)
     {    
-        using (DocumentClient client = new DocumentClient(_endpointUri, _primaryKey))
+        using (CosmosClient client = new CosmosClient(_endpointUri, _primaryKey))
         {
-            await client.OpenAsync();
-            Uri collectionLink = UriFactory.CreateDocumentCollectionUri(_databaseId, _collectionId);
+            var database = client.GetDatabase(_databaseId);
+            var peopleContainer = database.GetContainer(_peopleCollectionId);
+            var transactionContainer = database.GetContainer(_transactionCollectionId);
             var transactions = new Bogus.Faker<Transaction>()
+                .RuleFor(t => t.id, (fake) => Guid.NewGuid().ToString())
                 .RuleFor(t => t.amount, (fake) => Math.Round(fake.Random.Double(5, 500), 2))
                 .RuleFor(t => t.processed, (fake) => fake.Random.Bool(0.6f))
                 .RuleFor(t => t.paidBy, (fake) => $"{fake.Name.FirstName().ToLower()}.{fake.Name.LastName().ToLower()}")
                 .RuleFor(t => t.costCenter, (fake) => fake.Commerce.Department(1).ToLower())
                 .GenerateLazy(100);
-            foreach(var transaction in transactions)
+            foreach (var transaction in transactions)
             {
-                ResourceResponse<Document> result = await client.CreateDocumentAsync(collectionLink, transaction);    
-                await Console.Out.WriteLineAsync($"Document Created\t{result.Resource.Id}");
+                ItemResponse<Transaction> result = await transactionContainer.CreateItemAsync(transaction);
+                await Console.Out.WriteLineAsync($"Item Created\t{result.Resource.id}");
             }
-        }  
+        }
     }
     ```
 
-    > As a reminder, the Bogus library generates a set of test data. In this example, you are creating 100 items using the Bogus library and the rules listed above. The **GenerateLazy** method tells the Bogus library to prepare for a request of 500 items by returning a variable of type **IEnumerable<Transaction>**. Since LINQ uses deferred execution by default, the items aren't actually created until the collection is iterated. The **foreach** loop at the end of this code block iterates over the collection and creates items in Azure Cosmos DB.
+    > As a reminder, the Bogus library generates a set of test data. In this example, you are creating 100 items using the Bogus library and the rules listed above. The **GenerateLazy** method tells the Bogus library to prepare for a request of 100 items by returning a variable of type **IEnumerable<Transaction>**. Since LINQ uses deferred execution by default, the items aren't actually created until the collection is iterated. The **foreach** loop at the end of this code block iterates over the collection and creates items in Azure Cosmos DB.
 
 1. Save all of your open editor tabs.
 
@@ -739,27 +682,27 @@ In this lab, you will use the .NET SDK to tune Azure Cosmos DB requests to optim
 1. Back in the code editor tab, locate the following lines of code:
 
     ```csharp
-    foreach(var transaction in transactions)
+    foreach (var transaction in transactions)
     {
-        ResourceResponse<Document> result = await client.CreateDocumentAsync(collectionSelfLink, transaction);
-        await Console.Out.WriteLineAsync($"Document Created\t{result.Resource.Id}");
-    } 
+        ItemResponse<Transaction> result = await transactionContainer.CreateItemAsync(transaction);
+        await Console.Out.WriteLineAsync($"Item Created\t{result.Resource.id}");
+    }
     ```
 
     Replace those lines of code with the following code:
 
     ```csharp
-    List<Task<ResourceResponse<Document>>> tasks = new List<Task<ResourceResponse<Document>>>();
-    foreach(var transaction in transactions)
+    List<Task<ItemResponse<Transaction>>> tasks = new List<Task<ItemResponse<Transaction>>>();
+    foreach (var transaction in transactions)
     {
-        Task<ResourceResponse<Document>> resultTask = client.CreateDocumentAsync(collectionLink, transaction);
+        Task<ItemResponse<Transaction>> resultTask = transactionContainer.CreateItemAsync(transaction);
         tasks.Add(resultTask);
-    }    
+    }
     Task.WaitAll(tasks.ToArray());
-    foreach(var task in tasks)
+    foreach (var task in tasks)
     {
-        await Console.Out.WriteLineAsync($"Document Created\t{task.Result.Resource.Id}");
-    }  
+        await Console.Out.WriteLineAsync($"Item Created\t{task.Result.Resource.id}");
+    }
     ```
 
     > We are going to attempt to run as many of these creation tasks in parallel as possible. Remember, our container is configured at 400 RU/s.
@@ -779,22 +722,22 @@ In this lab, you will use the .NET SDK to tune Azure Cosmos DB requests to optim
                 .RuleFor(t => t.paidBy, (fake) => $"{fake.Name.FirstName().ToLower()}.{fake.Name.LastName().ToLower()}")
                 .RuleFor(t => t.costCenter, (fake) => fake.Commerce.Department(1).ToLower())
                 .GenerateLazy(100);
-            List<Task<ResourceResponse<Document>>> tasks = new List<Task<ResourceResponse<Document>>>();
-            foreach(var transaction in transactions)
+            List<Task<ItemResponse<Transaction>>> tasks = new List<Task<ItemResponse<Transaction>>>();
+            foreach (var transaction in transactions)
             {
-                Task<ResourceResponse<Document>> resultTask = client.CreateDocumentAsync(collectionLink, transaction);
+                Task<ItemResponse<Transaction>> resultTask = transactionContainer.CreateItemAsync(transaction);
                 tasks.Add(resultTask);
-            }    
+            }
             Task.WaitAll(tasks.ToArray());
-            foreach(var task in tasks)
+            foreach (var task in tasks)
             {
-                await Console.Out.WriteLineAsync($"Document Created\t{task.Result.Resource.Id}");
-            } 
+                await Console.Out.WriteLineAsync($"Item Created\t{task.Result.Resource.id}");
+            }
         }  
     }
     ```
 
-    > As a reminder, the Bogus library generates a set of test data. In this example, you are creating 100 items using the Bogus library and the rules listed above. The **GenerateLazy** method tells the Bogus library to prepare for a request of 500 items by returning a variable of type **IEnumerable<Transaction>**. Since LINQ uses deferred execution by default, the items aren't actually created until the collection is iterated. The **foreach** loops at the end of this code block iterates over the collection and creates asynchronous tasks. Each asynchronous task will issue a request to Azure Cosmos DB. These requests are issued in parallel and should cause an exceptional scenario since your  does not have enough assigned throughput to handle the volume of requests.
+    > As a reminder, the Bogus library generates a set of test data. In this example, you are creating 100 items using the Bogus library and the rules listed above. The **GenerateLazy** method tells the Bogus library to prepare for a request of 100 items by returning a variable of type **IEnumerable<Transaction>**. Since LINQ uses deferred execution by default, the items aren't actually created until the collection is iterated. The **foreach** loops at the end of this code block iterates over the collection and creates asynchronous tasks. Each asynchronous task will issue a request to Azure Cosmos DB. These requests are issued in parallel and should cause an exceptional scenario since your  does not have enough assigned throughput to handle the volume of requests.
 
 1. Save all of your open editor tabs.
 
@@ -848,41 +791,23 @@ In this lab, you will use the .NET SDK to tune Azure Cosmos DB requests to optim
 
 ## Tuning Queries and Reads
 
-*You will now tune your requests to Azure Cosmos DB by manipulating properties of the **FeedOptions** class in the .NET SDK.*
+*You will now tune your requests to Azure Cosmos DB by manipulating the SQL query and properties of the **RequestOptions** class in the .NET SDK.*
 
 ### Measuing RU Charge
 
-1. Locate the *using* block within the **Main** method and delete any existing code:
+1. Locate the *using* block within the **Main** method and delete any code from the previous section:
 
     ```csharp
     public static async Task Main(string[] args)
-    {    
-        using (DocumentClient client = new DocumentClient(_endpointUri, _primaryKey))
+    {
+        using (CosmosClient client = new CosmosClient(_endpointUri, _primaryKey))
         {
+            var database = client.GetDatabase(_databaseId);
+            var peopleContainer = database.GetContainer(_peopleCollectionId);
+            var transactionContainer = database.GetContainer(_transactionCollectionId);
+
         }
     }
-    ```
-
-1. Add the following code to the method to create an asynchronous connection:
-
-    ```csharp
-    await client.OpenAsync();
-    ```
-    
-1. Add the following line of code to create a variable named ``collectionLink`` that is a reference (self-link) to an existing collection:
-
-    ```csharp
-    Uri collectionLink = UriFactory.CreateDocumentCollectionUri(_databaseId, _collectionId);
-    ```
-
-1. Add the following lines of code to configure options for a query:
-
-    ```csharp
-    FeedOptions options = new FeedOptions
-    {
-        EnableCrossPartitionQuery = true,
-        PopulateQueryMetrics = true
-    };
     ```
 
 1. Add the following line of code that will store a SQL query in a string variable:
@@ -896,24 +821,21 @@ In this lab, you will use the .NET SDK to tune Azure Cosmos DB requests to optim
 1. Add the following line of code to create a item query instance:
 
     ```csharp
-    IDocumentQuery<Document> query = client.CreateDocumentQuery<Document>(collectionLink, sql, options).AsDocumentQuery();
+    FeedIterator<Transaction> query = transactionContainer.CreateItemQuery<Transaction>(sql, 1);
     ```
 
 1. Add the following line of code to get the first "page" of results:
 
     ```csharp
-    var result = await query.ExecuteNextAsync();
+    var result = await query.FetchNextSetAsync();
     ```
 
     > We will not enumerate the full result set. We are only interested in the metrics for the first page of results.
 
-1. Add the following lines of code to print out all of the query metrics to the console:
+1. Add the following lines of code to print out the Request Charge metric for the query to the console:
 
     ```csharp
-    foreach(string key in result.QueryMetrics.Keys)
-    {
-        await Console.Out.WriteLineAsync($"{key}\t{result.QueryMetrics[key]}");
-    }
+    await Console.Out.WriteLineAsync($"Request Charge: {result.RequestCharge} RUs");
     ```
 
 1. Save all of your open editor tabs.
@@ -930,7 +852,7 @@ In this lab, you will use the .NET SDK to tune Azure Cosmos DB requests to optim
 
 1. Observe the output of the console application.
 
-    > You should see multiple metrics printed out in your console window. Pay close attention to the **Total Query Execution Time**, **Request Charge** and **Retrieved Document Size** metrics.
+    > You should see the **Request Charge** metric printed out in your console window.
 
 1. Click the **🗙** symbol to close the terminal pane.
 
@@ -962,7 +884,7 @@ In this lab, you will use the .NET SDK to tune Azure Cosmos DB requests to optim
 
 1. Observe the output of the console application.
 
-    > You should see a reduction in both the **Request Charge** and **Total Query Execution Time** values.
+    > You should see a reduction in both the **Request Charge** value.
 
 1. Back in the code editor tab, locate the following line of code:
 
@@ -1022,18 +944,18 @@ In this lab, you will use the .NET SDK to tune Azure Cosmos DB requests to optim
 
 1. Observe the output of the console application.
 
-    > Observe the slight differences in the various metric values.
+    > Observe the slight differences in the metric value.
 
 ### Managing SDK Query Options
 
-1. Locate the *using* block within the **Main** method and delete any existing code:
+1. Locate the *using* block within the **Main** method and delete code added in the previous section:
 
     ```csharp
-    public static async Task Main(string[] args)
-    {    
-        using (DocumentClient client = new DocumentClient(_endpointUri, _primaryKey))
-        {
-        }
+    using (CosmosClient client = new CosmosClient(_endpointUri, _primaryKey))
+    {
+        var database = client.GetDatabase(_databaseId);
+        var peopleContainer = database.GetContainer(_peopleCollectionId);
+        var transactionContainer = database.GetContainer(_transactionCollectionId);
     }
     ```
 
