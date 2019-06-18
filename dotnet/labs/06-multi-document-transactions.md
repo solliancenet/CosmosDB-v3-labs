@@ -24,13 +24,13 @@ In this lab, you will author and execute multiple stored procedures within your 
 
 1. In the **Add Container** popup, perform the following actions:
 
-    1. In the **Database id** field, select the **Create new** option and enter the value **FinancialDatabase**.
+    1. In the **Database id** field, select the **Create new** option and enter the value **NutritionDatabase**.
 
     1. Ensure the **Provision database throughput** option is not selected.
 
-    1. In the **Container id** field, enter the value **InvestorCollection**.
+    1. In the **Container id** field, enter the value **FoodCollection**.
 
-    1. In the **Partition key** field, enter the value ``/company``.
+    1. In the **Partition key** field, enter the value ``/foodGroup``.
 
     1. In the **Throughput** field, enter the value ``1000``.
 
@@ -56,9 +56,9 @@ In this lab, you will author and execute multiple stored procedures within your 
 
 1. In the **Azure Cosmos DB** blade, locate and click the **Data Explorer** link on the left side of the blade.
 
-1. In the **Data Explorer** section, expand the **FinancialDatabase** database node and then expand the **InvestorCollection** container node. 
+1. In the **Data Explorer** section, expand the **NutritionDatabase** database node and then expand the **FoodCollection** container node. 
 
-1. Within the **InvestorCollection** node, click the **Items** link.
+1. Within the **FoodCollection** node, click the **Items** link.
 
 ### Create Simple Stored Procedure
 
@@ -130,11 +130,11 @@ In this lab, you will author and execute multiple stored procedures within your 
 
 1. In the **Input parameters** popup that appears, perform the following actions:
 
-    1. In the **Partition key value** field, enter the value: ``contosoairlines``.
+    1. In the **Partition key value** field, enter the value: ``My Recipes``.
     
     1. If there are no param fields listed, click the **Add New Param** button.
 
-    1. In the param field, use Type **String** and enter the value: ``{ "company": "contosoairlines", "industry": "travel" }``.
+    1. In the param field, use Type **String** and enter the value: ``{ "foodGroup": "My Recipes", "description": "Cookies" }``.
 
     1. Click the **Execute** button.
 
@@ -147,7 +147,7 @@ In this lab, you will author and execute multiple stored procedures within your 
 1. In the query tab, replace the contents of the *query editor* with the following SQL query:
 
     ```sql
-    SELECT * FROM investors WHERE investors.company = "contosoairlines" AND investors.industry = "travel"
+    SELECT * FROM foods WHERE foods.foodGroup = "My Recipes" AND foods.description = "Cookies"
     ```
 
     > This query will retrieve the item you have just created.
@@ -195,11 +195,11 @@ In this lab, you will author and execute multiple stored procedures within your 
 
 1. In the **Input parameters** popup that appears, perform the following actions:
 
-    1. In the **Partition key value** field, enter the value: ``contosoairlines``.
+    1. In the **Partition key value** field, enter the value: ``My Recipes``.
     
     1. Click the **Add New Param** button.
 
-    1. In the new field that appears, enter the value: ``{ "company": "contosoairlines" }``.
+    1. In the new field that appears, enter the value: ``{ "foodGroup": "My Recipes" }``.
 
     1. Click the **Execute** button.
 
@@ -240,27 +240,27 @@ In this lab, you will author and execute multiple stored procedures within your 
 
 1. In the **Input parameters** popup that appears, perform the following actions:
 
-    1. In the **Partition key value** field, enter the value: ``adventureworks``.
+    1. In the **Partition key value** field, enter the value: ``Packaged Foods``.
     
     1. Click the **Add New Param** button.
 
-    1. In the new field that appears, enter the value: ``{ "company": "contosoairlines" }``.
+    1. In the new field that appears, enter the value: ``{ "foodGroup": "My Recipes" }``.
 
     1. Click the **Execute** button.
 
 1. In the **Result** pane at the bottom of the tab, observe that the stored procedure execution has failed.
 
-    > Stored procedures are bound to a specific partition key. In this example, we tried to execute the stored procedure within the context of the **adventureworks** partition key. Within the stored procedure, we tried to create a new item using the **contosoairlines** partition key. The stored procedure was unable to create a new item (or access existing items) in a partition key other than the one specified when the stored procedure is executed. This caused the stored procedure to fail. You are not able to create or manipulate items across partition keys within a stored procedure.
+    > Stored procedures are bound to a specific partition key. In this example, we tried to execute the stored procedure within the context of the **Packaged Foods** partition key. Within the stored procedure, we tried to create a new item using the **My Recipes** partition key. The stored procedure was unable to create a new item (or access existing items) in a partition key other than the one specified when the stored procedure is executed. This caused the stored procedure to fail. You are not able to create or manipulate items across partition keys within a stored procedure.
 
 1. Click the **Execute** button at the top of the tab.
 
 1. In the **Input parameters** popup that appears, perform the following actions:
 
-    1. In the **Partition key value** field, enter the value: ``adventureworks``.
+    1. In the **Partition key value** field, enter the value: ``Packaged Foods``.
     
     1. Click the **Add New Param** button.
 
-    1. In the new field that appears, enter the value: ``{ "company": "adventureworks" }``.
+    1. In the new field that appears, enter the value: ``{ "foodGroup": "Packaged Foods" }``.
 
     1. Click the **Execute** button.
 
@@ -273,12 +273,12 @@ In this lab, you will author and execute multiple stored procedures within your 
 1. In the query tab, replace the contents of the *query editor* with the following SQL query:
 
     ```sql
-    SELECT * FROM investors WHERE investors.company = "adventureworks"
+    SELECT * FROM foods WHERE foods.foodGroup = "Packaged Foods"
     ```
 
     > This query will retrieve the item you have just created.
 
-1. Click the **Execute Query** button in the query tab to run the query. 
+1. Click the **Execute Query** button in the query tab to run the query.
 
 1. In the **Results** pane, observe the results of your query.
 
@@ -293,18 +293,17 @@ In this lab, you will author and execute multiple stored procedures within your 
 1. Replace the contents of the *stored procedure editor* with the following JavaScript code:
 
     ```js
-    function createTwoDocuments(companyName, industry, taxRate) {
+    function createTwoDocuments(foodGroupName, foodDescription, mealName) {
         var context = getContext();
         var container = context.getCollection();
         var firstItem = {
-            company: companyName,
-            industry: industry
+            foodGroup: foodGroupName,
+            description: foodDescription
         };
         var secondItem = {
-            company: companyName,
-            tax: {
-                exempt: false,
-                rate: taxRate
+            foodGroup: foodGroupName,
+            eaten: {
+                meal: mealName
             }
         };
         var firstAccepted = container.createDocument(container.getSelfLink(), firstItem, 
@@ -314,8 +313,8 @@ In this lab, you will author and execute multiple stored procedures within your 
                     function (secondError, newSecondItem) {
                         if (secondError) throw new Error('Error' + secondError.message);      
                         context.getResponse().setBody({
-                            companyRecord: newFirstItem,
-                            taxRecord: newSecondItem
+                            foodRecord: newFirstItem,
+                            mealRecord: newSecondItem
                         });
                     }
                 );
@@ -334,15 +333,15 @@ In this lab, you will author and execute multiple stored procedures within your 
 
 1. In the **Input parameters** popup that appears, perform the following actions:
 
-    1. In the **Partition key value** field, enter the value: ``abcairways``.
+    1. In the **Partition key value** field, enter the value: ``Vitamins``.
     
     1. Click the **Add New Param** button three times.
 
-    1. In the first field that appears, enter the value: ``abcairways``.
+    1. In the first field that appears, enter the value: ``Vitamins``.
 
-    1. In the second field that appears, enter the value: ``travel``.
+    1. In the second field that appears, enter the value: ``Calcium``.
 
-    1. In the third field that appears, enter the value: ``1.05``.
+    1. In the third field that appears, enter the value: ``Breakfast``.
 
     1. Click the **Execute** button.
 
@@ -353,18 +352,17 @@ In this lab, you will author and execute multiple stored procedures within your 
 1. Replace the contents of the *stored procedure editor* with the following JavaScript code:
 
     ```js
-    function createTwoDocuments(companyName, industry, taxRate) {
+    function createTwoDocuments(foodGroupName, foodDescription, mealName) {
         var context = getContext();
         var container = context.getCollection();
         var firstItem = {
-            company: companyName,
-            industry: industry
+            foodGroup: foodGroupName,
+            description: foodDescription
         };
         var secondItem = {
-            company: companyName + "_taxprofile",
-            tax: {
-                exempt: false,
-                rate: taxRate
+            foodGroup: foodGroupName + "_meal",
+            eaten: {
+                meal: mealName
             }
         };
         var firstAccepted = container.createDocument(container.getSelfLink(), firstItem, 
@@ -376,8 +374,8 @@ In this lab, you will author and execute multiple stored procedures within your 
                         if (secondError) throw new Error('Error' + secondError.message); 
                         console.log('Created: ' + newSecondItem.id);                   
                         context.getResponse().setBody({
-                            companyRecord: newFirstItem,
-                            taxRecord: newSecondItem
+                            foodRecord: newFirstItem,
+                            mealRecord: newSecondItem
                         });
                     }
                 );
@@ -388,7 +386,7 @@ In this lab, you will author and execute multiple stored procedures within your 
     }
     ```
 
-    > Transactions are deeply and natively integrated into Cosmos DB’s JavaScript programming model. Inside a JavaScript function, all operations are automatically wrapped under a single transaction. If the JavaScript completes without any exception, the operations to the database are committed. We are going to change the stored procedure to put in a different company name for the second item. This should cause the stored procedure to fail since the second item uses a different partition key. If there is any exception that’s propagated from the script, Cosmos DB’s JavaScript runtime will roll back the whole transaction. This will effectively ensure that the first or second items are not commited to the database.
+    > Transactions are deeply and natively integrated into Cosmos DB’s JavaScript programming model. Inside a JavaScript function, all operations are automatically wrapped under a single transaction. If the JavaScript completes without any exception, the operations to the database are committed. We are going to change the stored procedure to put in a different foodGroup name for the second item. This should cause the stored procedure to fail since the second item uses a different partition key. If there is any exception that’s propagated from the script, Cosmos DB’s JavaScript runtime will roll back the whole transaction. This will effectively ensure that the first or second items are not commited to the database.
 
 1. Click the **Update** button at the top of the tab.
 
@@ -396,15 +394,15 @@ In this lab, you will author and execute multiple stored procedures within your 
 
 1. In the **Input parameters** popup that appears, perform the following actions:
 
-    1. In the **Partition key value** field, enter the value: ``jetsonairways``.
+    1. In the **Partition key value** field, enter the value: ``Junk Food``.
     
     1. Click the **Add New Param** button until three param fields are listed.
 
-    1. In the first field that appears, enter the value: ``jetsonairways``.
+    1. In the first field that appears, enter the value: ``Junk Food``.
 
-    1. In the second field that appears, enter the value: ``travel``.
+    1. In the second field that appears, enter the value: ``Chips``.
 
-    1. In the third field that appears, enter the value: ``1.15``.
+    1. In the third field that appears, enter the value: ``Midnight Snack``.
 
     1. Click the **Execute** button.
 
@@ -417,7 +415,7 @@ In this lab, you will author and execute multiple stored procedures within your 
 1. In the query tab, replace the contents of the *query editor* with the following SQL query:
 
     ```sql
-    SELECT * FROM investors WHERE investors.company = "jetsonairways"
+    SELECT * FROM foods WHERE foods.foodGroup = "Junk Food"
     ```
 
     > This query won't retrieve any items since the transaction was rolled back.
