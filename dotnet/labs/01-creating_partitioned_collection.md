@@ -26,7 +26,7 @@ In this lab, you will create multiple Azure Cosmos DB containers. Some of the co
     dotnet new console --output .
     ```
 
-    > This command will create a new .NET Core 2.1 project. The project will be a **console** project and the project will be created in the current directly since you used the ``--output .`` option.
+    > This command will create a new .NET Core 2.2 project. The project will be a **console** project and the project will be created in the current directly since you used the ``--output .`` option.
 
 1. Visual Studio Code will most likely prompt you to install various extensions related to **.NET Core** or **Azure Cosmos DB** development. None of these extensions are required to complete the labs.
 
@@ -110,7 +110,6 @@ In this lab, you will create multiple Azure Cosmos DB containers. Some of the co
     using System.Collections.Generic;
     using System.Collections.ObjectModel;
     using System.Linq;
-    using System.Net;
     using System.Threading.Tasks;
     using Microsoft.Azure.Cosmos;
     ```
@@ -129,13 +128,13 @@ In this lab, you will create multiple Azure Cosmos DB containers. Some of the co
 1. Within the **Program** class, add the following lines of code to create variables for your connection information:
 
     ```csharp
-    private static readonly Uri _endpointUri = new Uri("");
+    private static readonly string _endpointUri = "";
     private static readonly string _primaryKey = "";
     ```
 
 1. For the ``_endpointUri`` variable, replace the placeholder value with the **URI** value from your Azure Cosmos DB account that you recorded earlier in this lab: 
 
-    > For example, if your **uri** is ``https://cosmosacct.documents.azure.com:443/``, your new variable assignment will look like this: ``private static readonly Uri _endpointUri = new Uri("https://cosmosacct.documents.azure.com:443/");``.
+    > For example, if your **uri** is ``https://cosmosacct.documents.azure.com:443/``, your new variable assignment will look like this: ``private static readonly string _endpointUri = "https://cosmosacct.documents.azure.com:443/";``.
 
     > Keep the **URI** value recorded, you will use it again later in this lab.
 
@@ -166,7 +165,7 @@ In this lab, you will create multiple Azure Cosmos DB containers. Some of the co
     ```csharp
     public class Program
     { 
-        private static readonly Uri _endpointUri = new Uri("<your uri>");
+        private static readonly string _endpointUri = "<your uri>";
         private static readonly string _primaryKey = "<your key>";
         public static async Task Main(string[] args)
         {    
@@ -336,7 +335,7 @@ In this lab, you will create multiple Azure Cosmos DB containers. Some of the co
 1. Close all open editor tabs.
 
 
-## Populate a Container with Documents using the SDK
+## Populate a Container with Items using the SDK
 
 > You will now use the .NET SDK to populate your container with various items of varying schemas. These items will be serialized instances of multiple C# classes that you will create in your project.
 
