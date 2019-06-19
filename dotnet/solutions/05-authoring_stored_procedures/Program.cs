@@ -7,12 +7,12 @@ using System.Collections.Generic;
 using System.Linq;
 
 public class Program
-{ 
+{
     private static readonly Uri _endpointUri = new Uri("");
     private static readonly string _primaryKey = "";
 
     public static async Task Main(string[] args)
-    {    
+    {
         using (DocumentClient client = new DocumentClient(_endpointUri, _primaryKey))
         {
             await client.OpenAsync();
@@ -24,10 +24,10 @@ public class Program
                 .RuleFor(p => p.company, f => "contosofinancial")
                 .Generate(25000);
             int pointer = 0;
-            while(pointer < people.Count)
+            while (pointer < people.Count)
             {
                 RequestOptions options = new RequestOptions { PartitionKey = new PartitionKey("contosofinancial") };
-                StoredProcedureResponse<int> result = await client.ExecuteStoredProcedureAsync<int>(sprocLinkUpload, options, people.Skip(pointer));
+                StoredProcedureResponse<int> result = await client.ExecuteStoredProcedureAsync<int>(sprocLinkUpload, options, people.Skip(pointer).Take(10000));
                 pointer += result.Response;
                 await Console.Out.WriteLineAsync($"{pointer} Total Documents\t{result.Response} Documents Uploaded in this Iteration");
             }
@@ -42,7 +42,7 @@ public class Program
                 await Console.Out.WriteLineAsync($"Batch Delete Completed.\tDeleted: {result.Response.Deleted}\tContinue: {result.Response.Continuation}");
                 resume = result.Response.Continuation;
             }
-            while(resume);
-        }   
+            while (resume);
+        }
     }
 }
