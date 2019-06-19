@@ -16,9 +16,7 @@ Finally, you will need a Microsoft Azure account. Free accounts are available fo
 
 > Before you start this lab you will need to set up and configure a number of Azure resources that you will use throughout the lab. The .NET SDK requires credentials to connect to your Azure accounts. You will collect and store these credentials in this step.
 
-### Create an Azure Resource Group for this Lab
-
-_You will create an azure resource group to allow for easy management of the resources utilized in this lab_
+### Retrieve Credentials for this Lab
 
 1. In a new browser window, sign in to the **Azure Portal** (<https://portal.azure.com>).
 
