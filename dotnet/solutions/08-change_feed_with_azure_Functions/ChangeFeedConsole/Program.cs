@@ -26,14 +26,18 @@ namespace ChangeFeedConsole
 
                 CosmosContainer leaseContainer = await db.CreateContainerIfNotExistsAsync(id: "consoleLeases", partitionKeyPath: "/id", requestUnitsPerSecond: 400);
 
-                var builder = container.CreateChangeFeedProcessorBuilder("migrationProcessor", async (IReadOnlyCollection<CartAction> input, CancellationToken cancellationToken) =>
+                var builder = container.CreateChangeFeedProcessorBuilder("migrationProcessor", (IReadOnlyCollection<CartAction> input, CancellationToken cancellationToken) =>
                 {
                     Console.WriteLine(input.Count + " Changes Received");
 
+                    var tasks = new List<Task>();
+
                     foreach (var doc in input)
                     {
-                        await destinationContainer.CreateItemAsync(doc, new PartitionKey(doc.BuyerState));
+                        tasks.Add(destinationContainer.CreateItemAsync(doc, new PartitionKey(doc.BuyerState)));
                     }
+
+                    return Task.WhenAll(tasks);
                 });
 
                 var processor = builder.WithInstanceName("changeFeedConsole").WithLeaseContainer(leaseContainer).Build();

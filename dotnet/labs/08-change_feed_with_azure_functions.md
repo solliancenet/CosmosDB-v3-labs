@@ -601,7 +601,7 @@ _The first use case we'll explore for Cosmos DB Change Feed is Live Migration. A
 1. Now, add the following lines of code directly after the **leaseContainer** definition in order to create an instance of the change processor:
 
    ```csharp
-   var builder = container.CreateChangeFeedProcessorBuilder("migrationProcessor", async (IReadOnlyCollection<object> input, CancellationToken cancellationToken) => {
+   var builder = container.CreateChangeFeedProcessorBuilder("migrationProcessor", (IReadOnlyCollection<object> input, CancellationToken cancellationToken) => {
        Console.WriteLine(input.Count + " Changes Received");
        //todo: Add processor code here
    });
@@ -662,7 +662,7 @@ _The first use case we'll explore for Cosmos DB Change Feed is Live Migration. A
 
                    var builder = container.CreateChangeFeedProcessorBuilder(
                        "migrationProcessor",
-                       async (
+                       (
                            IReadOnlyCollection<object> input,
                            CancellationToken cancellationToken) =>
                    {
@@ -789,7 +789,7 @@ _The Change Feed console app we just created is going to need access to the defi
 
    ```csharp
    var builder = container.CreateChangeFeedProcessorBuilder(
-                      "migrationProcessor", async (
+                      "migrationProcessor", (
                           IReadOnlyCollection<CartAction> input,
                           CancellationToken cancellationToken) =>
        {
@@ -801,10 +801,14 @@ _The Change Feed console app we just created is going to need access to the defi
 1. The **input** is a collection of **CartAction** documents that have changed. To migrate them, we'll simply loop through them and write them out to our destination container. Replace the `//todo` with the following code:
 
    ```csharp
-   foreach (var doc in input)
-   {
-       await destinationContainer.CreateItemAsync(doc, new PartitionKey(doc.BuyerState));
-   }
+   var tasks = new List<Task>();
+
+    foreach (var doc in input)
+    {
+        tasks.Add(destinationContainer.CreateItemAsync(doc, new PartitionKey(doc.BuyerState)));
+    }
+
+    return Task.WhenAll(tasks);
    ```
 
 ### Test to Confirm the Change Feed Function Works
@@ -903,6 +907,12 @@ _Azure Functions provide a quick and easy way to hook up with the Cosmos DB Chan
 
    ```sh
    dotnet add package Microsoft.Azure.Cosmos --version 3.0.0.17-preview
+   ```
+
+1. In your terminal pane, enter and execute the following command:
+
+   ```sh
+   dotnet  add ChangeFeedFunctions.csproj reference ..\\shared\\shared.csproj
    ```
 
 1. Your first Azure Function has been created, switch back to Visual Studio Code and note the new **ChangeFeedFunctions** folder, expand it and note **local.settings.json**, and the **MaterializedViewFunction.cs**.
