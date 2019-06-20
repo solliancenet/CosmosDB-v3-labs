@@ -1,3 +1,24 @@
+param($session = $null, $location = "West US", [switch]$teardown)
+
+# Settings to apply to new deployment
+$resourceGroupName = "cosmoslabs"
+$randomNum = if ($null -eq $session) { Get-Random -Maximum 100000 } else { $session } # some resources need unique names - this could be user entered instead
+$accountName = "cosmoslab$($randomNum)"
+$eventHubNS = "shoppingHub$($randomNum)"
+
+if ($teardown){
+    # Remove the whole resource group
+    Write-Output "Removing all resources in '$($resourceGroupName)'"
+    
+    Remove-AzResourceGroup -Name $resourceGroupName
+
+    exit
+}
+
+Write-Output "Setting up resources in region '$($location)':" $resourceGroupName $accountName "  FinancialDatabase" "  NutritionDatabase" "  StoreDatabase" $eventHubNS
+
+
+### Helper Functions #####
 function New-Database ($resourceGroupName, $accountName, $databaseName) {
     $databaseResourceName = $accountName + "/sql/" + $databaseName
 
@@ -19,23 +40,28 @@ function New-Container ($resourceGroupName, $accountName, $databaseName, $contai
                 "paths" = @($partition); 
                 "kind"  = "Hash"
             }; 
-            # "indexingPolicy"=@{
-            #     "indexingMode"="Consistent"; 
-            #     "includedPaths"= @(@{
-            #         "path"="/*";
-            #         "indexes"= @(@{
-            #                 "kind"="Range";
-            #                 "dataType"="number";
-            #                 "precision"=-1
-            #             },
-            #             @{
-            #                 "kind"="Range";
-            #                 "dataType"="string";
-            #                 "precision"=-1
-            #             }
-            #         )
-            #     });
-            # };
+            
+            "indexingPolicy"=@{
+                "indexingMode"="Consistent"; 
+                "includedPaths"= @(@{
+                    "path"="/*";
+                    "indexes"= @(@{
+                            "kind"="Range";
+                            "dataType"="number";
+                            "precision"=-1
+                        },
+                        @{
+                            "kind"="Range";
+                            "dataType"="string";
+                            "precision"=-1
+                        },
+                        @{
+                            "kind"="Spatial";
+                            "dataType"="point";
+                        }
+                    )
+                });
+            };
         };
         "options"  = @{ "Throughput" = $throughput }
     } 
@@ -48,10 +74,11 @@ function New-Container ($resourceGroupName, $accountName, $databaseName, $contai
 function Add-DataSet ($resourceGroupName, $dataFactoryName, $location, $cosmosAccount, $cosmosDatabase, $cosmosContainer) {
     $cosmosLocation = "https://$cosmosAccount.documents.azure.com:443/"
 
+    # Blob location should be replaced by new hosted container-read SAS
     $storageAccountLocation = "https://cosmoslabsv3update.blob.core.windows.net"
     $storageAccountSas = "sv=2018-03-28&ss=bfqt&srt=sco&sp=rl&st=2019-06-11T13%3A43%3A56Z&se=2020-06-12T13%3A43%3A00Z&sig=KJRYFY4%2Fm1pu6rklgvx8T%2BEl5JzF7LUt%2FErvKt1NBhw%3D"
     $sourceBlobFolder = "nutrition"
-    $sourceBlobFile = "DataSample.json" # small sample file for script testing, full file is NutritionData.json
+    $sourceBlobFile = "NutritionData.json"
     $pipelineName = "ImportLabNutritionData"
 
     $cosmosKey = Invoke-AzResourceAction -Action listKeys `
@@ -239,12 +266,12 @@ function Add-DataSet ($resourceGroupName, $dataFactoryName, $location, $cosmosAc
     }
 }
 
-function Add-EventHub($resourceGroupName, $location, $eventHubNS, $eventHubName, $retentionDays){
+function Add-EventHub($resourceGroupName, $location, $eventHubNS, $eventHubName, $retentionDays) {
     New-AzEventHubNamespace -ResourceGroupName $resourceGroupName -NamespaceName $eventHubNS -Location $location
     New-AzEventHub -ResourceGroupName $resourceGroupName -NamespaceName $eventHubNS -EventHubName $eventHubName -MessageRetentionInDays $retentionDays
 }
 
-function Add-StreamProcessor($resourceGroupName, $location, $eventHubNS, $jobName){
+function Add-StreamProcessor($resourceGroupName, $location, $eventHubNS, $jobName) {
     # NOTE - Creating a Power BI Output is not supported via scripting
 
     $jobDefinition = @"
@@ -323,13 +350,10 @@ function Add-StreamProcessor($resourceGroupName, $location, $eventHubNS, $jobNam
     New-AzStreamAnalyticsTransformation -ResourceGroupName $resourceGroupName -JobName $jobName -File "TransformationDefinition.json"    
 }
 
-# Settings to apply to new deployment
-$location = "West US"
-$resourceGroupName = "cosmoslabs"
-$randomNum = Get-Random # some resources need unique names - this could be user entered instead
-$accountName = "cosmoslab$($randomNum)"
-$eventHubNS = "shoppingHub$($randomNum)"
+##################
 
+
+# Begin Setup
 New-AzResourceGroup -Name $resourceGroupName -Location $location
 
 $locations = @(
@@ -341,16 +365,16 @@ $CosmosDBProperties = @{
     "locations"                = $locations;
 }
 
- New-AzResource -ResourceType "Microsoft.DocumentDb/databaseAccounts" `
+New-AzResource -ResourceType "Microsoft.DocumentDb/databaseAccounts" `
      -ApiVersion "2015-04-08" -ResourceGroupName $resourceGroupName -Location $location `
      -Name $accountName -PropertyObject $CosmosDBProperties -Force
 
 New-Database $resourceGroupName $accountName "FinancialDatabase"
 New-Container $resourceGroupName $accountName "FinancialDatabase" "PeopleCollection" "/accountHolder/LastName"
-New-Container $resourceGroupName $accountName "FinancialDatabase" "TransactionCollection" "/costCenter"
+New-Container $resourceGroupName $accountName "FinancialDatabase" "TransactionCollection" "/costCenter" 10000
 
 New-Database $resourceGroupName $accountName "NutritionDatabase"
-New-Container $resourceGroupName $accountName "NutritionDatabase" "FoodCollection" "/foodGroup"
+New-Container $resourceGroupName $accountName "NutritionDatabase" "FoodCollection" "/foodGroup" 11000
 
 #Lab08
  New-Database $resourceGroupName $accountName "StoreDatabase"
@@ -363,6 +387,3 @@ Add-StreamProcessor $resourceGroupName $location $eventHubNS "CartStreamProcesso
 #END Lab08
 
 Add-DataSet $resourceGroupName "importNutritionData$randomNum" $location $accountName "NutritionDatabase" "FoodCollection"
-
-# To remove the whole resource group
-# Remove-AzResourceGroup  -Name $resourceGroupName
