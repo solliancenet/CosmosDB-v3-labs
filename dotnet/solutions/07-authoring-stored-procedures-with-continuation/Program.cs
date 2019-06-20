@@ -20,9 +20,8 @@ namespace MultiDocTransactions
         {
             using (CosmosClient client = new CosmosClient(_endpointUri, _primaryKey))
             {
-                CosmosDatabase database = client.GetDatabase(_databaseId);
-                CosmosContainer container = database.GetContainer(_containerId);
-                CosmosScripts scripts = container.GetScripts();
+                Microsoft.Azure.Cosmos.Database database = client.GetDatabase(_databaseId);
+                Container container = database.GetContainer(_containerId);
 
                 List<Food> foods = new Faker<Food>()
                 .RuleFor(p => p.Id, f => (-1 - f.IndexGlobal).ToString())
@@ -34,22 +33,23 @@ namespace MultiDocTransactions
                 int pointer = 0;
                 while (pointer < foods.Count)
                 {
-                    StoredProcedureExecuteResponse<int> result = await scripts.ExecuteStoredProcedureAsync<IEnumerable<Food>, int>(new PartitionKey("Energy Bars"), "bulkUpload", foods.Skip(pointer));
+                    StoredProcedureExecuteResponse<int> result = await container.Scripts.ExecuteStoredProcedureAsync<IEnumerable<Food>, int>(new PartitionKey("Energy Bars"), "bulkUpload", foods.Skip(pointer));
                     pointer += result.Resource;
                     await Console.Out.WriteLineAsync($"{pointer} Total Items\t{result.Resource} Items Uploaded in this Iteration");
                 }
+
+                Console.WriteLine("Execution paused for verification. Press any key to continue to delete.");
+                Console.ReadKey();
 
                 bool resume = true;
                 do
                 {
                     string query = "SELECT * FROM foods f WHERE f.foodGroup = 'Energy Bars'";
-                    StoredProcedureExecuteResponse<DeleteStatus> result = await scripts.ExecuteStoredProcedureAsync<string, DeleteStatus>(new PartitionKey("Energy Bars"), "bulkDelete", query);
+                    StoredProcedureExecuteResponse<DeleteStatus> result = await container.Scripts.ExecuteStoredProcedureAsync<string, DeleteStatus>(new PartitionKey("Energy Bars"), "bulkDelete", query);
                     await Console.Out.WriteLineAsync($"Batch Delete Completed.\tDeleted: {result.Resource.Deleted}\tContinue: {result.Resource.Continuation}");
                     resume = result.Resource.Continuation;
                 }
                 while (resume);
-
-
             }
         }
     }

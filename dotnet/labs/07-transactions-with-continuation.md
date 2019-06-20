@@ -294,9 +294,8 @@ _The CosmosClient class is the main "entry point" to using the SQL API in Azure 
 1. Within the using block, add the following code to the method to obtain a reference to the `FoodCollection` container:
 
    ```csharp
-    CosmosDatabase database = client.GetDatabase(_databaseId);
-    CosmosContainer container = database.GetContainer(_containerId);
-    CosmosScripts scripts = container.GetScripts();
+    Microsoft.Azure.Cosmos.Database database = client.GetDatabase(_databaseId);
+    Container container = database.GetContainer(_containerId);
    ```
 
 1. Your `Program` class definition should now look like this:
@@ -313,8 +312,8 @@ _The CosmosClient class is the main "entry point" to using the SQL API in Azure 
         {
             using (CosmosClient client = new CosmosClient(_endpointUri, _primaryKey))
             {
-                CosmosDatabase database = client.GetDatabase(_databaseId);
-                CosmosContainer container = database.GetContainer(_containerId);
+                Microsoft.Azure.Cosmos.Database database = client.GetDatabase(_databaseId);
+                Container container = database.GetContainer(_containerId);
             }
         }
     }
@@ -404,7 +403,7 @@ _The CosmosClient class is the main "entry point" to using the SQL API in Azure 
 1. Within the **while** block, add the following lines of code to execute the stored procedure:
 
    ```csharp
-   StoredProcedureExecuteResponse<int> result = await scripts.ExecuteStoredProcedureAsync<IEnumerable<Food>, int>(new PartitionKey("Energy Bars"), "bulkUpload", foods.Skip(pointer));
+   StoredProcedureExecuteResponse<int> result = await container.Scripts.ExecuteStoredProcedureAsync<IEnumerable<Food>, int>(new PartitionKey("Energy Bars"), "bulkUpload", foods.Skip(pointer));
    ```
 
    > This line of code will execute the stored procedure using three parameters; the partition key for the data set you are executing against, the name of the stored procedure, and a list of **food** objects to send to the stored procedure.
@@ -430,9 +429,8 @@ _The CosmosClient class is the main "entry point" to using the SQL API in Azure 
     {
         using (CosmosClient client = new CosmosClient(_endpointUri, _primaryKey))
         {
-            CosmosDatabase database = client.GetDatabase(_databaseId);
-            CosmosContainer container = database.GetContainer(_containerId);
-            CosmosScripts scripts = container.GetScripts();
+            Microsoft.Azure.Cosmos.Database database = client.GetDatabase(_databaseId);
+            Container container = database.GetContainer(_containerId);
 
             List<Food> foods = new Faker<Food>()
             .RuleFor(p => p.Id, f => (-1 - f.IndexGlobal).ToString())
@@ -444,7 +442,7 @@ _The CosmosClient class is the main "entry point" to using the SQL API in Azure 
             int pointer = 0;
             while (pointer < foods.Count)
             {
-                StoredProcedureExecuteResponse<int> result = await scripts.ExecuteStoredProcedureAsync<IEnumerable<Food>, int>(new PartitionKey("Energy Bars"), "bulkUpload", foods.Skip(pointer));
+                StoredProcedureExecuteResponse<int> result = await container.Scripts.ExecuteStoredProcedureAsync<IEnumerable<Food>, int>(new PartitionKey("Energy Bars"), "bulkUpload", foods.Skip(pointer));
                 pointer += result.Resource;
                 await Console.Out.WriteLineAsync($"{pointer} Total Items\t{result.Resource} Items Uploaded in this Iteration");
             }
@@ -545,15 +543,14 @@ _The CosmosClient class is the main "entry point" to using the SQL API in Azure 
         {
             using (CosmosClient client = new CosmosClient(_endpointUri, _primaryKey))
             {
-                CosmosDatabase database = client.GetDatabase(_databaseId);
-                CosmosContainer container = database.GetContainer(_containerId);
-                CosmosScripts scripts = container.GetScripts();
+                Microsoft.Azure.Cosmos.Database database = client.GetDatabase(_databaseId);
+                Container container = database.GetContainer(_containerId);
 
                 bool resume = true;
                 do
                 {
                     string query = "SELECT * FROM foods f WHERE f.foodGroup = 'Energy Bars'";
-                    StoredProcedureExecuteResponse<DeleteStatus> result = await scripts.ExecuteStoredProcedureAsync<string, DeleteStatus>(new PartitionKey("Energy Bars"), "bulkDelete", query);
+                    StoredProcedureExecuteResponse<DeleteStatus> result = await container.Scripts.ExecuteStoredProcedureAsync<string, DeleteStatus>(new PartitionKey("Energy Bars"), "bulkDelete", query);
                     await Console.Out.WriteLineAsync($"Batch Delete Completed.\tDeleted: {result.Resource.Deleted}\tContinue: {result.Resource.Continuation}");
                     resume = result.Resource.Continuation;
                 }
