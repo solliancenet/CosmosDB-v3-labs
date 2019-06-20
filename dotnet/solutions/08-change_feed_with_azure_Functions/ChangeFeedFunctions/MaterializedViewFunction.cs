@@ -58,13 +58,13 @@ namespace ChangeFeedFunctions
 
                     foreach (var key in stateDict.Keys)
                     {
-                        var query = new CosmosSqlQueryDefinition("select * from StateSales s where s.State = @state").UseParameter("@state", key);
+                        var query = new QueryDefinition("select * from StateSales s where s.State = @state").UseParameter("@state", key);
 
-                        var resultSet = container.CreateItemQuery<StateCount>(query, partitionKey: new Microsoft.Azure.Cosmos.PartitionKey(key), maxItemCount: 1);
+                        var resultSet = container.GetItemQueryIterator<StateCount>(query, requestOptions: new QueryRequestOptions() { PartitionKey = new Microsoft.Azure.Cosmos.PartitionKey(key), MaxItemCount = 1 });
 
                         while (resultSet.HasMoreResults)
                         {
-                            var stateCount = (await resultSet.FetchNextSetAsync()).FirstOrDefault();
+                            var stateCount = (await resultSet.ReadNextAsync()).FirstOrDefault();
 
                             if (stateCount == null)
                             {
