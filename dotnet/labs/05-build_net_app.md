@@ -29,7 +29,7 @@ _After using the Azure Portal's **Data Explorer** to query an Azure Cosmos DB co
 1. In the terminal pane, enter and execute the following command:
 
    ```sh
-   dotnet add package Microsoft.Azure.Cosmos --version 3.0.0.17-preview
+   dotnet add package Microsoft.Azure.Cosmos --version 3.0.0.18-preview
    ```
 
    > This command will add the [Microsoft.Azure.Cosmos](https://www.nuget.org/packages/Microsoft.Azure.Cosmos/) NuGet package as a project dependency. The lab instructions have been tested using the `3.0.0` version of this NuGet package.
@@ -78,7 +78,7 @@ _After using the Azure Portal's **Data Explorer** to query an Azure Cosmos DB co
             <TargetFramework>netcoreapp2.2</TargetFramework>
         </PropertyGroup>
         <ItemGroup>
-            <PackageReference Include="Microsoft.Azure.Cosmos" Version="3.0.0.17-preview" />
+            <PackageReference Include="Microsoft.Azure.Cosmos" Version="3.0.0.18-preview" />
         </ItemGroup>
     </Project>
 
@@ -232,7 +232,7 @@ _ReadItemAsync allows a single item to be retrieved from Cosmos DB by its ID_
 1. Add the following lines of code to use the **ReadItemAsync** function to retrieve a single item from your Cosmos DB by its `id` and write its description to the console.
 
    ```csharp
-    ItemResponse<Food> candyResponse = await container.ReadItemAsync<Food>(new PartitionKey("Sweets"), "19130");
+    ItemResponse<Food> candyResponse = await container.ReadItemAsync<Food>("19130", new PartitionKey("Sweets"));
     Food candy = candyResponse.Resource;
     Console.Out.WriteLine($"Read {candy.Description}");
    ```
@@ -282,8 +282,8 @@ _ReadItemAsync allows a single item to be retrieved from Cosmos DB by its ID_
 1.  Add the following code to execute and read the results of this query
 
     ```csharp
-    FeedIterator<Food> queryA = container.CreateItemQuery<Food>(new CosmosSqlQueryDefinition(sqlA), 1);
-    foreach (Food food in await queryA.FetchNextSetAsync())
+    FeedIterator<Food> queryA = container.GetItemQueryIterator<Food>(new QueryDefinition(sqlA), requestOptions: new QueryRequestOptions{MaxConcurrency = 1});
+    foreach (Food food in await queryA.ReadNextAsync())
     {
         await Console.Out.WriteLineAsync($"{food.Description} by {food.ManufacturerName}");
         foreach (Serving serving in food.Servings)
@@ -293,8 +293,6 @@ _ReadItemAsync allows a single item to be retrieved from Cosmos DB by its ID_
         await Console.Out.WriteLineAsync();
     }
     ```
-
-    > Note the `1` being used as a parameter to **CosmosSqlQueryDefintion**. This parameter limits the maximum parallel query executions in the Cosmos DB service to 1.
 
 1.  Save all of your open tabs in Visual Studio Code
 
@@ -339,10 +337,10 @@ _ReadItemAsync allows a single item to be retrieved from Cosmos DB by its ID_
 1.  Add the following line of code after the definition of `sqlB` to create your next item query:
 
     ```csharp
-    FeedIterator<Food> queryB = container.CreateItemQuery<Food>(sqlB, 5, maxItemCount: 100);
+    FeedIterator<Food> queryB = container.GetItemQueryIterator<Food>(sqlB, requestOptions: new QueryRequestOptions{MaxConcurrency = 5, MaxItemCount = 100});
     ```
 
-    > Take note of the differences in this call to **CreateItemQuery** as compared to the previous section. **maxConcurrency** is set to `5` and we are limited the **MaxItemCount** to 100 items. This will result in paging if there are more than 100 items that match the query.
+    > Take note of the differences in this call to **GetItemQueryIterator** as compared to the previous section. **maxConcurrency** is set to `5` and we are limited the **MaxItemCount** to 100 items. This will result in paging if there are more than 100 items that match the query.
 
 1.  Add the following lines of code to page through the results of this query using a while loop.
 
@@ -351,7 +349,7 @@ _ReadItemAsync allows a single item to be retrieved from Cosmos DB by its ID_
     while (queryB.HasMoreResults)
     {
         Console.Out.WriteLine($"---Page #{++pageCount:0000}---");
-        foreach (var food in await queryB.FetchNextSetAsync())
+        foreach (var food in await queryB.ReadNextAsync())
         {
             Console.Out.WriteLine($"\t[{food.Id}]\t{food.Description,-20}\t{food.ManufacturerName,-40}");
         }

@@ -61,7 +61,7 @@ _In order to simulate data flowing into our store, in the form of actions on an 
 1.  In the terminal pane, enter and execute the following command:
 
     ```sh
-    dotnet add package Microsoft.Azure.Cosmos --version 3.0.0.17-preview
+    dotnet add package Microsoft.Azure.Cosmos --version 3.0.0.18-preview
     ```
 
     > This command will add the [Microsoft.Azure.Cosmos](https://www.nuget.org/packages/Microsoft.Azure.Cosmos/) NuGet package as a project dependency.
@@ -109,7 +109,7 @@ _In order to simulate data flowing into our store, in the form of actions on an 
         </PropertyGroup>
         <ItemGroup>
             <PackageReference Include="Bogus" Version="27.0.1" />
-            <PackageReference Include="Microsoft.Azure.Cosmos" Version="3.0.0.17-preview" />
+            <PackageReference Include="Microsoft.Azure.Cosmos" Version="3.0.0.18-preview" />
         </ItemGroup>
     </Project>
     ```
@@ -488,7 +488,7 @@ _The two main options for consuming the Cosmos DB change feed are Azure Function
 1.  In the terminal pane, enter and execute the following command:
 
     ```sh
-    dotnet add package Microsoft.Azure.Cosmos --version 3.0.0.17-preview
+    dotnet add package Microsoft.Azure.Cosmos --version 3.0.0.18-preview
     ```
 
     > This command will add the [Microsoft.Azure.Cosmos](https://www.nuget.org/packages/Microsoft.Azure.Cosmos/) NuGet package as a project dependency.
@@ -525,7 +525,7 @@ _The two main options for consuming the Cosmos DB change feed are Azure Function
             <LangVersion>Latest</LangVersion>
         </PropertyGroup>
         <ItemGroup>
-            <PackageReference Include="Microsoft.Azure.Cosmos" Version="3.0.0.17-preview" />
+            <PackageReference Include="Microsoft.Azure.Cosmos" Version="3.0.0.18-preview" />
         </ItemGroup>
     </Project>
     ```
@@ -589,19 +589,19 @@ _The first use case we'll explore for Cosmos DB Change Feed is Live Migration. A
 1. In order to consume the change feed we make use of a **Lease Container**. Add the following lines of code in place of `//code continues here` to create the lease container:
 
    ```csharp
-   CosmosContainer leaseContainer = await db.CreateContainerIfNotExists(
+   Container leaseContainer = await db.CreateContainerIfNotExists(
        id: "consoleLeases",
        partiionKey: "/id",
-       requestUnitsPerSecond: 400
+       throughput: 400
    );
    ```
 
    > The **Lease Container** stores information to allow for parallel processing of the change feed, and acts as a book mark for where we last processed changes from the feed.
 
-1. Now, add the following lines of code directly after the **leaseContainer** definition in order to create an instance of the change processor:
+1. Now, add the following lines of code directly after the **leaseContainer** definition in order to get an instance of the change processor:
 
    ```csharp
-   var builder = container.CreateChangeFeedProcessorBuilder("migrationProcessor", (IReadOnlyCollection<object> input, CancellationToken cancellationToken) => {
+   var builder = container.GetChangeFeedProcessorBuilder("migrationProcessor", (IReadOnlyCollection<object> input, CancellationToken cancellationToken) => {
        Console.WriteLine(input.Count + " Changes Received");
        //todo: Add processor code here
    });
@@ -655,12 +655,12 @@ _The first use case we'll explore for Cosmos DB Change Feed is Live Migration. A
                    var container = db.GetContainer(_containerId);
                    var destinationContainer = db.GetContainer(_destinationContainerId);
 
-                   CosmosContainer leaseContainer = await db.CreateContainerIfNotExistsAsync(
+                   Container leaseContainer = await db.CreateContainerIfNotExistsAsync(
                        id: "consoleLeases",
                        partitionKeyPath: "/id",
-                       requestUnitsPerSecond: 400);
+                       throughput: 400);
 
-                   var builder = container.CreateChangeFeedProcessorBuilder(
+                   var builder = container.GetChangeFeedProcessorBuilder(
                        "migrationProcessor",
                        (
                            IReadOnlyCollection<object> input,
@@ -785,10 +785,10 @@ _The Change Feed console app we just created is going to need access to the defi
 
 1. Locate the todo we left ourselves `//todo: Add processor code here`
 
-1. Modify the signature of the Func<T> in the **CreateChangeFeedProcessorBuilder** replacing `object` with `CartAction` as follows:
+1. Modify the signature of the Func<T> in the **GetChangeFeedProcessorBuilder** replacing `object` with `CartAction` as follows:
 
    ```csharp
-   var builder = container.CreateChangeFeedProcessorBuilder(
+   var builder = container.GetChangeFeedProcessorBuilder(
                       "migrationProcessor", (
                           IReadOnlyCollection<CartAction> input,
                           CancellationToken cancellationToken) =>
@@ -906,7 +906,7 @@ _Azure Functions provide a quick and easy way to hook up with the Cosmos DB Chan
 1. In your terminal pane, enter and execute the following command:
 
    ```sh
-   dotnet add package Microsoft.Azure.Cosmos --version 3.0.0.17-preview
+   dotnet add package Microsoft.Azure.Cosmos --version 3.0.0.18-preview
    ```
 
 1. In your terminal pane, enter and execute the following command:
@@ -1104,13 +1104,13 @@ _The Materialized View pattern is used to generate pre-populated views of data i
 
    foreach (var key in stateDict.Keys)
    {
-       var query = new CosmosSqlQueryDefinition("select * from StateSales s where s.State = @state").UseParameter("@state", key);
+       var query = new QueryDefinition("select * from StateSales s where s.State = @state").UseParameter("@state", key);
 
-       var resultSet = container.CreateItemQuery<StateCount>(query, partitionKey: new Microsoft.Azure.Cosmos.PartitionKey(key), maxItemCount: 1);
+        var resultSet = container.GetItemQueryIterator<StateCount>(query, requestOptions: new QueryRequestOptions() { PartitionKey = new Microsoft.Azure.Cosmos.PartitionKey(key), MaxItemCount = 1 });
 
        while (resultSet.HasMoreResults)
        {
-           var stateCount = (await resultSet.FetchNextSetAsync()).FirstOrDefault();
+           var stateCount = (await resultSet.ReadNextAsync()).FirstOrDefault();
 
            if (stateCount == null)
            {
@@ -1218,13 +1218,13 @@ _The Materialized View pattern is used to generate pre-populated views of data i
 
                        foreach (var key in stateDict.Keys)
                        {
-                           var query = new CosmosSqlQueryDefinition("select * from StateSales s where s.State = @state").UseParameter("@state", key);
+                           var query = new QueryDefinition("select * from StateSales s where s.State = @state").UseParameter("@state", key);
 
-                           var resultSet = container.CreateItemQuery<StateCount>(query, partitionKey: new Microsoft.Azure.Cosmos.PartitionKey(key), maxItemCount: 1);
+                            var resultSet = container.GetItemQueryIterator<StateCount>(query, requestOptions: new QueryRequestOptions() { PartitionKey = new Microsoft.Azure.Cosmos.PartitionKey(key), MaxItemCount = 1 });
 
                            while (resultSet.HasMoreResults)
                            {
-                               var stateCount = (await resultSet.FetchNextSetAsync()).FirstOrDefault();
+                               var stateCount = (await resultSet.ReadNextAsync()).FirstOrDefault();
 
                                if (stateCount == null)
                                {

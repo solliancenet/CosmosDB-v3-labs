@@ -20,15 +20,16 @@ public class Program
             var database = client.GetDatabase(_databaseId);
             var container = database.GetContainer(_containerId);
 
-            ItemResponse<Food> candyResponse = await container.ReadItemAsync<Food>(new PartitionKey("Sweets"), "19130");
+            ItemResponse<Food> candyResponse = await container.ReadItemAsync<Food>("19130", new PartitionKey("Sweets"));
             Food candy = candyResponse.Resource;
             Console.Out.WriteLine($"Read {candy.Description}");
 
             string sqlA = "SELECT f.description, f.manufacturerName, f.servings FROM foods f WHERE f.foodGroup = 'Sweets'";
-            FeedIterator<Food> queryA = container.CreateItemQuery<Food>(new CosmosSqlQueryDefinition(sqlA), 1);
-            foreach (Food food in await queryA.FetchNextSetAsync())
+            FeedIterator<Food> queryA = container.GetItemQueryIterator<Food>(new QueryDefinition(sqlA), requestOptions: new QueryRequestOptions { MaxConcurrency = 1 });
+            foreach (Food food in await queryA.ReadNextAsync())
             {
                 await Console.Out.WriteLineAsync($"{food.Description} by {food.ManufacturerName}");
+
                 foreach (Serving serving in food.Servings)
                 {
                     await Console.Out.WriteLineAsync($"\t{serving.Amount} {serving.Description}");
@@ -36,33 +37,13 @@ public class Program
                 await Console.Out.WriteLineAsync();
             }
 
-            // TODO: 
-            IOrderedQueryable<Food> sweets = container.CreateItemQuery<Food>("Sweets", true, requestOptions: new QueryRequestOptions { MaxItemCount = 100, ConsistencyLevel = ConsistencyLevel.Session });
-            var manufacturedSweets = sweets.Where(f => f.ManufacturerName != null).ToList();
-
-            string sqlB = @"SELECT VALUE { 'id': f.id, 'productName': f.description, 'company': f.manufacturerName, 'package': { 'name': s.description, 'weight': s.weightInGrams } }
-            FROM foods f JOIN s IN f.servings
-            WHERE f.manufacturerName != null AND s.weightInGrams != null";
-            FeedIterator<GroceryProduct> queryB = container.CreateItemQuery<GroceryProduct>(sqlB, 5, requestOptions: new QueryRequestOptions{ MaxItemCount = 20, ConsistencyLevel = ConsistencyLevel.Session });
-
-            FeedResponse<GroceryProduct> feedResponse = await queryB.FetchNextSetAsync();
-            string continuation = feedResponse.Continuation;
-            foreach (var product in feedResponse)
-            {
-                Console.Out.WriteLine($"\t[{product.Id}]\t{product.ProductName,-20}\t{product.Company,-40}\t{product.Package.Name}");
-            }
-            FeedIterator<GroceryProduct> queryB2 = container.CreateItemQuery<GroceryProduct>(sqlB, 5, continuationToken: continuation);
-            FeedResponse<GroceryProduct> feedResponse2 = await queryB2.FetchNextSetAsync();
-            Console.Out.WriteLine($"Continuing with {feedResponse2.Count} items");
-
-
-            string sqlC = "SELECT f.id, f.description, f.manufacturerName, f.servings FROM foods f WHERE f.manufacturerName != null";
-            FeedIterator<Food> queryC = container.CreateItemQuery<Food>(sqlC, 5, maxItemCount: 100);
+            string sqlB = "SELECT f.id, f.description, f.manufacturerName, f.servings FROM foods f WHERE f.manufacturerName != null";
+            FeedIterator<Food> queryB = container.GetItemQueryIterator<Food>(sqlB, requestOptions: new QueryRequestOptions { MaxConcurrency = 5, MaxItemCount = 100 });
             int pageCount = 0;
-            while (queryC.HasMoreResults)
+            while (queryB.HasMoreResults)
             {
                 Console.Out.WriteLine($"---Page #{++pageCount:0000}---");
-                foreach (var food in await queryC.FetchNextSetAsync())
+                foreach (var food in await queryB.ReadNextAsync())
                 {
                     Console.Out.WriteLine($"\t[{food.Id}]\t{food.Description,-20}\t{food.ManufacturerName,-40}");
                 }

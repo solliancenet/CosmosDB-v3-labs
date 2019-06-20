@@ -24,9 +24,9 @@ namespace ChangeFeedConsole
                 var container = db.GetContainer(_containerId);
                 var destinationContainer = db.GetContainer(_destinationContainerId);
 
-                CosmosContainer leaseContainer = await db.CreateContainerIfNotExistsAsync(id: "consoleLeases", partitionKeyPath: "/id", requestUnitsPerSecond: 400);
+                Container leaseContainer = await db.CreateContainerIfNotExistsAsync(id: "consoleLeases", partitionKeyPath: "/id", throughput: 400);
 
-                var builder = container.CreateChangeFeedProcessorBuilder("migrationProcessor", (IReadOnlyCollection<CartAction> input, CancellationToken cancellationToken) =>
+                var builder = container.GetChangeFeedProcessorBuilder("migrationProcessor", (IReadOnlyCollection<CartAction> input, CancellationToken cancellationToken) =>
                 {
                     Console.WriteLine(input.Count + " Changes Received");
 
