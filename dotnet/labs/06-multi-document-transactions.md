@@ -2,52 +2,6 @@
 
 In this lab, you will author and execute multiple stored procedures within your Azure Cosmos DB instance. You will explore features unique to JavaScript stored procedures such as throwing errors for transaction rollback, logging using the JavaScript console and implementing a continuation model within a bounded execution enviornment.
 
-## Setup
-
-> Before you start this lab, you will need to create an Azure Cosmos DB database and container that you will use throughout the lab.
-
-### Create Azure Cosmos DB Database and Container
-
-*You will now create a database and container within your Azure Cosmos DB account.*
-
-1. On the left side of the portal, click the **Resource groups** link.
-
-    ![Resource groups](../media/04-resource_groups.jpg)
-
-1. In the **Resource groups** blade, locate and select the **cosmosgroup-lab** *Resource Group*.
-
-1. In the **cosmosgroup-lab** blade, select the **Azure Cosmos DB** account you recently created.
-
-1. In the **Azure Cosmos DB** blade, locate and click the **Overview** link on the left side of the blade.
-
-1. At the top of the **Azure Cosmos DB** blade, click the **Add Container** button.
-
-1. In the **Add Container** popup, perform the following actions:
-
-    1. In the **Database id** field, select the **Create new** option and enter the value **NutritionDatabase**.
-
-    1. Ensure the **Provision database throughput** option is not selected.
-
-    1. In the **Container id** field, enter the value **FoodCollection**.
-
-    1. In the **Partition key** field, enter the value ``/foodGroup``.
-
-    1. In the **Throughput** field, enter the value ``1000``.
-
-    1. Click the **OK** button.
-
-1. Wait for the creation of the new **database** and **container** to finish before moving on with this lab.
-
-### Retrieve Account Credentials
-
-*The Data Migration Tool and .NET SDKs both require credentials to connect to your Azure Cosmos DB account. You will collect and store these credentials for use throughout the lab.*
-
-1. On the left side of the **Azure Cosmos DB** blade, locate the **Settings** section and click the **Keys** link.
-
-1. In the **Keys** pane, record the values in the **CONNECTION STRING**, **URI** and **PRIMARY KEY** fields. You will use these values later in this lab.
-
-    ![Credentials](../media/04-keys.jpg)
-
 ## Author Simple Stored Procedures
 
 *You will get started in this lab by authoring simple stored procedures that implement common server-side tasks such as adding one or more items as part of a database transaction.*
