@@ -1,10 +1,10 @@
 # Creating a Partitioned Container with .NET SDK
 
-In this lab, you will create multiple Azure Cosmos DB containers. Some of the containers will be unlimited and configured with a partition key, while others will be fixed-sized. You will then use the SQL API and .NET SDK to query specific containers using a single partition key or across multiple partition keys.
+In this lab, you will create multiple Azure Cosmos DB containers using different partition keys and settings. You will then use the SQL API and .NET SDK to query specific containers using a single partition key or across multiple partition keys.
 
 ## Create Containers using the .NET SDK
 
-> You will start by using the .NET SDK to create both fixed-size and unlimited containers to use in the lab.
+> You will start by using the .NET SDK to create containers to use in the lab.
 
 ### Create a .NET Core Project
 
@@ -16,9 +16,9 @@ In this lab, you will create multiple Azure Cosmos DB containers. Some of the co
 
     > Alternatively, you can run a command prompt in your current directory and execute the ``code .`` command.
 
-1. In the Visual Studio Code window that appears, right-click the **Explorer** pane and select the **Open in Command Prompt** menu option.
+1. In the Visual Studio Code window that appears, right-click the **Explorer** pane and select the **Open in Terminal** menu option.
 
-    ![Open in Command Prompt](../media/02-open_command_prompt.jpg)
+    ![Open in Terminal](../media/02-open_command_prompt.jpg)
 
 1. In the open terminal pane, enter and execute the following command:
 
@@ -33,10 +33,10 @@ In this lab, you will create multiple Azure Cosmos DB containers. Some of the co
 1. In the terminal pane, enter and execute the following command:
 
     ```sh
-    dotnet add package Microsoft.Azure.Cosmos --version 3.0.0.17-preview
+    dotnet add package Microsoft.Azure.Cosmos --version 3.0.0.18-preview
     ```
 
-    > This command will add the [Microsoft.Azure.Cosmos](https://www.nuget.org/packages/Microsoft.Azure.Cosmos/) NuGet package as a project dependency. The lab instructions have been tested using the ``3.0.0.17-preview`` version of this NuGet package.
+    > This command will add the [Microsoft.Azure.Cosmos](https://www.nuget.org/packages/Microsoft.Azure.Cosmos/) NuGet package as a project dependency. The lab instructions have been tested using the ``3.0.0.18-preview`` version of this NuGet package.
 
 1. In the terminal pane, enter and execute the following command:
 
@@ -91,7 +91,7 @@ In this lab, you will create multiple Azure Cosmos DB containers. Some of the co
         </PropertyGroup>        
         <ItemGroup>
             <PackageReference Include="Bogus" Version="22.0.8" />
-            <PackageReference Include="Microsoft.Azure.Cosmos" Version="3.0.0.17-preview" />
+            <PackageReference Include="Microsoft.Azure.Cosmos" Version="3.0.0.18-preview" />
         </ItemGroup>        
     </Project>
     ```
@@ -180,7 +180,7 @@ In this lab, you will create multiple Azure Cosmos DB containers. Some of the co
 
 1. Save all of your open editor tabs.
 
-1. In the Visual Studio Code window, right-click the **Explorer** pane and select the **Open in Command Prompt** menu option.
+1. In the Visual Studio Code window, right-click the **Explorer** pane and select the **Open in Terminal** menu option.
 
 1. In the open terminal pane, enter and execute the following command:
 
@@ -204,10 +204,10 @@ In this lab, you will create multiple Azure Cosmos DB containers. Some of the co
     }
     ```
 
-1. Add the following code to the method to create a new ``CosmosDatabase`` instance if one does not already exist:
+1. Add the following code to the method to create a new ``Database`` instance if one does not already exist:
 
     ```csharp
-    CosmosDatabase targetDatabase = await client.CreateDatabaseIfNotExistsAsync("EntertainmentDatabase");
+    Database targetDatabase = await client.CreateDatabaseIfNotExistsAsync("EntertainmentDatabase");
     ```
 
     > This code will check to see if a database exists in your Azure Cosmos DB account that meets the specified parameters. If a database that matches does not exist, it will create a new database.
@@ -222,7 +222,7 @@ In this lab, you will create multiple Azure Cosmos DB containers. Some of the co
 
 1. Save all of your open editor tabs.
 
-1. In the Visual Studio Code window, right-click the **Explorer** pane and select the **Open in Command Prompt** menu option.
+1. In the Visual Studio Code window, right-click the **Explorer** pane and select the **Open in Terminal** menu option.
 
 1. In the open terminal pane, enter and execute the following command:
 
@@ -259,14 +259,14 @@ In this lab, you will create multiple Azure Cosmos DB containers. Some of the co
 
     ```csharp
     using (CosmosClient client = new CosmosClient(_endpointUri, _primaryKey))
-    {                        
+    {
     }
     ```
 
 1. Add the following code to the method to create a self-link to an existing database:
 
     ```csharp
-    CosmosDatabase targetDatabase = await client.CreateDatabaseIfNotExistsAsync("EntertainmentDatabase");
+    Database targetDatabase = await client.CreateDatabaseIfNotExistsAsync("EntertainmentDatabase");
     ```
 
 1. Add the following code to create a new ``IndexingPolicy`` instance with a custom indexing policy configured:
@@ -276,7 +276,7 @@ In this lab, you will create multiple Azure Cosmos DB containers. Some of the co
     {
         IndexingMode = IndexingMode.Consistent,
         Automatic = true,
-        IncludedPaths = new Collection<IncludedPath>
+        IncludedPaths =
         {
             new IncludedPath
             {
@@ -288,10 +288,10 @@ In this lab, you will create multiple Azure Cosmos DB containers. Some of the co
 
     > By default, all Azure Cosmos DB data is indexed. Although many customers are happy to let Azure Cosmos DB automatically handle all aspects of indexing, you can specify a custom indexing policy for containers. This indexing policy is very similar to the default indexing policy created by the SDK.
 
-1. Add the following code to create a new ``CosmosContainerSettings`` instance with a single partition key of ``/type`` defined and including the previously created ``IndexingPolicy``:
+1. Add the following code to create a new ``ContainerProperties`` instance with a single partition key of ``/type`` defined and including the previously created ``IndexingPolicy``:
 
     ```csharp
-    var containerSettings = new CosmosContainerSettings("CustomCollection", "/type")
+    var containerProperties = new ContainerProperties("CustomCollection", "/type")
     {
         IndexingPolicy = indexingPolicy
     };
@@ -299,16 +299,16 @@ In this lab, you will create multiple Azure Cosmos DB containers. Some of the co
 
     > This definition will create a partition key on the ``/type`` path. Partition key paths are case sensitive. This is especially important when you consider JSON property casing in the context of .NET CLR object to JSON object serialization.
 
-1. Add the following lines of code to create a new ``CosmosContainer`` instance if one does not already exist within your database. Specify the previously created settings and a value for **throughput**:
+1. Add the following lines of code to create a new ``Container`` instance if one does not already exist within your database. Specify the previously created settings and a value for **throughput**:
 
     ```csharp
-    var containerResponse = await targetDatabase.CreateContainerIfNotExistsAsync(containerSettings, 10000);
+    var containerResponse = await targetDatabase.CreateContainerIfNotExistsAsync(containerProperties, 10000);
     var customContainer = containerResponse.Container;
     ```
 
     > This code will check to see if a container exists in your database that meets all of the specified parameters. If a container that matches does not exist, it will create a new container. Here is where we can specify the RU/s allocated for a newly created container. If this is not specified, the SDK has a default value for RU/s assigned to a container.
 
-1. Add the following code to print out the self-link of the database:
+1. Add the following code to print out the ID of the database:
 
     ```csharp
     await Console.Out.WriteLineAsync($"Custom Container Id:\t{customContainer.Id}");
@@ -318,7 +318,7 @@ In this lab, you will create multiple Azure Cosmos DB containers. Some of the co
 
 1. Save all of your open editor tabs.
 
-1. In the Visual Studio Code window, right-click the **Explorer** pane and select the **Open in Command Prompt** menu option.
+1. In the Visual Studio Code window, right-click the **Explorer** pane and select the **Open in Terminal** menu option.
 
 1. In the open terminal pane, enter and execute the following command:
 
@@ -412,7 +412,7 @@ In this lab, you will create multiple Azure Cosmos DB containers. Some of the co
 
 1. Save all of your open editor tabs.
 
-1. In the Visual Studio Code window, right-click the **Explorer** pane and select the **Open in Command Prompt** menu option.
+1. In the Visual Studio Code window, right-click the **Explorer** pane and select the **Open in Terminal** menu option.
 
 1. In the open terminal pane, enter and execute the following command:
 
@@ -482,7 +482,7 @@ In this lab, you will create multiple Azure Cosmos DB containers. Some of the co
 1. Still within the ``foreach`` block, add the following line of code to write the value of the newly created resource's ``id`` property to the console:
 
     ```csharp
-    await Console.Out.WriteLineAsync($"Item Created\t{result.Resource.Id}");
+    await Console.Out.WriteLineAsync($"Item Created\t{result.Resource.id}");
     ```
 
     > The ``CosmosItemResponse`` type has a property named ``Resource`` that contains the object representing the item as well as other properties to give you access to interesting data about an item such as its ETag.
@@ -506,7 +506,7 @@ In this lab, you will create multiple Azure Cosmos DB containers. Some of the co
             foreach(var interaction in foodInteractions)
             {
                 ItemResponse<PurchaseFoodOrBeverage> result = await customContainer.CreateItemAsync(interaction);
-                await Console.Out.WriteLineAsync($"Item Created\t{result.Resource.Id}");
+                await Console.Out.WriteLineAsync($"Item Created\t{result.Resource.id}");
             }
         }     
     }
@@ -516,7 +516,7 @@ In this lab, you will create multiple Azure Cosmos DB containers. Some of the co
 
 1. Save all of your open editor tabs.
 
-1. In the Visual Studio Code window, right-click the **Explorer** pane and select the **Open in Command Prompt** menu option.
+1. In the Visual Studio Code window, right-click the **Explorer** pane and select the **Open in Terminal** menu option.
 
 1. In the open terminal pane, enter and execute the following command:
 
@@ -571,7 +571,7 @@ In this lab, you will create multiple Azure Cosmos DB containers. Some of the co
 
 1. Save all of your open editor tabs.
 
-1. In the Visual Studio Code window, right-click the **Explorer** pane and select the **Open in Command Prompt** menu option.
+1. In the Visual Studio Code window, right-click the **Explorer** pane and select the **Open in Terminal** menu option.
 
 1. In the open terminal pane, enter and execute the following command:
 
@@ -623,7 +623,7 @@ In this lab, you will create multiple Azure Cosmos DB containers. Some of the co
 
 1. Save all of your open editor tabs.
 
-1. In the Visual Studio Code window, right-click the **Explorer** pane and select the **Open in Command Prompt** menu option.
+1. In the Visual Studio Code window, right-click the **Explorer** pane and select the **Open in Terminal** menu option.
 
 1. In the open terminal pane, enter and execute the following command:
 

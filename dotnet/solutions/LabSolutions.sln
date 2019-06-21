@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.28307.645
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CreatingMultiPartition", "CreatingMultiPartition\CreatingMultiPartition.csproj", "{4EC95FF1-835F-4A63-AE37-2C2258546EAE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "01-CreatingMultiPartition", "CreatingMultiPartition\01-CreatingMultiPartition.csproj", "{4EC95FF1-835F-4A63-AE37-2C2258546EAE}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "QueryWithNet", "QueryWithNet\QueryWithNet.csproj", "{30B1E3B3-5637-4B44-BDD7-5C3E42FBDC67}"
 EndProject
@@ -11,7 +11,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MultiDocTransactions", "Mul
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "09-Troubleshooting", "09-Troubleshooting\09-Troubleshooting.csproj", "{C316A368-A408-4092-BBA2-668F97A92025}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "10-OptimisticConcurrency", "10-OptimisticConcurrency\10-OptimisticConcurrency.csproj", "{73CC798A-2F44-4DDF-BC91-06EED443B677}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "10-OptimisticConcurrency", "10-OptimisticConcurrency\10-OptimisticConcurrency.csproj", "{73CC798A-2F44-4DDF-BC91-06EED443B677}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
