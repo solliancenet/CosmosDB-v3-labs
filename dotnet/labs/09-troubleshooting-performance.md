@@ -225,7 +225,11 @@ In this lab, you will use the .NET SDK to tune Azure Cosmos DB requests to optim
 
     ```csharp
     using (CosmosClient client = new CosmosClient(_endpointUri, _primaryKey))
-    {                        
+    {
+        var database = client.GetDatabase(_databaseId);
+        var peopleContainer = database.GetContainer(_peopleCollectionId);
+        var transactionContainer = database.GetContainer(_transactionCollectionId);
+
     }
     ```
     
@@ -272,6 +276,7 @@ In this lab, you will use the .NET SDK to tune Azure Cosmos DB requests to optim
     ```csharp
     ItemResponse<object> response = await peopleContainer.CreateItemAsync(member);
     ```
+
 1. After the last line of code in the using block, add a new line of code to print out the value of the **RequestCharge** property of the **ItemResponse<>** instance:
 
     ```csharp
@@ -581,15 +586,18 @@ In this lab, you will use the .NET SDK to tune Azure Cosmos DB requests to optim
 
 1. Double-click the **Program.cs** link in the **Explorer** pane to open the file in the editor.
 
-1. Locate the *using* block within the **Main** method and delete the code added for the previous section:
+1. Locate the *using* block within the **Main** method and delete the code added for the previous section so it again looks like this:
 
     ```csharp
-    using (CosmosClient client = new CosmosClient(_endpointUri, _primaryKey))
+    public static async Task Main(string[] args)
     {
-        var database = client.GetDatabase(_databaseId);
-        var peopleContainer = database.GetContainer(_peopleCollectionId);
-        var transactionContainer = database.GetContainer(_transactionCollectionId);
+        using (CosmosClient client = new CosmosClient(_endpointUri, _primaryKey))
+        {
+            var database = client.GetDatabase(_databaseId);
+            var peopleContainer = database.GetContainer(_peopleCollectionId);
+            var transactionContainer = database.GetContainer(_transactionCollectionId);
 
+        }
     }
     ```
 
@@ -711,12 +719,14 @@ In this lab, you will use the .NET SDK to tune Azure Cosmos DB requests to optim
 
     ```csharp
     public static async Task Main(string[] args)
-    {    
-        using (DocumentClient client = new DocumentClient(_endpointUri, _primaryKey))
+    {
+        using (CosmosClient client = new CosmosClient(_endpointUri, _primaryKey))
         {
-            await client.OpenAsync();
-            Uri collectionLink = UriFactory.CreateDocumentCollectionUri(_databaseId, _collectionId);
+            var database = client.GetDatabase(_databaseId);
+            var peopleContainer = database.GetContainer(_peopleCollectionId);
+            var transactionContainer = database.GetContainer(_transactionCollectionId);
             var transactions = new Bogus.Faker<Transaction>()
+                .RuleFor(t => t.id, (fake) => Guid.NewGuid().ToString())
                 .RuleFor(t => t.amount, (fake) => Math.Round(fake.Random.Double(5, 500), 2))
                 .RuleFor(t => t.processed, (fake) => fake.Random.Bool(0.6f))
                 .RuleFor(t => t.paidBy, (fake) => $"{fake.Name.FirstName().ToLower()}.{fake.Name.LastName().ToLower()}")
@@ -816,10 +826,10 @@ In this lab, you will use the .NET SDK to tune Azure Cosmos DB requests to optim
     Replace that line of code with the following code:
 
     ```csharp
-    .GenerateLazy(50000);
+    .GenerateLazy(10000);
     ```
 
-    > We are going to try creating 50000 items in parallel against the new higher throughput limit.
+    > We are going to try creating 10000 items in parallel against the new higher throughput limit.
 
 1. Save all of your open editor tabs.
 
@@ -847,7 +857,7 @@ In this lab, you will use the .NET SDK to tune Azure Cosmos DB requests to optim
 
 ### Measuing RU Charge
 
-1. Locate the *using* block within the **Main** method and delete any code from the previous section:
+1. Locate the *using* block within the **Main** method and delete the code added for the previous section so it again looks like this:
 
     ```csharp
     public static async Task Main(string[] args)
@@ -1000,14 +1010,18 @@ In this lab, you will use the .NET SDK to tune Azure Cosmos DB requests to optim
 
 ### Managing SDK Query Options
 
-1. Locate the *using* block within the **Main** method and delete code added in the previous section:
+1. Locate the *using* block within the **Main** method and delete the code added for the previous section so it again looks like this:
 
     ```csharp
-    using (CosmosClient client = new CosmosClient(_endpointUri, _primaryKey))
+    public static async Task Main(string[] args)
     {
-        var database = client.GetDatabase(_databaseId);
-        var peopleContainer = database.GetContainer(_peopleCollectionId);
-        var transactionContainer = database.GetContainer(_transactionCollectionId);
+        using (CosmosClient client = new CosmosClient(_endpointUri, _primaryKey))
+        {
+            var database = client.GetDatabase(_databaseId);
+            var peopleContainer = database.GetContainer(_peopleCollectionId);
+            var transactionContainer = database.GetContainer(_transactionCollectionId);
+
+        }
     }
     ```
 
@@ -1279,15 +1293,18 @@ In this lab, you will use the .NET SDK to tune Azure Cosmos DB requests to optim
 
 ### Reading and Querying Items
 
-1. Locate the *using* block within the **Main** method and delete all code added in the previous section:
+1. Locate the *using* block within the **Main** method and delete the code added for the previous section so it again looks like this:
 
     ```csharp
-    using (CosmosClient client = new CosmosClient(_endpointUri, _primaryKey))
+    public static async Task Main(string[] args)
     {
-        var database = client.GetDatabase(_databaseId);
-        var peopleContainer = database.GetContainer(_peopleCollectionId);
-        var transactionContainer = database.GetContainer(_transactionCollectionId);
+        using (CosmosClient client = new CosmosClient(_endpointUri, _primaryKey))
+        {
+            var database = client.GetDatabase(_databaseId);
+            var peopleContainer = database.GetContainer(_peopleCollectionId);
+            var transactionContainer = database.GetContainer(_transactionCollectionId);
 
+        }
     }
     ```
 
@@ -1338,14 +1355,18 @@ In this lab, you will use the .NET SDK to tune Azure Cosmos DB requests to optim
 
 1. Click the **🗙** symbol to close the terminal pane.
 
-1. Locate the *using* block within the **Main** method and delete the previously added code:
+1. Locate the *using* block within the **Main** method and delete the code added for the previous section so it again looks like this:
 
     ```csharp
-    using (CosmosClient client = new CosmosClient(_endpointUri, _primaryKey))
+    public static async Task Main(string[] args)
     {
-        var database = client.GetDatabase(_databaseId);
-        var peopleContainer = database.GetContainer(_peopleCollectionId);
-        var transactionContainer = database.GetContainer(_transactionCollectionId);
+        using (CosmosClient client = new CosmosClient(_endpointUri, _primaryKey))
+        {
+            var database = client.GetDatabase(_databaseId);
+            var peopleContainer = database.GetContainer(_peopleCollectionId);
+            var transactionContainer = database.GetContainer(_transactionCollectionId);
+
+        }
     }
     ```
 
@@ -1385,17 +1406,16 @@ In this lab, you will use the .NET SDK to tune Azure Cosmos DB requests to optim
 
 ### Estimating Throughput Needs
 
-1. Locate the *using* block within the **Main** method:
+1. Locate the *WriteLineAsync* line within the **Main** method:
 
     ```csharp
-    using (CosmosClient client = new CosmosClient(_endpointUri, _primaryKey))
-    {
-    }
+    await Console.Out.WriteLineAsync($"{response.RequestCharge} RUs");    
     ```
 
-1. Add the following code to use the **CreateItemAsync** method of the **CosmosContainer** class to add a new item and print out the value of the **RequestCharge** property of the **ItemResponse<>** instance:
+1. Following that line, add the following code to use the **CreateItemAsync** method of the **CosmosContainer** class to add a new item and print out the value of the **RequestCharge** property of the **ItemResponse<>** instance:
 
     ```csharp
+    object member = new Member { accountHolder = new Bogus.Person() };
     ItemResponse<object> createResponse = await peopleContainer.CreateItemAsync(member);
     await Console.Out.WriteLineAsync($"{createResponse.RequestCharge} RUs");
     ```
@@ -1439,12 +1459,18 @@ In this lab, you will use the .NET SDK to tune Azure Cosmos DB requests to optim
 
 1. Locate the *using* block within the **Main** method and delete the code added for the previous section:
 
+1. Locate the *using* block within the **Main** method and delete the code added for the previous section so it again looks like this:
+
     ```csharp
-    using (CosmosClient client = new CosmosClient(_endpointUri, _primaryKey))
+    public static async Task Main(string[] args)
     {
-        var database = client.GetDatabase(_databaseId);
-        var peopleContainer = database.GetContainer(_peopleCollectionId);
-        var transactionContainer = database.GetContainer(_transactionCollectionId);
+        using (CosmosClient client = new CosmosClient(_endpointUri, _primaryKey))
+        {
+            var database = client.GetDatabase(_databaseId);
+            var peopleContainer = database.GetContainer(_peopleCollectionId);
+            var transactionContainer = database.GetContainer(_transactionCollectionId);
+
+        }
     }
     ```
 

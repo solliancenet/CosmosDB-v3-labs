@@ -15,7 +15,7 @@ public class Program
     private static readonly string _peopleCollectionId = "PeopleCollection";
     private static readonly string _transactionCollectionId = "TransactionCollection";
 
-    internal static async Task Main(string[] args)
+    public static async Task Main(string[] args)
     {
         using (CosmosClient client = new CosmosClient(_endpointUri, _primaryKey))
         {
@@ -50,7 +50,7 @@ public class Program
             .RuleFor(t => t.processed, (fake) => fake.Random.Bool(0.6f))
             .RuleFor(t => t.paidBy, (fake) => $"{fake.Name.FirstName().ToLower()}.{fake.Name.LastName().ToLower()}")
             .RuleFor(t => t.costCenter, (fake) => fake.Commerce.Department(1).ToLower())
-            .GenerateLazy(5000);
+            .GenerateLazy(10000);
 
         List<Task<ItemResponse<Transaction>>> tasks = new List<Task<ItemResponse<Transaction>>>();
         foreach (var transaction in transactions)
