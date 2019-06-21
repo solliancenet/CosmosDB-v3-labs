@@ -21,7 +21,7 @@ public class Program
             var database = client.GetDatabase(_databaseId);
             var container = database.GetContainer(_containerId);
 
-            ItemResponse<Food> response = await container.ReadItemAsync<Food>(new PartitionKey("Fast Foods"), "21083");
+            ItemResponse<Food> response = await container.ReadItemAsync<Food>("21083", new PartitionKey("Fast Foods"));
             await Console.Out.WriteLineAsync($"Existing ETag:\t{response.ETag}");
 
             ItemRequestOptions requestOptions = new ItemRequestOptions { IfMatchEtag = response.ETag };
