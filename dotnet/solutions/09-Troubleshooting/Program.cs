@@ -26,7 +26,7 @@ public class Program
         }
     }
 
-    private static async Task IndexTuning(CosmosContainer peopleContainer)
+    private static async Task IndexTuning(Container peopleContainer)
     {
         //object member = new Member { id = "example.document", accountHolder = new Bogus.Person() };
         object member = new Member
@@ -42,7 +42,7 @@ public class Program
         await Console.Out.WriteLineAsync($"{response.RequestCharge} RUs");
     }
 
-    private static async Task ObserveThrottling(CosmosContainer transactionContainer)
+    private static async Task ObserveThrottling(Container transactionContainer)
     {
         var transactions = new Bogus.Faker<Transaction>()
             .RuleFor(t => t.id, (fake) => Guid.NewGuid().ToString())
@@ -65,18 +65,18 @@ public class Program
         }
     }
 
-    private static async Task MeasuringRuCharge(CosmosContainer transactionContainer)
+    private static async Task MeasuringRuCharge(Container transactionContainer)
     {
         //string sql = "SELECT TOP 1000 * FROM c WHERE c.processed = true ORDER BY c.amount DESC";
         //string sql = "SELECT * FROM c WHERE c.processed = true";
         //string sql = "SELECT * FROM c";
         string sql = "SELECT c.id FROM c";
-        FeedIterator<Transaction> query = transactionContainer.CreateItemQuery<Transaction>(sql, 1);
-        var result = await query.FetchNextSetAsync();
+        FeedIterator<Transaction> query = transactionContainer.GetItemQueryIterator<Transaction>(sql);
+        var result = await query.ReadNextAsync();
         await Console.Out.WriteLineAsync($"Request Charge: {result.RequestCharge} RUs");
     }
 
-    private static async Task QueryOptions(CosmosContainer transactionContainer)
+    private static async Task QueryOptions(Container transactionContainer)
     {
         int maxItemCount = 1000;
         int maxDegreeOfParallelism = -1;
@@ -85,7 +85,8 @@ public class Program
         QueryRequestOptions options = new QueryRequestOptions
         {
             MaxItemCount = maxItemCount,
-            MaxBufferedItemCount = maxBufferedItemCount
+            MaxBufferedItemCount = maxBufferedItemCount,
+            MaxConcurrency = maxDegreeOfParallelism
         };
 
         await Console.Out.WriteLineAsync($"MaxItemCount:\t{maxItemCount}");
@@ -96,24 +97,24 @@ public class Program
 
         Stopwatch timer = Stopwatch.StartNew();
 
-        FeedIterator<Transaction> query = transactionContainer.CreateItemQuery<Transaction>(sql, maxDegreeOfParallelism, requestOptions: options);
+        FeedIterator<Transaction> query = transactionContainer.GetItemQueryIterator<Transaction>(sql, requestOptions: options);
         while (query.HasMoreResults)
         {
-            var result = await query.FetchNextSetAsync();
+            var result = await query.ReadNextAsync();
         }
         timer.Stop();
         await Console.Out.WriteLineAsync($"Elapsed Time:\t{timer.Elapsed.TotalSeconds}");
     }
 
-    private static async Task DirectQuery(CosmosContainer peopleContainer)
+    private static async Task DirectQuery(Container peopleContainer)
     {
         string sql = "SELECT TOP 1 * FROM c WHERE c.id = 'example.document'";
-        FeedIterator<object> query = peopleContainer.CreateItemQuery<object>(sql, -1);
-        FeedResponse<object> queryResponse = await query.FetchNextSetAsync();
+        FeedIterator<object> query = peopleContainer.GetItemQueryIterator<object>(sql);
+        FeedResponse<object> queryResponse = await query.ReadNextAsync();
         await Console.Out.WriteLineAsync($"{queryResponse.RequestCharge} RUs");
         await Console.Out.WriteLineAsync($"{queryResponse.Resource.First()}");
 
-        ItemResponse<object> response = await peopleContainer.ReadItemAsync<object>(new PartitionKey("Koepp"), "example.document");
+        ItemResponse<object> response = await peopleContainer.ReadItemAsync<object>("example.document", new PartitionKey("Koepp"));
         await Console.Out.WriteLineAsync($"{response.RequestCharge} RUs");
 
         object member = new Member { accountHolder = new Bogus.Person() };
@@ -126,11 +127,13 @@ public class Program
         await Console.Out.WriteLineAsync($"Estimated load: {response.RequestCharge * expectedReadsPerSec + createResponse.RequestCharge * expectedWritesPerSec} RU per sec");
     }
 
-    private static async Task ThroughputSettings(CosmosContainer peopleContainer)
+    private static async Task ThroughputSettings(Container peopleContainer)
     {
-        int? current = await peopleContainer.ReadProvisionedThroughputAsync();
+        ThroughputResponse response = await peopleContainer.ReadThroughputAsync();
+        int? current = response.Resource.Throughput;
         await Console.Out.WriteLineAsync($"{current} RU per sec");
-        await peopleContainer.ReplaceProvisionedThroughputAsync(1000);
+        await Console.Out.WriteLineAsync($"Minimum allowed: {response.MinThroughput} RU per sec");
+        await peopleContainer.ReplaceThroughputAsync(1000);
     }
 }
 

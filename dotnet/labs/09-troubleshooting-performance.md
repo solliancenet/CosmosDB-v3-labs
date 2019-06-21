@@ -109,7 +109,7 @@ In this lab, you will use the .NET SDK to tune Azure Cosmos DB requests to optim
         </PropertyGroup>
         <ItemGroup>
             <PackageReference Include="Bogus" Version="22.0.8" />
-            <PackageReference Include="Microsoft.Azure.Cosmos" Version="3.0.0.17-preview" />
+            <PackageReference Include="Microsoft.Azure.Cosmos" Version="3.0.0.18-preview" />
         </ItemGroup>
     </Project>
     ```
@@ -271,7 +271,7 @@ In this lab, you will use the .NET SDK to tune Azure Cosmos DB requests to optim
     }
     ```
 
-1. Add a new line of code to invoke the **CreateItemAsync** method of the **CosmosContainer** instance using the **member** variable as a parameter:
+1. Add a new line of code to invoke the **CreateItemAsync** method of the **Container** instance using the **member** variable as a parameter:
 
     ```csharp
     ItemResponse<object> response = await peopleContainer.CreateItemAsync(member);
@@ -631,7 +631,7 @@ In this lab, you will use the .NET SDK to tune Azure Cosmos DB requests to optim
     ItemResponse<Transaction> result = await transactionContainer.CreateItemAsync(transaction);
     ```
 
-    > The ``CreateItemAsync`` method of the ``CosmosContainer`` class takes in an object that you would like to serialize into JSON and store as an item within the specified collection.
+    > The ``CreateItemAsync`` method of the ``Container`` class takes in an object that you would like to serialize into JSON and store as an item within the specified collection.
 
 1. Still within the ``foreach`` block, add the following line of code to write the value of the newly created resource's ``id`` property to the console:
 
@@ -883,13 +883,13 @@ In this lab, you will use the .NET SDK to tune Azure Cosmos DB requests to optim
 1. Add the following line of code to create a item query instance:
 
     ```csharp
-    FeedIterator<Transaction> query = transactionContainer.CreateItemQuery<Transaction>(sql, 1);
+    FeedIterator<Transaction> query = transactionContainer.GetItemQueryIterator<Transaction>(sql);
     ```
 
 1. Add the following line of code to get the first "page" of results:
 
     ```csharp
-    var result = await query.FetchNextSetAsync();
+    var result = await query.ReadNextAsync();
     ```
 
     > We will not enumerate the full result set. We are only interested in the metrics for the first page of results.
@@ -1039,7 +1039,8 @@ In this lab, you will use the .NET SDK to tune Azure Cosmos DB requests to optim
     QueryRequestOptions options = new QueryRequestOptions
     {
         MaxItemCount = maxItemCount,
-        MaxBufferedItemCount = maxBufferedItemCount
+        MaxBufferedItemCount = maxBufferedItemCount,
+        MaxConcurrency = maxDegreeOfParallelism
     };
     ```
 
@@ -1068,7 +1069,7 @@ In this lab, you will use the .NET SDK to tune Azure Cosmos DB requests to optim
 1. Add the following line of code to create a item query instance:
 
     ```csharp
-    FeedIterator<Transaction> query = transactionContainer.CreateItemQuery<Transaction>(sql, maxDegreeOfParallelism, requestOptions: options);
+    FeedIterator<Transaction> query = transactionContainer.GetItemQueryIterator<Transaction>(sql, requestOptions: options);
     ```
 
 1. Add the following lines of code to enumerate the result set.
@@ -1076,11 +1077,11 @@ In this lab, you will use the .NET SDK to tune Azure Cosmos DB requests to optim
     ```csharp
     while (query.HasMoreResults)  
     {
-        var result = await query.FetchNextSetAsync();
+        var result = await query.ReadNextAsync();
     }
     ```
 
-    > Since the results are paged, we will need to call the ``FetchNextSetAsync`` method multiple times in a while loop.
+    > Since the results are paged, we will need to call the ``ReadNextAsync`` method multiple times in a while loop.
 
 1. Add the following line of code stop the timer:
 
@@ -1319,13 +1320,13 @@ In this lab, you will use the .NET SDK to tune Azure Cosmos DB requests to optim
 1. Add the following line of code to create a item query instance:
 
     ```csharp
-    FeedIterator<object> query = peopleContainer.CreateItemQuery<object>(sql, -1);
+    FeedIterator<object> query = peopleContainer.GetItemQueryIterator<object>(sql);
     ```
 
 1. Add the following line of code to get the first page of results and then store them in a variable of type **FeedResponse<>**:
 
     ```csharp
-    FeedResponse<object> response = await query.FetchNextSetAsync();
+    FeedResponse<object> response = await query.ReadNextAsync();
     ```
 
     > We only need to retrieve a single page since we are getting the ``TOP 1`` items from the .
@@ -1370,10 +1371,10 @@ In this lab, you will use the .NET SDK to tune Azure Cosmos DB requests to optim
     }
     ```
 
-1. Add the following code to use the **ReadItemAsync** method of the **CosmosContainer** class to retrieve an item using the unique id and the partition key set to the last name from the previous step:
+1. Add the following code to use the **ReadItemAsync** method of the **Container** class to retrieve an item using the unique id and the partition key set to the last name from the previous step:
 
     ```csharp
-    ItemResponse<object> response = await peopleContainer.ReadItemAsync<object>(new PartitionKey("<Last Name>"), "example.document");
+    ItemResponse<object> response = await peopleContainer.ReadItemAsync<object>("example.document", new PartitionKey("<Last Name>"));
     ```
 
 1. Add the following line of code to print out the value of the **RequestCharge** property of the **ItemResponse<>** instance:
@@ -1412,7 +1413,7 @@ In this lab, you will use the .NET SDK to tune Azure Cosmos DB requests to optim
     await Console.Out.WriteLineAsync($"{response.RequestCharge} RUs");    
     ```
 
-1. Following that line, add the following code to use the **CreateItemAsync** method of the **CosmosContainer** class to add a new item and print out the value of the **RequestCharge** property of the **ItemResponse<>** instance:
+1. Following that line, add the following code to use the **CreateItemAsync** method of the **Container** class to add a new item and print out the value of the **RequestCharge** property of the **ItemResponse<>** instance:
 
     ```csharp
     object member = new Member { accountHolder = new Bogus.Person() };
@@ -1477,10 +1478,11 @@ In this lab, you will use the .NET SDK to tune Azure Cosmos DB requests to optim
 1. Add the following code to retrieve the current RU/sec setting for the container:
 
     ```csharp
-    int? current = await peopleContainer.ReadProvisionedThroughputAsync();
+    ThroughputResponse response = await peopleContainer.ReadThroughputAsync();
+    int? current = response.Resource.Throughput;
     ```
 
-    > Note that the return type is a nullable value. Provisioned throughput can be set either at the container or database level. If set at the database level, this method on the **CosmosContainer** will return null. When set at the container level, the same method on **CosmosDatabase** will return null.
+    > Note that the type of the **Throughput** property is a nullable value. Provisioned throughput can be set either at the container or database level. If set at the database level, this property read from the **Container** will return null. When set at the container level, the same method on **Database** will return null.
 
 1. Add the following line of code to print out the provisioned throughput value:
 
@@ -1491,10 +1493,10 @@ In this lab, you will use the .NET SDK to tune Azure Cosmos DB requests to optim
 1. Add the following code to update the RU/sec setting for the container:
 
     ```csharp
-    await peopleContainer.ReplaceProvisionedThroughputAsync(1000);
+    await peopleContainer.ReplaceThroughputAsync(1000);
     ```
 
-    > Although the overall minimum throughput that can be set is 400 RU/s, specific containers or databases may have higher limits depending on size of stored data, previous maximum throughput settings, or number of containers in a database. Trying to set a value below the available minimum will cause an exception here.
+    > Although the overall minimum throughput that can be set is 400 RU/s, specific containers or databases may have higher limits depending on size of stored data, previous maximum throughput settings, or number of containers in a database. Trying to set a value below the available minimum will cause an exception here. The current allowed minumum value can be found on the **ThroughputResponse.MinThroughput** property.
 
 1. Save all of your open editor tabs.
 
