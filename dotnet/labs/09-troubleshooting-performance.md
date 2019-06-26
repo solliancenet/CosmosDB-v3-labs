@@ -1407,7 +1407,21 @@ In this lab, you will use the .NET SDK to tune Azure Cosmos DB requests to optim
 
 ### Estimating Throughput Needs
 
-1. Locate the *WriteLineAsync* line within the **Main** method:
+1. We'll start out by looking at actual usage of your Cosmos account for these labs. Return to the **Azure Portal** (<http://portal.azure.com>).
+
+1. On the left side of the portal, click the **Resource groups** link.
+
+1. In the **Resource groups** blade, locate and select the **cosmosgroup-lab** *Resource Group*.
+
+1. In the **cosmosgroup-lab** blade, select the **Azure Cosmos DB** account you recently created.
+
+1. In the **Azure Cosmos DB** blade, locate and click the **Metrics** link on the left side of the blade under the **Monitoring** section. Observe the values in the *Number of requests* graph to see the volume of requests your lab work has been making to your Cosmos containers.
+
+    ![Metrics](../media/09-metrics.jpg)
+
+    > Various parameters can be changed to adjust the data shown in the graphs and there is also an option to export data to csv for further analysis. For an existing application this can be helpful in determining your query volume.
+
+1. Return to the Visual Studio Code window and locate the *WriteLineAsync* line within the **Main** method in **Program.cs**:
 
     ```csharp
     await Console.Out.WriteLineAsync($"{response.RequestCharge} RUs");    
