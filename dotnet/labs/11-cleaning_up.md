@@ -22,10 +22,10 @@ In this lab, you will remove the resource group containing your Azure Cosmos DB 
     az group list
     ```
 
-1. Type in the following command and press **Enter** to delete the **LABMPAR** *Resource Group*:
+1. Type in the following command and press **Enter** to delete the **cosmoslab** *Resource Group*:
 
     ```sh
-    az group delete --name "cosmosgroup-lab" --no-wait --yes
+    az group delete --name "cosmoslab" --no-wait --yes
     ```
 
 1. Close the **Cloud Shell** prompt at the bottom of the portal.

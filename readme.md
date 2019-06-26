@@ -48,12 +48,18 @@ Prior to starting these labs, you must have the following operating system and s
 
 *It is recommended to complete the labs in the order specified below:*
 
-- [Pre-lab: Creating an Azure Cosmos DB account](dotnet/technical_deep_dive/01-getting_started.md)
-- [Lab 1: Creating a partitioned solution using Azure Cosmos DB](dotnet/technical_deep_dive/02-creating_multi_partition_solution.md)
-- [Lab 2: Querying an Azure Cosmos DB Database using the SQL API](dotnet/technical_deep_dive/03-querying_the_database_using_sql.md)
-- [Lab 3: Authoring Azure Cosmos DB Stored Procedures using JavaScript ](dotnet/technical_deep_dive/04-authoring_stored_procedures.md)
-- [Lab 4: Troubleshooting and Tuning Azure Cosmos DB Requests](dotnet/technical_deep_dive/05-troubleshooting_failed_requests.md)
-- [Post-lab: Cleaning Up](dotnet/technical_deep_dive/06-cleaning_up.md)
+- [Pre-lab: Creating an Azure Cosmos DB account](dotnet/labs/00-account_setup.md)
+- [Lab 1: Creating a partitioned collection with the .NET SDK](dotnet/labs/01-creating_partitioned_collection.md)
+- [Lab 2: Load data into Cosmos DB with ADF](dotnet/labs/02-load_data_with_adf.md)
+- [Lab 3: Querying in Azure Cosmos DB](dotnet/labs)
+- [Lab 4: Indexing in Cosmos DB](dotnet/labs)
+- [Lab 5: Build simple .NET console app](dotnet/labs/05-build_net_app.md)
+- [Lab 6: Multi-Document Transactions](dotnet/labs/06-multi-document-transactions.md)
+- [Lab 7: Long-Running Multi-Document Transactions with Continuation Tokens](dotnet/labs/07-transactions-with-continuation.md)
+- [Lab 8: Change Feed with Azure Functions](dotnet/labs/08-change_feed_with_azure_functions.md)
+- [Lab 9: Troubleshooting Performance](dotnet/labs/09-troubleshooting-performance.md)
+- [Lab 10: Optimistic Concurrency Control](dotnet/labs/10-concurrency-control.md)
+- [Post-lab: Cleaning Up](dotnet/labs/11-cleaning_up.md)
 
 ---
 
