@@ -207,7 +207,8 @@ In this lab, you will create multiple Azure Cosmos DB containers using different
 1. Add the following code to the method to create a new ``Database`` instance if one does not already exist:
 
     ```csharp
-    Database targetDatabase = await client.CreateDatabaseIfNotExistsAsync("EntertainmentDatabase");
+    DatabaseResponse databaseResponse = await client.CreateDatabaseIfNotExistsAsync("EntertainmentDatabase");
+    Database targetDatabase = databaseResponse.Database;
     ```
 
     > This code will check to see if a database exists in your Azure Cosmos DB account that meets the specified parameters. If a database that matches does not exist, it will create a new database.
@@ -251,7 +252,7 @@ In this lab, you will create multiple Azure Cosmos DB containers using different
 1. Click the **🗙** symbol to close the terminal pane.
 
 
-### Create an Partitioned Container using the SDK
+### Create a Partitioned Container using the SDK
 
 *To create a container, you must specify a name and a partition key path. You will specify those values when creating a container in this task. A partition key is a logical hint for distributing data onto a scaled out underlying set of physical partitions and for efficiently routing queries to the appropriate underlying partition. To learn more, refer to [/docs.microsoft.com/azure/cosmos-db/partition-data](../media/https://docs.microsoft.com/en-us/azure/cosmos-db/partition-data).*
 
@@ -263,10 +264,10 @@ In this lab, you will create multiple Azure Cosmos DB containers using different
     }
     ```
 
-1. Add the following code to the method to create a self-link to an existing database:
+1. Add the following code to the method to create a reference to an existing database:
 
     ```csharp
-    Database targetDatabase = await client.CreateDatabaseIfNotExistsAsync("EntertainmentDatabase");
+    Database targetDatabase = client.GetDatabase("EntertainmentDatabase");
     ```
 
 1. Add the following code to create a new ``IndexingPolicy`` instance with a custom indexing policy configured:
@@ -549,9 +550,8 @@ In this lab, you will create multiple Azure Cosmos DB containers using different
     {  
         using (CosmosClient client = new CosmosClient(_endpointUri, _primaryKey))
         {
-            var targetDatabase = await client.CreateDatabaseIfNotExistsAsync("EntertainmentDatabase");
-            var containerResponse = await targetDatabase.CreateContainerIfNotExistsAsync("CustomCollection", "/type");
-            var customContainer = containerResponse.Container;
+            var targetDatabase = client.GetDatabase("EntertainmentDatabase");
+            var customContainer = targetDatabase.GetContainer("CustomCollection");
             var tvInteractions = new Bogus.Faker<WatchLiveTelevisionChannel>()
                 .RuleFor(i => i.id, (fake) => Guid.NewGuid().ToString())
                 .RuleFor(i => i.type, (fake) => nameof(WatchLiveTelevisionChannel))
@@ -602,9 +602,8 @@ In this lab, you will create multiple Azure Cosmos DB containers using different
     {  
         using (CosmosClient client = new CosmosClient(_endpointUri, _primaryKey))
         {
-            var targetDatabase = await client.CreateDatabaseIfNotExistsAsync("EntertainmentDatabase");
-            var containerResponse = await targetDatabase.CreateContainerIfNotExistsAsync("CustomCollection", "/type");
-            var customContainer = containerResponse.Container;
+            var targetDatabase = client.GetDatabase("EntertainmentDatabase");
+            var customContainer = targetDatabase.GetContainer("CustomCollection");
             var mapInteractions = new Bogus.Faker<ViewMap>()
                 .RuleFor(i => i.id, (fake) => Guid.NewGuid().ToString())
                 .RuleFor(i => i.type, (fake) => nameof(ViewMap))

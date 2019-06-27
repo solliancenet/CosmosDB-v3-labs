@@ -15,7 +15,8 @@ public class Program
     {
         using (CosmosClient client = new CosmosClient(_endpointUri, _primaryKey))
         {
-            Database targetDatabase = await client.CreateDatabaseIfNotExistsAsync("EntertainmentDatabase");
+            DatabaseResponse databaseResponse = await client.CreateDatabaseIfNotExistsAsync("EntertainmentDatabase");
+            Database targetDatabase = databaseResponse.Database;
             await Console.Out.WriteLineAsync($"Database Id:\t{targetDatabase.Id}");
 
             ContainerResponse response = await targetDatabase.CreateContainerIfNotExistsAsync("DefaultCollection", "/id");
