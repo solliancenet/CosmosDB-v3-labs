@@ -151,9 +151,11 @@ _The key functionality of the console application is to add documents to our Cos
    private static readonly string _containerId = "CartContainer";
    ```
 
-1. For the `_endpointUrl` variable, replace the placehodler value with the **URI** value for your Azure Cosmos DB account that you recorded earlier in this lab.
+1. For the ``_endpointUri`` variable, replace the placeholder value with the **URI** value and for the ``_primaryKey`` variable, replace the placeholder value with the **PRIMARY KEY** value from your Azure Cosmos DB account. Use [these instructions](00-account_setup.md) to get these values if you do not already have them:
 
-1. For the `_primaryKey` variable, replace the placeholder value with the **PRIMARY KEY** value from your Azure Cosmos DB account that you recorded earlier in this lab.
+    > For example, if your **uri** is ``https://cosmosacct.documents.azure.com:443/``, your new variable assignment will look like this: ``private static readonly string _endpointUri = "https://cosmosacct.documents.azure.com:443/";``.
+
+    > For example, if your **primary key** is ``elzirrKCnXlacvh1CRAnQdYVbVLspmYHQyYrhx0PltHi8wn5lHVHFnd1Xm3ad5cn4TUcH4U0MSeHsVykkFPHpQ==``, your new variable assignment will look like this: ``private static readonly string _primaryKey = "elzirrKCnXlacvh1CRAnQdYVbVLspmYHQyYrhx0PltHi8wn5lHVHFnd1Xm3ad5cn4TUcH4U0MSeHsVykkFPHpQ==";``.
 
 1. Location the **Main** method:
 
@@ -560,7 +562,7 @@ _The two main options for consuming the Cosmos DB change feed are Azure Function
    }
    ```
 
-   > Be sure to replace the values for `<your-endpoint-url>` and `<your-primary-key>` with the keys you retrieved from your Cosmos DB account previously.
+1. For the ``_endpointUri`` variable, replace the placeholder value with the **URI** value and for the ``_primaryKey`` variable, replace the placeholder value with the **PRIMARY KEY** value from your Azure Cosmos DB account.
 
 1. Modify the **Main** method to connect to the source container, by adding the following code:
 
