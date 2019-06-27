@@ -128,43 +128,17 @@ _You will now implement stored procedures that may execute longer than the bound
 
 ### Create a .NET Core Project
 
-1. On your local machine, create a new folder that will be used to contain the content of your .NET Core project.
+1. On your local machine, locate the CosmosLabs folder in your Documents folder and open the Lab07 folder that will be used to contain the content of your .NET Core project.
 
-1. In the new folder, right-click the folder and select the **Open with Code** menu option.
+1. In the Lab07 folder, right-click the folder and select the **Open with Code** menu option.
 
    ![Open with Visual Studio Code](../media/04-open_with_code.jpg)
 
    > Alternatively, you can run a command prompt in your current directory and execute the `code .` command.
 
-1. In the Visual Studio Code window that appears, right-click the **Explorer** pane and select the **Open in Command Prompt** menu option.
+1. In the Visual Studio Code window that appears, right-click the **Explorer** pane and select the **Open in Terminal** menu option.
 
-   ![Open in Command Prompt](../media/04-open_command_prompt.jpg)
-
-1. In the open terminal pane, enter and execute the following command:
-
-   ```sh
-   dotnet new console --output .
-   ```
-
-   > This command will create a new .NET Core 2.2 project. The project will be a **console** project and the project will be created in the current directly since you used the `--output .` option.
-
-1. Visual Studio Code will most likely prompt you to install various extensions related to **.NET Core** or **Azure Cosmos DB** development. None of these extensions are required to complete the labs.
-
-1. In the terminal pane, enter and execute the following command:
-
-   ```sh
-   dotnet add package Microsoft.Azure.Cosmos --version 3.0.0
-   ```
-
-   > This command will add the [Microsoft.Azure.Cosmos](https://www.nuget.org/packages/Microsoft.Azure.Cosmos/) NuGet package as a project dependency. The lab instructions have been tested using the `3.0.0` version of this NuGet package.
-
-1. In the terminal pane, enter and execute the following command:
-
-   ```sh
-   dotnet add package Bogus --version 22.0.8
-   ```
-
-   > This command will add the [Bogus](https://www.nuget.org/packages/Bogus/) NuGet package as a project dependency. This library will allow us to quickly generate test data using a fluent syntax and minimal code. We will use this library to generate test documents to upload to our Azure Cosmos DB instance. The lab instructions have been tested using the `22.0.8` version of this NuGet package.
+   ![Open in Terminal](../media/04-open_command_prompt.jpg)
 
 1. In the terminal pane, enter and execute the following command:
 
@@ -184,73 +158,11 @@ _You will now implement stored procedures that may execute longer than the bound
 
 1. Click the **🗙** symbol to close the terminal pane.
 
-1. Observe the **Program.cs** and **[folder name].csproj** files created by the .NET Core CLI.
+1. In the **Explorer** pane verify that you have a **DataTypes.cs** file in your project folder.
 
-1. Double-click the **[folder name].csproj** link in the **Explorer** pane to open the file in the editor.
-
-1. Add a new **PropertyGroup** XML element to the project configuration within the **Project** element:
-
-   ```xml
-   <PropertyGroup>
-       <LangVersion>latest</LangVersion>
-   </PropertyGroup>
-   ```
-
-1. Your new XML should look like this:
-
-   ```xml
-   <Project Sdk="Microsoft.NET.Sdk">
-       <PropertyGroup>
-           <LangVersion>latest</LangVersion>
-       </PropertyGroup>
-       <PropertyGroup>
-           <OutputType>Exe</OutputType>
-           <TargetFramework>netcoreapp2.2</TargetFramework>
-       </PropertyGroup>
-       <ItemGroup>
-           <PackageReference Include="Bogus" Version="22.0.7" />
-           <PackageReference Include="Microsoft.Azure.Cosmos" Version="3.0.0" />
-       </ItemGroup>
-   </Project>
-   ```
+    > This file contains the data classes you will be working with in the following steps.
 
 1. Double-click the **Program.cs** link in the **Explorer** pane to open the file in the editor.
-
-### Create CosmosClient Instance
-
-_The CosmosClient class is the main "entry point" to using the SQL API in Azure Cosmos DB. We are going to create an instance of the **CosmosClient** class by passing in connection metadata as parameters of the class' constructor. We will then use this class instance throughout the lab._
-
-1. Within the **Program.cs** editor tab, Add the following using blocks to the top of the editor:
-
-   ```csharp
-   using Bogus;
-   using System.Threading.Tasks;
-   using Microsoft.Azure.Cosmos;
-   using Microsoft.Azure.Cosmos.Scripts;
-   using System.Collections.Generic;
-   using System.Linq;
-   using Newtonsoft.Json;
-   ```
-
-1. Locate the **Program** class and replace it with the following class:
-
-   ```csharp
-   public class Program
-   {
-       public static async Task Main(string[] args)
-       {
-       }
-   }
-   ```
-
-1. Within the **Program** class, add the following lines of code to create variables for your connection information:
-
-   ```csharp
-    private static readonly string _endpointUri = "";
-    private static readonly string _primaryKey = "";
-    private static readonly string _databaseId = "NutritionDatabase";
-    private static readonly string _containerId = "FoodCollection";
-   ```
 
 1. For the ``_endpointUri`` variable, replace the placeholder value with the **URI** value and for the ``_primaryKey`` variable, replace the placeholder value with the **PRIMARY KEY** value from your Azure Cosmos DB account. Use [these instructions](00-account_setup.md) to get these values if you do not already have them:
 
@@ -258,56 +170,9 @@ _The CosmosClient class is the main "entry point" to using the SQL API in Azure 
 
     > For example, if your **primary key** is ``elzirrKCnXlacvh1CRAnQdYVbVLspmYHQyYrhx0PltHi8wn5lHVHFnd1Xm3ad5cn4TUcH4U0MSeHsVykkFPHpQ==``, your new variable assignment will look like this: ``private static readonly string _primaryKey = "elzirrKCnXlacvh1CRAnQdYVbVLspmYHQyYrhx0PltHi8wn5lHVHFnd1Xm3ad5cn4TUcH4U0MSeHsVykkFPHpQ==";``.
 
-1. Locate the **Main** method:
-
-   ```csharp
-   public static async Task Main(string[] args)
-   {
-   }
-   ```
-
-1. Within the **Main** method, add the following lines of code to author a using block that creates and disposes a **CosmosClient** instance:
-
-   ```csharp
-   using (CosmosClient client = new CosmosClient(_endpointUri, _primaryKey))
-   {
-
-   }
-   ```
-
-1. Within the using block, add the following code to the method to obtain a reference to the `FoodCollection` container:
-
-   ```csharp
-    Microsoft.Azure.Cosmos.Database database = client.GetDatabase(_databaseId);
-    Container container = database.GetContainer(_containerId);
-   ```
-
-1. Your `Program` class definition should now look like this:
-
-   ```csharp
-   public class Program
-    {
-        private static readonly string _endpointUri = "";
-        private static readonly string _primaryKey = "";
-        private static readonly string _databaseId = "NutritionDatabase";
-        private static readonly string _containerId = "FoodCollection";
-
-        public static async Task Main(string[] args)
-        {
-            using (CosmosClient client = new CosmosClient(_endpointUri, _primaryKey))
-            {
-                Microsoft.Azure.Cosmos.Database database = client.GetDatabase(_databaseId);
-                Container container = database.GetContainer(_containerId);
-            }
-        }
-    }
-   ```
-
-   > We will now execute a build of the application to make sure our code compiles successfully.
-
 1. Save all of your open editor tabs.
 
-1. In the Visual Studio Code window, right-click the **Explorer** pane and select the **Open in Command Prompt** menu option.
+1. In the Visual Studio Code window, right-click the **Explorer** pane and select the **Open in Terminal** menu option.
 
 1. In the open terminal pane, enter and execute the following command:
 
@@ -319,29 +184,9 @@ _The CosmosClient class is the main "entry point" to using the SQL API in Azure 
 
 1. Click the **🗙** symbol to close the terminal pane.
 
-1. Close all open editor tabs.
-
 ### Execute Bulk Upload Stored Procedure from .NET Core SDK
 
 1. In the Visual Studio Code window, double click to open the **Program.cs** file
-
-1. Following the definition of the **Program** class, add the following code to create a `Food` class:
-
-   ```csharp
-   public class Food
-   {
-       [JsonProperty("id")]
-       public string Id { get; set; }
-       [JsonProperty("description")]
-       public string Description { get; set; }
-       [JsonProperty("manufacturerName")]
-       public string ManufacturerName { get; set; }
-       [JsonProperty("foodGroup")]
-       public string FoodGroup { get; set; }
-   }
-   ```
-
-1. Save all of your open editor tabs.
 
 1. Locate the **Main** method within the **Program** class:
 
@@ -349,26 +194,9 @@ _The CosmosClient class is the main "entry point" to using the SQL API in Azure 
    public static async Task Main(string[] args)
    ```
 
-1. Within the **using** block, add the following line of code to create a `scripts` variable that references the location of your stored procedures:
+   > As a reminder, the Bogus library generates a set of test data. In this example, you are creating 10,000 items using the Bogus library and the rules listed. The **Generate** method tells the Bogus library to use the rules to create the specified number of entities and store them in a generic **List<T>**.
 
-   ```csharp
-   CosmosScripts scripts = container.GetScripts();
-   ```
-
-1. Still within the **using** block, add the following block of code to create a collection of 25,000 "fake" instances of the **Food** class.
-
-   ```csharp
-   List<Food> foods = new Faker<Food>()
-                .RuleFor(p => p.Id, f => (-1 - f.IndexGlobal).ToString())
-                .RuleFor(p => p.Description, f => f.Commerce.ProductName())
-                .RuleFor(p => p.ManufacturerName, f => f.Company.CompanyName())
-                .RuleFor(p => p.FoodGroup, f => "Energy Bars")
-                .Generate(10000);
-   ```
-
-   > As a reminder, the Bogus library generates a set of test data. In this example, you are creating 10,000 items using the Bogus library and the rules listed above. The **Generate** method tells the Bogus library to use the rules to create the specified number of entities and store them in a generic **List<T>**.
-
-1. Still within the **using** block, add the following line of code to create a variable named **pointer** with a default value of **zero**.
+1. Within the **using** block, add the following line of code to create a variable named **pointer** with a default value of **zero**.
 
    ```csharp
    int pointer = 0;
@@ -376,7 +204,7 @@ _The CosmosClient class is the main "entry point" to using the SQL API in Azure 
 
    > We are going to use this variable to determine how many documents were uploaded by our stored procedure.
 
-1. Still within the **using** block, add the following **while** block to continue to iterate code as long as the value of the **pointer** field is _less than_ the amount of items in the **food** collection:
+1. Still within the **using** block, add the following **while** block to continue to iterate code as long as the value of the **pointer** field is _less than_ the amount of items in the **foods** collection:
 
    ```js
    while (pointer < foods.Count) {}
@@ -413,7 +241,7 @@ _The CosmosClient class is the main "entry point" to using the SQL API in Azure 
     {
         using (CosmosClient client = new CosmosClient(_endpointUri, _primaryKey))
         {
-            Microsoft.Azure.Cosmos.Database database = client.GetDatabase(_databaseId);
+            Database database = client.GetDatabase(_databaseId);
             Container container = database.GetContainer(_containerId);
 
             List<Food> foods = new Faker<Food>()
@@ -439,7 +267,7 @@ _The CosmosClient class is the main "entry point" to using the SQL API in Azure 
 
 1. Save all of your open editor tabs.
 
-1. In the Visual Studio Code window, right-click the **Explorer** pane and select the **Open in Command Prompt** menu option.
+1. In the Visual Studio Code window, right-click the **Explorer** pane and select the **Open in Terminal** menu option.
 
 1. In the open terminal pane, enter and execute the following command:
 
@@ -451,7 +279,7 @@ _The CosmosClient class is the main "entry point" to using the SQL API in Azure 
 
 1. Observe the results of the console project.
 
-   > This stored procedure will batch upload 25,000 documents to your collection within the specified partition key.
+   > This stored procedure will batch upload 10,000 documents to your collection within the specified partition key.
 
 1. Click the **🗙** symbol to close the terminal pane.
 
@@ -499,18 +327,6 @@ _The CosmosClient class is the main "entry point" to using the SQL API in Azure 
 
 1. In the Visual Studio Code pane, double click the **Program.cs** file to open it in the editor.
 
-1. Following the definition of the `Food` class, add the following code to create a `DeleteStatus` class:
-
-   ```csharp
-   public class DeleteStatus
-   {
-       public int Deleted { get; set; }
-       public bool Continuation { get; set; }
-   }
-   ```
-
-   > The next stored procedure returns a complex JSON object instead of a simple typed value. We will need to create a C# class to deserialize the JSON object so we can use it's data in our C# code.
-
 1. Locate the **Main** method and delete any existing code:
 
    ```csharp
@@ -520,34 +336,36 @@ _The CosmosClient class is the main "entry point" to using the SQL API in Azure 
    }
    ```
 
+   > The next stored procedure returns a complex JSON object instead of a simple typed value. We use a custom `DeleteStatus` C# class to deserialize the JSON object so we can use its data in our C# code.
+
 1. Replace the **Main** method with the following implementation:
 
    ```csharp
-   public static async Task Main(string[] args)
+    public static async Task Main(string[] args)
+    {
+        using (CosmosClient client = new CosmosClient(_endpointUri, _primaryKey))
         {
-            using (CosmosClient client = new CosmosClient(_endpointUri, _primaryKey))
-            {
-                Microsoft.Azure.Cosmos.Database database = client.GetDatabase(_databaseId);
-                Container container = database.GetContainer(_containerId);
+            Database database = client.GetDatabase(_databaseId);
+            Container container = database.GetContainer(_containerId);
 
-                bool resume = true;
-                do
-                {
-                    string query = "SELECT * FROM foods f WHERE f.foodGroup = 'Energy Bars'";
-                    StoredProcedureExecuteResponse<DeleteStatus> result = await container.Scripts.ExecuteStoredProcedureAsync<string, DeleteStatus>(new PartitionKey("Energy Bars"), "bulkDelete", query);
-                    await Console.Out.WriteLineAsync($"Batch Delete Completed.\tDeleted: {result.Resource.Deleted}\tContinue: {result.Resource.Continuation}");
-                    resume = result.Resource.Continuation;
-                }
-                while (resume);
+            bool resume = true;
+            do
+            {
+                string query = "SELECT * FROM foods f WHERE f.foodGroup = 'Energy Bars'";
+                StoredProcedureExecuteResponse<DeleteStatus> result = await container.Scripts.ExecuteStoredProcedureAsync<string, DeleteStatus>(new PartitionKey("Energy Bars"), "bulkDelete", query);
+                await Console.Out.WriteLineAsync($"Batch Delete Completed.\tDeleted: {result.Resource.Deleted}\tContinue: {result.Resource.Continuation}");
+                resume = result.Resource.Continuation;
             }
+            while (resume);
         }
+    }
    ```
 
    > This code will execute the stored procedure that deletes documents as long as the **resume** variable is set to true. The stored procedure itself always returns an object, serialized as **DeleteStatus**, that has a boolean indicating whether we should continue deleting documents and a number indicating how many documents were deleted as part of this execution. Within the do-while loop, we simply store the value of the boolean returned from the stored procedure in our **resume** variable and continue executing the stored procedure until it returns a false value indicating that all documents were deleted.
 
 1. Save all of your open editor tabs.
 
-1. In the Visual Studio Code window, right-click the **Explorer** pane and select the **Open in Command Prompt** menu option.
+1. In the Visual Studio Code window, right-click the **Explorer** pane and select the **Open in Terminal** menu option.
 
 1. In the open terminal pane, enter and execute the following command:
 
