@@ -12,150 +12,29 @@ To download and use Visual Studio Code, [Click this Link](https://code.visualstu
 
 Finally, you will need a Microsoft Azure account. Free accounts are available for demo purposes. [Visit the Azure Portal](https://portal.azure.com) for details.
 
-## Setup
-
-> Before you start this lab you will need to set up and configure a number of Azure resources that you will use throughout the lab. The .NET SDK requires credentials to connect to your Azure accounts. You will collect and store these credentials in this step.
-
-### Retrieve Credentials for this Lab
-
-1. In a new browser window, sign in to the **Azure Portal** (<https://portal.azure.com>).
-
-1. On the left side of the portal, click the **Resource Groups** link.
-
-   ![Resource Groups](../media/08-select-resource-groups.jpg)
-
-1. In the **Resource groups** blade, locate and select the **cosmosdblab-group** _Resource Group_.
-
-   ![Lab resource group](../media/08-cosmos-in-resources.jpg)
-
-1. In the **cosmosdblab-group** blade, select the Cosmos DB Account that was created.
-
-   ![Cosmos DB in Resource Blade](../media/08-cosmos-in-resources.jpg)
-
-1. On the left side of the **Azure Cosmos DB** blade, locate the **Settings** section and click the **Keys** link.
-
-   ![Cosmos DB Keys](../media/08-cosmos-keys.jpg)
-
-1. In the **Keys** pane, record the values in the **PRIMARY CONNECTION STRING**, **URI** and **PRIMARY KEY** fields. You will use these values later in this lab.
-
-   ![Cosmos DB Keys to Copy](../media/08-cosmos-keys-to-copy.jpg)
-
 ## Build A .NET Console App to Generate Data
 
 _In order to simulate data flowing into our store, in the form of actions on an ecommerce website, we'll build a simple .NET Console App to generate and add documents to our Cosmos DB CartContainer_
 
-1. On your local machine, create a new folder that will be used to contain the content of your .NET Core project.
+1. On your local machine, locate the CosmosLabs folder in your Documents folder and open the Lab08 folder that will be used to contain the content of your .NET Core project.
 
-1. Open a terminal window and navigate to the folder that you created in the previous step
+1. In the Lab08 folder, right-click the folder and select the **Open with Code** menu option.
 
-1. In the terminal window, enter and execute the following command:
-
-   ```sh
-   dotnet new console -o DataGenerator
-   ```
-
-> This command will create a new .NET Core 2.2 project. This project will be a **console** project and the project will be crated in a new directory called **DataGenerator**
-
-1.  Change directory to the **DataGenerator** folder
-
-1.  In the terminal pane, enter and execute the following command:
-
-    ```sh
-    dotnet add package Microsoft.Azure.Cosmos --version 3.0.0.18-preview
-    ```
-
-    > This command will add the [Microsoft.Azure.Cosmos](https://www.nuget.org/packages/Microsoft.Azure.Cosmos/) NuGet package as a project dependency.
-
-1.  In the terminal pane, enter and execute the following command:
-
-    ```sh
-    dotnet add package Bogus --version 27.0.1
-    ```
-
-    > This command will add the [Bogus]() NuGet package, which you'll use to generate randomized shopping data.
-
-1.  Change directory back to your root folder
-
-1.  In the terminal pane, open Visual Studio code with the following command:
-
-    ```sh
-    code .
-    ```
-
-1.  Observe the **Program.cs** and **DataGenerator.csproj** files created by the .NET Core CLI.
-
-    ![Project files](../media/08-initial-project-files.jpg)
-
-1.  Double-click the **DataGenerator.csproj** link in the **Explorer** pane to open the file in the editor.
-
-1.  Add a new **PropertyGroup** XML element to the project configuration within the **Project** element:
-
-    ```xml
-    <PropertyGroup>
-        <LangVersion>Latest</LangVersion>
-    </PropertyGroup>
-    ```
-
-1.  Your new XML should look like this:
-
-    ```xml
-    <Project Sdk="Microsoft.NET.Sdk">
-        <PropertyGroup>
-            <OutputType>Exe</OutputType>
-            <TargetFramework>netcoreapp2.2</TargetFramework>
-        </PropertyGroup>
-        <PropertyGroup>
-            <LangVersion>Latest</LangVersion>
-        </PropertyGroup>
-        <ItemGroup>
-            <PackageReference Include="Bogus" Version="27.0.1" />
-            <PackageReference Include="Microsoft.Azure.Cosmos" Version="3.0.0.18-preview" />
-        </ItemGroup>
-    </Project>
-    ```
+   > Alternatively, you can run a command prompt in your current directory and execute the `code .` command.
 
 1.  Double-click the **Program.cs** link in the **Explorer** pane to open the file in the editor.
 
     ![Open editor](../media/08-console-main-default.jpg)
-
-### Create Function to Add Documents to Cosmos DB
-
-_The key functionality of the console application is to add documents to our Cosmos DB to simulate activity on our ecommerce website. Here, you'll create a data definition for these documents and define a function to add them_
-
-1. Within the **Program.cs** editor tab, Add the following using blocks to the top of the editor:
-
-   ```csharp
-   using System.Threading.Tasks;
-   using Microsoft.Azure.Cosmos;
-   using Newtonsoft.Json;
-   using Newtonsoft.Json.Converters;
-   ```
-
-1. Locate the **Program** class and replace it with the following class:
-
-   ```csharp
-   public class Program
-   {
-       public static async Task Main(string[] args)
-       {
-       }
-   }
-   ```
-
-1. Within the **Program** class, add the following lines of code to create variables for your connection information:
-
-   ```csharp
-   private static readonly string _endpointUrl = "";
-   private static readonly string _primaryKey = "";
-   private static readonly string _databaseId = "StoreDatabase";
-   private static readonly string _containerId = "CartContainer";
-   ```
 
 1. For the ``_endpointUri`` variable, replace the placeholder value with the **URI** value and for the ``_primaryKey`` variable, replace the placeholder value with the **PRIMARY KEY** value from your Azure Cosmos DB account. Use [these instructions](00-account_setup.md) to get these values if you do not already have them:
 
     > For example, if your **uri** is ``https://cosmosacct.documents.azure.com:443/``, your new variable assignment will look like this: ``private static readonly string _endpointUri = "https://cosmosacct.documents.azure.com:443/";``.
 
     > For example, if your **primary key** is ``elzirrKCnXlacvh1CRAnQdYVbVLspmYHQyYrhx0PltHi8wn5lHVHFnd1Xm3ad5cn4TUcH4U0MSeHsVykkFPHpQ==``, your new variable assignment will look like this: ``private static readonly string _primaryKey = "elzirrKCnXlacvh1CRAnQdYVbVLspmYHQyYrhx0PltHi8wn5lHVHFnd1Xm3ad5cn4TUcH4U0MSeHsVykkFPHpQ==";``.
+
+### Create Function to Add Documents to Cosmos DB
+
+_The key functionality of the console application is to add documents to our Cosmos DB to simulate activity on our ecommerce website. Here, you'll create a data definition for these documents and define a function to add them_
 
 1. Location the **Main** method:
 
@@ -215,25 +94,6 @@ _The key functionality of the console application is to add documents to our Cos
 ### Create a Function to Generate Random Shopping Data
 
 _Now that you have a function to add documents to Cosmos DB you'll need a way to generate those documents. We'll use the *Randomizer* class in the Bogus library to help with this step_
-
-1. Within the **Program.cs** editor tab, add the following using block to the top of the editor:
-
-   ```csharp
-   using Bogus;
-   using System.Collections.Generic;
-   ```
-
-1. The full list of using should now look like this:
-
-   ```csharp
-   using System;
-   using System.Threading.Tasks;
-   using Microsoft.Azure.Cosmos;
-   using Newtonsoft.Json;
-   using Newtonsoft.Json.Converters;
-   using Bogus;
-   using System.Collections.Generic;
-   ```
 
 1. In between the **Main** method and the **AddItem** function, add a new function:
 
@@ -473,114 +333,15 @@ _You're ready to run the console app, and in this step you'll take a look at you
 
 _The two main options for consuming the Cosmos DB change feed are Azure Functions and the Change Feed Processor library. We'll start with the Change Feed Processor via a simple console application_
 
-### Create a .NET Console Application
-
-1. Open a terminal window and navigate to the root folder you created previously
-
-1. In the terminal window, enter and execute the following command:
-
-   ```sh
-   dotnet new console -o ChangeFeedConsole
-   ```
-
-> This command will create a new .NET Core 2.2 project. This project will be a **console** project and the project will be crated in a new directory called **ChangeFeedConsole**
-
-1.  Change directory to the **ChangeFeedConsole** folder
-
-1.  In the terminal pane, enter and execute the following command:
-
-    ```sh
-    dotnet add package Microsoft.Azure.Cosmos --version 3.0.0.18-preview
-    ```
-
-    > This command will add the [Microsoft.Azure.Cosmos](https://www.nuget.org/packages/Microsoft.Azure.Cosmos/) NuGet package as a project dependency.
-
-1.  Change directory back to your root folder
-
-1.  In the terminal pane, open Visual Studio code with the following command:
-
-    ```sh
-    code .
-    ```
-
-1.  Observe the **Program.cs** and **ChangeFeedConsole.csproj** files created by the .NET Core CLI.
-
-1)  Double-click the **ChangeFeedConsole.csproj** link in the **Explorer** pane to open the file in the editor.
-
-1)  Add a new **PropertyGroup** XML element to the project configuration within the **Project** element:
-
-    ```xml
-    <PropertyGroup>
-        <LangVersion>Latest</LangVersion>
-    </PropertyGroup>
-    ```
-
-1)  Your new XML should look like this:
-
-    ```xml
-    <Project Sdk="Microsoft.NET.Sdk">
-        <PropertyGroup>
-            <OutputType>Exe</OutputType>
-            <TargetFramework>netcoreapp2.2</TargetFramework>
-        </PropertyGroup>
-        <PropertyGroup>
-            <LangVersion>Latest</LangVersion>
-        </PropertyGroup>
-        <ItemGroup>
-            <PackageReference Include="Microsoft.Azure.Cosmos" Version="3.0.0.18-preview" />
-        </ItemGroup>
-    </Project>
-    ```
-
-1)  Double-click the **Program.cs** link in the **Explorer** pane to open the file in the editor.
-
-### Connect to Cosmos DB
-
-1. At the top of the **Program.cs** file add the following using statements:
-
-   ```csharp
-   using System.Collections.Generic;
-   using System.Threading;
-   using System.Threading.Tasks;
-   using Microsoft.Azure.Cosmos
-   ```
-
-1. Modify the **Program** class definition as follows:
-
-   ```csharp
-   class Program
-   {
-       private static readonly string _endpointUrl = "<your-endpoint-url>";
-       private static readonly string _primaryKey = "<your-primary-key>";
-       private static readonly string _databaseId = "StoreDatabase";
-       private static readonly string _containerId = "CartContainer";
-
-       public static async Task Main(string[] args)
-       {
-           //code goes here
-       }
-   }
-   ```
-
-1. For the ``_endpointUri`` variable, replace the placeholder value with the **URI** value and for the ``_primaryKey`` variable, replace the placeholder value with the **PRIMARY KEY** value from your Azure Cosmos DB account.
-
-1. Modify the **Main** method to connect to the source container, by adding the following code:
-
-   ```csharp
-   using(var client = new CosmosClient(_endpointUrl, _primaryKey))
-   {
-       var db = client.GetDatabase(_databaseId);
-       var container = db.GetContainer(_containerId);
-
-       //code continues here
-   }
-   ```
-
 ### Connect to the Cosmos DB Change Feed
 
 _The first use case we'll explore for Cosmos DB Change Feed is Live Migration. A common concern when designing a Cosmos DB container is proper selection of a partition key. You'll recall that we created our CartContainer with a partition key of /Item. What if we find out later this key is wrong? Or what if writes work better with /Item while reads work better with /BuyerState as the partition key? We can avoid analysis paralysis by using Cosmos DB Change Feed to migrate our data in real time to a second container with a different partition key!_
 
-1. Add one more configuration value to the top of the **Program.cs** file, for the name of the destination container, following `_containerId`:
+1. Double-click the **Program.cs** link under the **ChangeFeedConsole** folder in the **Explorer** pane to open the file in the editor.
+
+1. For the ``_endpointUri`` variable, replace the placeholder value with the **URI** value and for the ``_primaryKey`` variable, replace the placeholder value with the **PRIMARY KEY** value from your Azure Cosmos DB account.
+
+1. Notice the container configuration value at the top of the **Program.cs** file, for the name of the destination container, following `_containerId`:
 
    ```csharp
    private static readonly string _destinationContainerId = "CartContainerByState";
