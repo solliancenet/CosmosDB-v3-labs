@@ -735,11 +735,11 @@ _This step is optional, if you do not wish to follow the lab to creating the das
 
    ![Resource Groups](../media/08-select-resource-groups.jpg)
 
-1. In the **Resource groups** blade, locate and select the **cosmosdblab-group** _Resource Group_.
+1. In the **Resource groups** blade, locate and select the **cosmoslabs** _Resource Group_.
 
    ![Lab resource group](../media/08-cosmos-in-resources.jpg)
 
-1. In the **cosmosdblab-group** resource blade, and select the Event Hub account you just created
+1. In the **cosmoslabs** resource blade, and select the Event Hub account you just created
 
    ![Select Event Hub](../media/08-cosmos-select-hub.jpg)
 
@@ -755,9 +755,9 @@ _This step is optional, if you do not wish to follow the lab to creating the das
 
 _This step is optional, if you do not wish to connect to Power BI to visualize your Event Hub, you may skip it_
 
-1. Return to the **cosmosdblab-group** blade in the browser
+1. Return to the **cosmoslabs** blade in the browser
 
-1. In the **cosmosdblab-group** resource blade and select the stream analytics job
+1. In the **cosmoslabs** resource blade and select the stream analytics job
 
    ![Select Stream Analytics](../media/08-select-stream-processor.jpg)
 
