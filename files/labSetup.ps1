@@ -1,4 +1,4 @@
-param($session = $null, $location = "West US", [switch]$teardown)
+param($session = $null, $location = "West US", $codePath = "$Home\Documents", [switch]$teardown)
 
 # Settings to apply to new deployment
 $resourceGroupName = "cosmoslabs"
@@ -354,6 +354,13 @@ function Add-StreamProcessor($resourceGroupName, $location, $eventHubNS, $jobNam
 
 
 # Begin Setup
+New-Item -Name CosmosLabs -Path $codePath -ItemType Directory -Force
+
+Copy-Item -Path .\templates\* -Filter "*.*" -Recurse -Destination "$codePath\CosmosLabs" -Container -Force
+
+Write-Output "" "Copied lab code files to: $codePath\CosmosLabs"
+
+
 New-AzResourceGroup -Name $resourceGroupName -Location $location
 
 $locations = @(
