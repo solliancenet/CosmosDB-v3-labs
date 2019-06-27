@@ -14,11 +14,11 @@ In this lab, you will populate an Azure Cosmos DB container from an existing set
 
     ![Resource groups](../media/03-resource_groups.jpg)
 
-1. In the **Resource groups** blade, locate and select the **cosmosgroup-lab** *Resource Group*.
+1. In the **Resource groups** blade, locate and select the **cosmoslabs** *Resource Group*.
 
     ![Lab resource group](../media/03-lab_resource_group.jpg)
 
-1. In the **cosmosgroup-lab** blade, select the **Azure Cosmos DB** account you recently created.
+1. In the **cosmoslabs** blade, select the **Azure Cosmos DB** account you recently created.
 
     ![Cosmos resource](../media/03-cosmos_resource.jpg)
 
@@ -32,7 +32,7 @@ In this lab, you will populate an Azure Cosmos DB container from an existing set
 
 1. In the **Add Container** popup, perform the following actions:
 
-    1. In the **Database id** field, select the **Create new** option and enter the value **NutritionDatabase**.
+    1. In the **Database id** field, select the **Create new** option and enter the value **ImportDatabase**.
 
     1. Ensure the **Provision database throughput** option is not selected.
 
@@ -76,7 +76,7 @@ You will use **Azure Data Factory (ADF)** to import the JSON array stored in the
 
     ![Resource groups](../media/03-resource_groups.jpg)
 
-1. In the **Resource groups** blade, locate and select the **cosmosgroup-lab** *Resource Group*.
+1. In the **Resource groups** blade, locate and select the **cosmoslabs** *Resource Group*.
 
 
 1. Click **add** to add a new resource
@@ -127,7 +127,7 @@ You will use **Azure Data Factory (ADF)** to import the JSON array stored in the
 
     ![](../media/03-adf_selecttarget.jpg)
 
-1. Name the linked service **targetcosmosdb** and select your Azure subscription and Cosmos DB account. You should also select the Cosmos DB database that you created earlier.
+1. Name the linked service **targetcosmosdb** and select your Azure subscription and Cosmos DB account. You should also select the Cosmos DB **ImportDatabase** that you created earlier.
 
     ![](../media/03-adf_selecttargetdb.jpg)
 
@@ -171,11 +171,11 @@ You will use **Azure Data Factory (ADF)** to import the JSON array stored in the
 
     ![Resource groups](../media/03-resource_groups.jpg)
 
-1. In the **Resource groups** blade, locate and select the **cosmosgroup-lab** *Resource Group*.
+1. In the **Resource groups** blade, locate and select the **cosmoslabs** *Resource Group*.
 
     ![Lab resource group](../media/03-lab_resource_group.jpg)
 
-1. In the **cosmosgroup-lab** blade, select the **Azure Cosmos DB** account you recently created.
+1. In the **cosmoslabs** blade, select the **Azure Cosmos DB** account you recently created.
 
     ![Cosmos resource](../media/03-cosmos_resource.jpg)
 
@@ -183,7 +183,7 @@ You will use **Azure Data Factory (ADF)** to import the JSON array stored in the
 
     ![Data Explorer pane](../media/03-data_explorer_pane.jpg)
 
-1. In the **Data Explorer** section, expand the **NutritionDatabase** database node and then expand the **FoodCollection** container node. 
+1. In the **Data Explorer** section, expand the **ImportDatabase** database node and then expand the **FoodCollection** container node. 
 
     ![Container node](../media/03-collection_node.jpg)
 

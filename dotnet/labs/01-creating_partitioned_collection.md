@@ -8,9 +8,9 @@ In this lab, you will create multiple Azure Cosmos DB containers using different
 
 ### Create a .NET Core Project
 
-1. On your local machine, create a new folder that will be used to contain the content of your .NET Core project.
+1. On your local machine, locate the CosmosLabs folder in your Documents folder and open the Lab01 folder that will be used to contain the content of your .NET Core project.
 
-1. In the new folder, right-click the folder and select the **Open with Code** menu option.
+1. In the Lab01 folder, right-click the folder and select the **Open with Code** menu option.
 
     ![Open with Visual Studio Code](../media/02-open_with_code.jpg)
 
@@ -132,18 +132,14 @@ In this lab, you will create multiple Azure Cosmos DB containers using different
     private static readonly string _primaryKey = "";
     ```
 
-1. For the ``_endpointUri`` variable, replace the placeholder value with the **URI** value from your Azure Cosmos DB account that you recorded earlier in this lab: 
+1. For the ``_endpointUri`` variable, replace the placeholder value with the **URI** value and for the ``_primaryKey`` variable, replace the placeholder value with the **PRIMARY KEY** value from your Azure Cosmos DB account. Use [these instructions](00-account_setup.md) to get these values if you do not already have them:
 
     > For example, if your **uri** is ``https://cosmosacct.documents.azure.com:443/``, your new variable assignment will look like this: ``private static readonly string _endpointUri = "https://cosmosacct.documents.azure.com:443/";``.
 
-    > Keep the **URI** value recorded, you will use it again later in this lab.
-
-1. For the ``_primaryKey`` variable, replace the placeholder value with the **PRIMARY KEY** value from your Azure Cosmos DB account that you recorded earlier in this lab: 
-
     > For example, if your **primary key** is ``elzirrKCnXlacvh1CRAnQdYVbVLspmYHQyYrhx0PltHi8wn5lHVHFnd1Xm3ad5cn4TUcH4U0MSeHsVykkFPHpQ==``, your new variable assignment will look like this: ``private static readonly string _primaryKey = "elzirrKCnXlacvh1CRAnQdYVbVLspmYHQyYrhx0PltHi8wn5lHVHFnd1Xm3ad5cn4TUcH4U0MSeHsVykkFPHpQ==";``.
 
-    > Keep the **PRIMARY KEY** value recorded, you will use it again later in this lab.
-    
+    > Keep the **URI** and **PRIMARY KEY** values recorded, you will use them again later in this lab.
+
 1. Locate the **Main** method:
 
     ```csharp
@@ -338,96 +334,13 @@ In this lab, you will create multiple Azure Cosmos DB containers using different
 
 ## Populate a Container with Items using the SDK
 
-> You will now use the .NET SDK to populate your container with various items of varying schemas. These items will be serialized instances of multiple C# classes that you will create in your project.
-
-### Create Classes
-
-1. In the Visual Studio Code window, right-click the **Explorer** pane and select the **New File** menu option.
-
-    ![New File](../media/02-new_file.jpg)
-
-1. Name the new file **IInteraction.cs** . The editor tab will automatically open for the new file.
-
-    ![Interaction Interface File](../media/02-interaction_interface.jpg)
-
-1. Paste in the following code for the ``IInteraction`` interface:
-
-    ```csharp
-    public interface IInteraction
-    {
-        string type { get; }
-    }
-    ```
-
-1. In the Visual Studio Code window, right-click the **Explorer** pane and select the **New File** menu option.
-
-1. Name the new file **PurchaseFoodOrBeverage.cs** . The editor tab will automatically open for the new file.
-
-1. Paste in the following code for the ``PurchaseFoodOrBeverage`` class:
-
-    ```csharp
-    public class PurchaseFoodOrBeverage : IInteraction
-    {
-        public string id { get; set; }
-        public decimal unitPrice { get; set; }
-        public decimal totalPrice { get; set; }
-        public int quantity { get; set; }
-        public string type { get; set; }
-    }
-    ```
-
-1. In the Visual Studio Code window, right-click the **Explorer** pane and select the **New File** menu option.
-
-1. Name the new file **ViewMap.cs** . The editor tab will automatically open for the new file.
-
-1. Paste in the following code for the ``ViewMap`` class:
-
-    ```csharp
-    public class ViewMap : IInteraction
-    {	
-        public string id { get; set; }
-        public int minutesViewed { get; set; }
-        public string type { get; set; }
-    }
-    ```
-    
-1. In the Visual Studio Code window, right-click the **Explorer** pane and select the **New File** menu option.
-
-1. Name the new file **WatchLiveTelevisionChannel.cs** . The editor tab will automatically open for the new file.
-
-1. Paste in the following code for the ``WatchLiveTelevisionChannel`` class:
-
-    ```csharp
-    public class WatchLiveTelevisionChannel : IInteraction
-    {
-        public string id { get; set; }
-        public string channelName { get; set; }
-        public int minutesViewed { get; set; }
-        public string type { get; set; }
-    }
-    ```
-
-1. Observe your newly created files in the **Explorer** pane.
-
-    ![New files](../media/02-new_classes.jpg)
-
-1. Save all of your open editor tabs.
-
-1. In the Visual Studio Code window, right-click the **Explorer** pane and select the **Open in Terminal** menu option.
-
-1. In the open terminal pane, enter and execute the following command:
-
-    ```sh
-    dotnet build
-    ```
-
-    > This command will build the console project.
-
-1. Click the **🗙** symbol to close the terminal pane.
-
-1. Close all open editor tabs.
+> You will now use the .NET SDK to populate your container with various items of varying schemas. These items will be serialized instances of multiple C# classes in your project.
 
 ### Populate Container with Data
+
+1. In the Visual Studio Code window, look in the **Explorer** pane and verify that you have a **DataTypes.cs** file in your project folder.
+
+    > This file contains the data classes you will be working with in the following steps.
 
 1. Double-click the **Program.cs** link in the **Explorer** pane to open the file in the editor.
 

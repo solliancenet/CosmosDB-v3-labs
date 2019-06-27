@@ -16,11 +16,11 @@
 
     ![Resource groups](../media/02-resource_groups.jpg)
 
-1. In the **Resource groups** blade, locate and select the **cosmosgroup-lab** *Resource Group*.
+1. In the **Resource groups** blade, locate and select the **cosmoslabs** *Resource Group*.
 
     ![Lab resource group](../media/02-lab_resource_group.jpg)
 
-1. In the **cosmosgroup-lab** blade, select the **Azure Cosmos DB** account you recently created.
+1. In the **cosmoslabs** blade, select the **Azure Cosmos DB** account you recently created.
 
     ![Cosmos resource](../media/02-cosmos_resource.jpg)
 
