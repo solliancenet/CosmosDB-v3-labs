@@ -132,8 +132,6 @@ _You will now implement stored procedures that may execute longer than the bound
 
 1. In the Lab07 folder, right-click the folder and select the **Open with Code** menu option.
 
-   ![Open with Visual Studio Code](../media/04-open_with_code.jpg)
-
    > Alternatively, you can run a command prompt in your current directory and execute the `code .` command.
 
 1. In the Visual Studio Code window that appears, right-click the **Explorer** pane and select the **Open in Terminal** menu option.

@@ -6,113 +6,15 @@ In this lab, you will use the .NET SDK to tune Azure Cosmos DB requests to optim
 
 > Before you start this lab, you will need to create an Azure Cosmos DB database and container that you will use throughout the lab.
 
-### Create Azure Cosmos DB Database and Containers
-
-*You will now create a database and containers within your Azure Cosmos DB account.*
-
-1. On the left side of the portal, click the **Resource groups** link.
-
-    ![Resource groups](../media/05-resource_groups.jpg)
-
-1. In the **Resource groups** blade, locate and select the **cosmosgroup-lab** *Resource Group*.
-
-1. In the **cosmosgroup-lab** blade, select the **Azure Cosmos DB** account you recently created.
-
-1. In the **Azure Cosmos DB** blade, locate and click the **Overview** link on the left side of the blade.
-
-1. At the top of the **Azure Cosmos DB** blade, click the **Add Container** button.
-
-1. In the **Add Container** popup, perform the following actions:
-
-    1. In the **Database id** field, select the **Create new** option and enter the value **FinancialDatabase**.
-
-    1. Ensure the **Provision database throughput** option is not selected.
-
-    1. In the **Container id** field, enter the value **TransactionCollection**.
-
-    1. In the **Partition key** field, enter the value ``/costCenter``.
-
-    1. In the **Throughput** field, enter the value ``10000``.
-
-    1. Click the **OK** button.
-
-1. Wait for the creation of the new **database** and **container** to finish before moving on.
-
-1. At the top of the **Azure Cosmos DB** blade, click the **Add Container** button.
-
-1. In the **Add Container** popup, perform the following actions:
-
-    1. In the **Database id** field, select the **Existing database** option and then enter the value **FinancialDatabase**.
-
-    1. In the **Container id** field, enter the value **PeopleCollection**.
-
-    1. In the **Partition key** field, enter the value ``/accountHolder/lastName``.
-
-    1. In the **Throughput** field, enter the value ``400``.
-
-    1. Click the **OK** button.
-
-1. Wait for the creation of the new **database** and **container** to finish before moving on with this lab.
-
-### Retrieve Account Credentials
-
-*The Data Migration Tool and .NET SDKs both require credentials to connect to your Azure Cosmos DB account. You will collect and store these credentials for use throughout the lab.*
-
-1. On the left side of the **Azure Cosmos DB** blade, locate the **Settings** section and click the **Keys** link.
-
-    ![Keys pane](../media/05-keys_pane.jpg)
-
-1. In the **Keys** pane, record the values in the **CONNECTION STRING**, **URI** and **PRIMARY KEY** fields. You will use these values later in this lab.
-
-    ![Credentials](../media/05-keys.jpg)
-
 ### Create a .NET Core Project
 
-1. On your local machine, create a new folder that will be used to contain the content of your .NET Core project.
+1. On your local machine, locate the CosmosLabs folder in your Documents folder and open the Lab09 folder that will be used to contain the content of your .NET Core project.
 
-1. In the new folder, right-click the folder and select the **Open with Code** menu option.
-
-    ![Open with Visual Studio Code](../media/05-open_with_code.jpg)
+1. In the Lab09 folder, right-click the folder and select the **Open with Code** menu option.
 
     > Alternatively, you can run a command prompt in your current directory and execute the ``code .`` command.
 
-1. In the Visual Studio Code window that appears, right-click the **Explorer** pane and select the **Open in Command Prompt** menu option.
-
-    ![Open in Command Prompt](../media/05-open_command_prompt.jpg)
-
-1. In the open terminal pane, enter and execute the following command:
-
-    ```sh
-    dotnet new console --output .
-    ```
-
-    > This command will create a new .NET Core 2.2 project. The project will be a **console** project and the project will be created in the current directly since you used the ``--output .`` option.
-
-1. Visual Studio Code will most likely prompt you to install various extensions related to **.NET Core** or **Azure Cosmos DB** development. None of these extensions are required to complete the labs.
-
-1. Observe the **Program.cs** and **[folder name].csproj** files created by the .NET Core CLI.
-
-    ![Project files](../media/05-project_files.jpg)
-
-1. Double-click the **[folder name].csproj** link in the **Explorer** pane to open the file in the editor.
-
-1. Delete and replace the content of your **.csproj** file with the following XML and then save the file:
-
-    ```xml
-    <Project Sdk="Microsoft.NET.Sdk">
-        <PropertyGroup>
-            <LangVersion>latest</LangVersion>
-        </PropertyGroup>
-        <PropertyGroup>
-            <OutputType>Exe</OutputType>
-            <TargetFramework>netcoreapp2.2</TargetFramework>
-        </PropertyGroup>
-        <ItemGroup>
-            <PackageReference Include="Bogus" Version="22.0.8" />
-            <PackageReference Include="Microsoft.Azure.Cosmos" Version="3.0.0.18-preview" />
-        </ItemGroup>
-    </Project>
-    ```
+1. In the Visual Studio Code window that appears, right-click the **Explorer** pane and select the **Open in Terminal** menu option.
 
 1. In the terminal pane, enter and execute the following command:
 
@@ -132,66 +34,11 @@ In this lab, you will use the .NET SDK to tune Azure Cosmos DB requests to optim
 
 1. Click the **🗙** symbol to close the terminal pane.
 
+1. In the **Explorer** pane verify that you have a **DataTypes.cs** file in your project folder.
+
+    > This file contains the data classes you will be working with in the following steps.
+
 1. Double-click the **Program.cs** link in the **Explorer** pane to open the file in the editor.
-
-    ![Open editor](../media/05-program_editor.jpg)
-
-### Add Lab Starting Code
-
-1. Within the **Program.cs** editor tab, delete the existing content and replace with the following code:
-
-    ```csharp
-    using System;
-    using System.Collections.Generic;
-    using System.Collections.ObjectModel;
-    using System.Diagnostics;
-    using System.Linq;
-    using System.Threading.Tasks;
-    using Bogus;
-    using Microsoft.Azure.Cosmos;
-
-    public class Program
-    {
-        private static readonly string _endpointUri = "";
-        private static readonly string _primaryKey = "";
-        private static readonly string _databaseId = "FinancialDatabase";
-        private static readonly string _peopleCollectionId = "PeopleCollection";
-        private static readonly string _transactionCollectionId = "TransactionCollection";
-
-        public static async Task Main(string[] args)
-        {
-            using (CosmosClient client = new CosmosClient(_endpointUri, _primaryKey))
-            {
-                var database = client.GetDatabase(_databaseId);
-                var peopleContainer = database.GetContainer(_peopleCollectionId);
-                var transactionContainer = database.GetContainer(_transactionCollectionId);
-
-            }
-        }
-    }
-
-    public class Member
-    {
-        public string id { get; set; } = Guid.NewGuid().ToString();
-        public Person accountHolder { get; set; }
-        public Family relatives { get; set; }
-    }
-
-    public class Family
-    {
-        public Person spouse { get; set; }
-        public IEnumerable<Person> children { get; set; }
-    }
-
-    public class Transaction
-    {
-        public string id { get; set; }
-        public double amount { get; set; }
-        public bool processed { get; set; }
-        public string paidBy { get; set; }
-        public string costCenter { get; set; }
-    }
-    ```
 
 1. For the ``_endpointUri`` variable, replace the placeholder value with the **URI** value and for the ``_primaryKey`` variable, replace the placeholder value with the **PRIMARY KEY** value from your Azure Cosmos DB account. Use [these instructions](00-account_setup.md) to get these values if you do not already have them:
 
@@ -203,7 +50,7 @@ In this lab, you will use the .NET SDK to tune Azure Cosmos DB requests to optim
 
 1. Save all of your open editor tabs.
 
-1. In the Visual Studio Code window, right-click the **Explorer** pane and select the **Open in Command Prompt** menu option.
+1. In the Visual Studio Code window, right-click the **Explorer** pane and select the **Open in Terminal** menu option.
 
 1. In the open terminal pane, enter and execute the following command:
 
@@ -300,7 +147,7 @@ In this lab, you will use the .NET SDK to tune Azure Cosmos DB requests to optim
 
 1. Save all of your open editor tabs.
 
-1. In the Visual Studio Code window, right-click the **Explorer** pane and select the **Open in Command Prompt** menu option.
+1. In the Visual Studio Code window, right-click the **Explorer** pane and select the **Open in Terminal** menu option.
 
 1. In the open terminal pane, enter and execute the following command:
 
@@ -391,7 +238,7 @@ In this lab, you will use the .NET SDK to tune Azure Cosmos DB requests to optim
 
 1. Save all of your open editor tabs.
 
-1. In the Visual Studio Code window, right-click the **Explorer** pane and select the **Open in Command Prompt** menu option.
+1. In the Visual Studio Code window, right-click the **Explorer** pane and select the **Open in Terminal** menu option.
 
 1. In the open terminal pane, enter and execute the following command:
 
@@ -538,7 +385,7 @@ In this lab, you will use the .NET SDK to tune Azure Cosmos DB requests to optim
 
 1. Return to the currently open **Visual Studio Code** editor containing your .NET Core project.
 
-1. In the Visual Studio Code window, right-click the **Explorer** pane and select the **Open in Command Prompt** menu option.
+1. In the Visual Studio Code window, right-click the **Explorer** pane and select the **Open in Terminal** menu option.
 
 1. In the open terminal pane, enter and execute the following command:
 
@@ -669,7 +516,7 @@ In this lab, you will use the .NET SDK to tune Azure Cosmos DB requests to optim
 
 1. Save all of your open editor tabs.
 
-1. In the Visual Studio Code window, right-click the **Explorer** pane and select the **Open in Command Prompt** menu option.
+1. In the Visual Studio Code window, right-click the **Explorer** pane and select the **Open in Terminal** menu option.
 
 1. In the open terminal pane, enter and execute the following command:
 
@@ -749,7 +596,7 @@ In this lab, you will use the .NET SDK to tune Azure Cosmos DB requests to optim
 
 1. Save all of your open editor tabs.
 
-1. In the Visual Studio Code window, right-click the **Explorer** pane and select the **Open in Command Prompt** menu option.
+1. In the Visual Studio Code window, right-click the **Explorer** pane and select the **Open in Terminal** menu option.
 
 1. In the open terminal pane, enter and execute the following command:
 
@@ -781,7 +628,7 @@ In this lab, you will use the .NET SDK to tune Azure Cosmos DB requests to optim
 
 1. Save all of your open editor tabs.
 
-1. In the Visual Studio Code window, right-click the **Explorer** pane and select the **Open in Command Prompt** menu option.
+1. In the Visual Studio Code window, right-click the **Explorer** pane and select the **Open in Terminal** menu option.
 
 1. In the open terminal pane, enter and execute the following command:
 
@@ -831,7 +678,7 @@ In this lab, you will use the .NET SDK to tune Azure Cosmos DB requests to optim
 
 1. Save all of your open editor tabs.
 
-1. In the Visual Studio Code window, right-click the **Explorer** pane and select the **Open in Command Prompt** menu option.
+1. In the Visual Studio Code window, right-click the **Explorer** pane and select the **Open in Terminal** menu option.
 
 1. In the open terminal pane, enter and execute the following command:
 
@@ -900,7 +747,7 @@ In this lab, you will use the .NET SDK to tune Azure Cosmos DB requests to optim
 
 1. Save all of your open editor tabs.
 
-1. In the Visual Studio Code window, right-click the **Explorer** pane and select the **Open in Command Prompt** menu option.
+1. In the Visual Studio Code window, right-click the **Explorer** pane and select the **Open in Terminal** menu option.
 
 1. In the open terminal pane, enter and execute the following command:
 
@@ -932,7 +779,7 @@ In this lab, you will use the .NET SDK to tune Azure Cosmos DB requests to optim
 
 1. Save all of your open editor tabs.
 
-1. In the Visual Studio Code window, right-click the **Explorer** pane and select the **Open in Command Prompt** menu option.
+1. In the Visual Studio Code window, right-click the **Explorer** pane and select the **Open in Terminal** menu option.
 
 1. In the open terminal pane, enter and execute the following command:
 
@@ -962,7 +809,7 @@ In this lab, you will use the .NET SDK to tune Azure Cosmos DB requests to optim
 
 1. Save all of your open editor tabs.
 
-1. In the Visual Studio Code window, right-click the **Explorer** pane and select the **Open in Command Prompt** menu option.
+1. In the Visual Studio Code window, right-click the **Explorer** pane and select the **Open in Terminal** menu option.
 
 1. In the open terminal pane, enter and execute the following command:
 
@@ -992,7 +839,7 @@ In this lab, you will use the .NET SDK to tune Azure Cosmos DB requests to optim
 
 1. Save all of your open editor tabs.
 
-1. In the Visual Studio Code window, right-click the **Explorer** pane and select the **Open in Command Prompt** menu option.
+1. In the Visual Studio Code window, right-click the **Explorer** pane and select the **Open in Terminal** menu option.
 
 1. In the open terminal pane, enter and execute the following command:
 
@@ -1095,7 +942,7 @@ In this lab, you will use the .NET SDK to tune Azure Cosmos DB requests to optim
 
 1. Save all of your open editor tabs.
 
-1. In the Visual Studio Code window, right-click the **Explorer** pane and select the **Open in Command Prompt** menu option.
+1. In the Visual Studio Code window, right-click the **Explorer** pane and select the **Open in Terminal** menu option.
 
 1. In the open terminal pane, enter and execute the following command:
 
@@ -1125,7 +972,7 @@ In this lab, you will use the .NET SDK to tune Azure Cosmos DB requests to optim
 
 1. Save all of your open editor tabs.
 
-1. In the Visual Studio Code window, right-click the **Explorer** pane and select the **Open in Command Prompt** menu option.
+1. In the Visual Studio Code window, right-click the **Explorer** pane and select the **Open in Terminal** menu option.
 
 1. In the open terminal pane, enter and execute the following command:
 
@@ -1155,7 +1002,7 @@ In this lab, you will use the .NET SDK to tune Azure Cosmos DB requests to optim
 
 1. Save all of your open editor tabs.
 
-1. In the Visual Studio Code window, right-click the **Explorer** pane and select the **Open in Command Prompt** menu option.
+1. In the Visual Studio Code window, right-click the **Explorer** pane and select the **Open in Terminal** menu option.
 
 1. In the open terminal pane, enter and execute the following command:
 
@@ -1184,7 +1031,7 @@ In this lab, you will use the .NET SDK to tune Azure Cosmos DB requests to optim
 
 1. Save all of your open editor tabs.
 
-1. In the Visual Studio Code window, right-click the **Explorer** pane and select the **Open in Command Prompt** menu option.
+1. In the Visual Studio Code window, right-click the **Explorer** pane and select the **Open in Terminal** menu option.
 
 1. In the open terminal pane, enter and execute the following command:
 
@@ -1214,7 +1061,7 @@ In this lab, you will use the .NET SDK to tune Azure Cosmos DB requests to optim
 
 1. Save all of your open editor tabs.
 
-1. In the Visual Studio Code window, right-click the **Explorer** pane and select the **Open in Command Prompt** menu option.
+1. In the Visual Studio Code window, right-click the **Explorer** pane and select the **Open in Terminal** menu option.
 
 1. In the open terminal pane, enter and execute the following command:
 
@@ -1244,7 +1091,7 @@ In this lab, you will use the .NET SDK to tune Azure Cosmos DB requests to optim
 
 1. Save all of your open editor tabs.
 
-1. In the Visual Studio Code window, right-click the **Explorer** pane and select the **Open in Command Prompt** menu option.
+1. In the Visual Studio Code window, right-click the **Explorer** pane and select the **Open in Terminal** menu option.
 
 1. In the open terminal pane, enter and execute the following command:
 
@@ -1274,7 +1121,7 @@ In this lab, you will use the .NET SDK to tune Azure Cosmos DB requests to optim
 
 1. Save all of your open editor tabs.
 
-1. In the Visual Studio Code window, right-click the **Explorer** pane and select the **Open in Command Prompt** menu option.
+1. In the Visual Studio Code window, right-click the **Explorer** pane and select the **Open in Terminal** menu option.
 
 1. In the open terminal pane, enter and execute the following command:
 
@@ -1338,7 +1185,7 @@ In this lab, you will use the .NET SDK to tune Azure Cosmos DB requests to optim
 
 1. Save all of your open editor tabs.
 
-1. In the Visual Studio Code window, right-click the **Explorer** pane and select the **Open in Command Prompt** menu option.
+1. In the Visual Studio Code window, right-click the **Explorer** pane and select the **Open in Terminal** menu option.
 
 1. In the open terminal pane, enter and execute the following command:
 
@@ -1383,7 +1230,7 @@ In this lab, you will use the .NET SDK to tune Azure Cosmos DB requests to optim
    
 1. Save all of your open editor tabs.
 
-1. In the Visual Studio Code window, right-click the **Explorer** pane and select the **Open in Command Prompt** menu option.
+1. In the Visual Studio Code window, right-click the **Explorer** pane and select the **Open in Terminal** menu option.
 
 1. In the open terminal pane, enter and execute the following command:
 
@@ -1450,7 +1297,7 @@ In this lab, you will use the .NET SDK to tune Azure Cosmos DB requests to optim
 
 1. Save all of your open editor tabs.
 
-1. In the Visual Studio Code window, right-click the **Explorer** pane and select the **Open in Command Prompt** menu option.
+1. In the Visual Studio Code window, right-click the **Explorer** pane and select the **Open in Terminal** menu option.
 
 1. In the open terminal pane, enter and execute the following command:
 
@@ -1512,7 +1359,7 @@ In this lab, you will use the .NET SDK to tune Azure Cosmos DB requests to optim
 
 1. Save all of your open editor tabs.
 
-1. In the Visual Studio Code window, right-click the **Explorer** pane and select the **Open in Command Prompt** menu option.
+1. In the Visual Studio Code window, right-click the **Explorer** pane and select the **Open in Terminal** menu option.
 
 1. In the open terminal pane, enter and execute the following command:
 
