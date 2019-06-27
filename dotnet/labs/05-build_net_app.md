@@ -4,35 +4,17 @@ _After using the Azure Portal's **Data Explorer** to query an Azure Cosmos DB co
 
 ### Create a .NET Core Project
 
-1. On your local machine, create a new folder that will be used to contain the content of your .NET Core project.
+1. On your local machine, locate the CosmosLabs folder in your Documents folder and open the Lab05 folder that will be used to contain the content of your .NET Core project.
 
-1. In the new folder, right-click the folder and select the **Open with Code** menu option.
+1. In the Lab05 folder, right-click the folder and select the **Open with Code** menu option.
 
    ![Open with Visual Studio Code](../media/03-open_with_code.jpg)
 
    > Alternatively, you can run a command prompt in your current directory and execute the `code .` command.
 
-1. In the Visual Studio Code window that appears, right-click the **Explorer** pane and select the **Open in Command Prompt** menu option.
+1. In the Visual Studio Code window that appears, right-click the **Explorer** pane and select the **Open in Terminal** menu option.
 
-   ![Open in Command Prompt](../media/03-open_command_prompt.jpg)
-
-1. In the open terminal pane, enter and execute the following command:
-
-   ```sh
-   dotnet new console --output .
-   ```
-
-   > This command will create a new .NET Core 2.2 project. The project will be a **console** project and the project will be created in the current directly since you used the `--output .` option.
-
-1. Visual Studio Code will most likely prompt you to install various extensions related to **.NET Core** or **Azure Cosmos DB** development. None of these extensions are required to complete the labs.
-
-1. In the terminal pane, enter and execute the following command:
-
-   ```sh
-   dotnet add package Microsoft.Azure.Cosmos --version 3.0.0.18-preview
-   ```
-
-   > This command will add the [Microsoft.Azure.Cosmos](https://www.nuget.org/packages/Microsoft.Azure.Cosmos/) NuGet package as a project dependency. The lab instructions have been tested using the `3.0.0` version of this NuGet package.
+   ![Open in Terminal](../media/03-open_command_prompt.jpg)
 
 1. In the terminal pane, enter and execute the following command:
 
@@ -52,158 +34,19 @@ _After using the Azure Portal's **Data Explorer** to query an Azure Cosmos DB co
 
 1. Click the **🗙** symbol to close the terminal pane.
 
-1. Observe the **Program.cs** and **[folder name].csproj** files created by the .NET Core CLI.
+1. In the **Explorer** pane verify that you have a **DataTypes.cs** file in your project folder.
 
-   ![Project files](../media/03-project_files.jpg)
-
-1. Double-click the **[folder name].csproj** link in the **Explorer** pane to open the file in the editor.
-
-1. Add a new **PropertyGroup** XML element to the project configuration within the **Project** element:
-
-   ```xml
-   <PropertyGroup>
-       <LangVersion>latest</LangVersion>
-   </PropertyGroup>
-   ```
-
-1. Your new XML should look like this:
-
-   ```xml
-   <Project Sdk="Microsoft.NET.Sdk">
-        <PropertyGroup>
-            <LangVersion>latest</LangVersion>
-        </PropertyGroup>
-        <PropertyGroup>
-            <OutputType>Exe</OutputType>
-            <TargetFramework>netcoreapp2.2</TargetFramework>
-        </PropertyGroup>
-        <ItemGroup>
-            <PackageReference Include="Microsoft.Azure.Cosmos" Version="3.0.0.18-preview" />
-        </ItemGroup>
-    </Project>
-
-   ```
+    > This file contains the data classes you will be working with in the following steps.
 
 1. Double-click the **Program.cs** link in the **Explorer** pane to open the file in the editor.
 
    ![Open editor](../media/03-program_editor.jpg)
-
-### Create CosmosClient Instance
-
-_The CosmosClient class is the main "entry point" to using the SQL API in Azure Cosmos DB. We are going to create an instance of the **CosmosClient** class by passing in connection metadata as parameters of the class' constructor. We will then use this class instance throughout the lab._
-
-1. Within the **Program.cs** editor tab, Add the following using blocks to the top of the editor:
-
-   ```csharp
-    using System.Linq;
-    using System.Threading.Tasks;
-    using Microsoft.Azure.Cosmos;
-    using System.Collections.Generic;
-   ```
-
-1. Locate the **Program** class and replace it with the following class:
-
-   ```csharp
-   public class Program
-   {
-       public static async Task Main(string[] args)
-       {
-       }
-   }
-   ```
-
-1. Following the **Program** class definition, add the following class definitions that represent that data stored in Cosmos DB:
-
-   ```csharp
-   public class Tag
-   {
-       public string Name { get; set; }
-   }
-
-   public class Nutrient
-   {
-       public string Id { get; set; }
-       public string Description { get; set; }
-       public decimal NutritionValue { get; set; }
-       public string Units { get; set; }
-   }
-
-   public class Serving
-   {
-       public decimal Amount { get; set; }
-       public string Description { get; set; }
-       public decimal WeightInGrams { get; set; }
-   }
-
-   public class Food
-   {
-       public string Id { get; set; }
-       public string Description { get; set; }
-       public string ManufacturerName { get; set; }
-       public List<Tag> Tags { get; set; }
-       public string FoodGroup { get; set; }
-       public List<Nutrient> Nutrients { get; set; }
-       public List<Serving> Servings { get; set; }
-
-       public Food()
-       {
-            Tags = new List<Tag>();
-            Nutrients = new List<Nutrient>();
-            Servings = new List<Serving>();
-       }
-   }
-   ```
-
-1. Within the **Program** class, add the following lines of code to create variables for your connection information:
-
-   ```csharp
-    private static readonly string _endpointUri = "";
-    private static readonly string _primaryKey = "";
-    private static readonly string _databaseId = "NutritionDatabse";
-    private static readonly string _containerId = "FoodCollection";
-   ```
 
 1. For the ``_endpointUri`` variable, replace the placeholder value with the **URI** value and for the ``_primaryKey`` variable, replace the placeholder value with the **PRIMARY KEY** value from your Azure Cosmos DB account. Use [these instructions](00-account_setup.md) to get these values if you do not already have them:
 
     > For example, if your **uri** is ``https://cosmosacct.documents.azure.com:443/``, your new variable assignment will look like this: ``private static readonly string _endpointUri = "https://cosmosacct.documents.azure.com:443/";``.
 
     > For example, if your **primary key** is ``elzirrKCnXlacvh1CRAnQdYVbVLspmYHQyYrhx0PltHi8wn5lHVHFnd1Xm3ad5cn4TUcH4U0MSeHsVykkFPHpQ==``, your new variable assignment will look like this: ``private static readonly string _primaryKey = "elzirrKCnXlacvh1CRAnQdYVbVLspmYHQyYrhx0PltHi8wn5lHVHFnd1Xm3ad5cn4TUcH4U0MSeHsVykkFPHpQ==";``.
-
-1. Locate the **Main** method:
-
-   ```csharp
-   public static async Task Main(string[] args)
-   {
-   }
-   ```
-
-1. Within the **Main** method, add the following lines of code to author a using block that creates and disposes a **CosmosClient** instance:
-
-   ```csharp
-   using (CosmosClient client = new CosmosClient(_endpointUri, _primaryKey))
-   {
-   }
-   ```
-
-1. Your `Program` class definition should now look like this:
-
-   ```csharp
-    public class Program
-    {
-        private static readonly string _endpointUri = "";
-        private static readonly string _primaryKey = "";
-        private static readonly string _databaseId = "NutritionDatabase";
-        private static readonly string _containerId = "FoodCollection";
-
-        public static async Task Main(string[] args)
-        {
-            using (CosmosClient client = new CosmosClient(_endpointUri, _primaryKey))
-            {
-
-            }
-        }
-    }
-   ```
 
    > We are now going to implement a sample query to make sure our client connection code works.
 
@@ -216,15 +59,10 @@ _ReadItemAsync allows a single item to be retrieved from Cosmos DB by its ID_
    ```csharp
    using (CosmosClient client = new CosmosClient(_endpointUri, _primaryKey))
    {
-
+       var database = client.GetDatabase(_databaseId);
+       var container = database.GetContainer(_containerId);
+    
    }
-   ```
-
-1. Add the following lines of code to create a variable named `container` that references the Cosmos DB container identified as `_containerId`
-
-   ```csharp
-   var database = client.GetDatabase(_databaseId);
-   var container = database.GetContainer(_containerId);
    ```
 
 1. Add the following lines of code to use the **ReadItemAsync** function to retrieve a single item from your Cosmos DB by its `id` and write its description to the console.
@@ -239,7 +77,7 @@ _ReadItemAsync allows a single item to be retrieved from Cosmos DB by its ID_
 
 1. Return to your terminal pane
 
-   > If you've closed the terminal right-click the **Explorer** pane and select the **Open in Command Prompt** menu option.
+   > If you've closed the terminal right-click the **Explorer** pane and select the **Open in Terminal** menu option.
 
 1. In the open terminal pane, enter and execute the following command:
 
@@ -296,7 +134,7 @@ _ReadItemAsync allows a single item to be retrieved from Cosmos DB by its ID_
 
 1.  Return to your terminal pane
 
-    > If you've closed the terminal right-click the **Explorer** pane and select the **Open in Command Prompt** menu option.
+    > If you've closed the terminal right-click the **Explorer** pane and select the **Open in Terminal** menu option.
 
 1.  In the open terminal pane, enter and execute the following command:
 
@@ -358,7 +196,7 @@ _ReadItemAsync allows a single item to be retrieved from Cosmos DB by its ID_
 
 1.  Return to your terminal pane
 
-    > If you've closed the terminal right-click the **Explorer** pane and select the **Open in Command Prompt** menu option.
+    > If you've closed the terminal right-click the **Explorer** pane and select the **Open in Terminal** menu option.
 
 1.  In the open terminal pane, enter and execute the following command:
 
