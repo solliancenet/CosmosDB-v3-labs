@@ -20,9 +20,29 @@ namespace DataGenerator
         {
             Console.WriteLine("Press any key to stop the console app...");
 
+            var tasks = new List<Task>();
+
             while (!Console.KeyAvailable)
             {
+                foreach (var action in GenerateActions())
+                {
+                    tasks.Add(AddItem(action));
+                    Console.Write("*");
+                }
+            }
 
+            Console.WriteLine("Stopping...");
+            await Task.WhenAll(tasks);
+        }
+
+        private static async Task AddItem(CartAction item)
+        {
+            using (var client = new CosmosClient(_endpointUrl, _primaryKey))
+            {
+                var db = client.GetDatabase(_databaseId);
+                var container = db.GetContainer(_containerId);
+
+                await container.CreateItemAsync(item, new PartitionKey(item.Item));
             }
         }
 

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Cosmos;
-using shared;
+using Shared;
 
 namespace ChangeFeedConsole
 {
@@ -24,6 +24,16 @@ namespace ChangeFeedConsole
                 var container = db.GetContainer(_containerId);
                 var destinationContainer = db.GetContainer(_destinationContainerId);
 
+                //todo: Add lab code here
+
+                Console.WriteLine("Started Change Feed Processor");
+                Console.WriteLine("Press any key to stop the processor...");
+
+                Console.ReadKey();
+
+                Console.WriteLine("Stopping Change Feed Processor");
+
+                //todo: Add stop code here
             }
         }
     }
