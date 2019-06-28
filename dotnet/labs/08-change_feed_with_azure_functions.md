@@ -4,13 +4,7 @@ In this lab you will use the Change Feed Processor Library and Azure Functions t
 
 ## Prerequisites
 
-In order to successfully complete this lab you will need the latest .NET Core SDK, and a text editor suitable for programming. This lab will use Visual Studio Code, an open source IDE provided by Microsoft.
-
-To get started with the .NET Core SDk, [Follow this Tutorial](https://aka.ms/dotnetcoregs)
-
-To download and use Visual Studio Code, [Click this Link](https://code.visualstudio.com/)
-
-Finally, you will need a Microsoft Azure account. Free accounts are available for demo purposes. [Visit the Azure Portal](https://portal.azure.com) for details.
+If this is your first lab, please [visit Lab00](00-account_setup.md) for setup instructions.
 
 ## Build A .NET Console App to Generate Data
 
