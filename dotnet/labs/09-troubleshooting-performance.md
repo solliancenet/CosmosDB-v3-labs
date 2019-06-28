@@ -62,7 +62,7 @@ In this lab, you will use the .NET SDK to tune Azure Cosmos DB requests to optim
 
 ## Examining Response Headers
 
-*Azure Cosmos DB returns various response headers that can give you more metadata about your request and what operations occured on the server-side. The .NET SDK exposes many of these headers to you as properties of the ``ResourceResponse<>`` class.*
+*Azure Cosmos DB returns various response headers that can give you more metadata about your request and what operations occurred on the server-side. The .NET SDK exposes many of these headers to you as properties of the ``ResourceResponse<>`` class.*
 
 ### Observe RU Charge for Large Item
 
@@ -167,9 +167,9 @@ In this lab, you will use the .NET SDK to tune Azure Cosmos DB requests to optim
 
 1. On the left side of the portal, click the **Resource groups** link.
 
-1. In the **Resource groups** blade, locate and select the **cosmosgroup-lab** *Resource Group*.
+1. In the **Resource groups** blade, locate and select the **cosmoslab** *Resource Group*.
 
-1. In the **cosmosgroup-lab** blade, select the **Azure Cosmos DB** account you recently created.
+1. In the **cosmoslab** blade, select the **Azure Cosmos DB** account you recently created.
 
 1. In the **Azure Cosmos DB** blade, locate and click the **Data Explorer** link on the left side of the blade.
 
@@ -258,9 +258,9 @@ In this lab, you will use the .NET SDK to tune Azure Cosmos DB requests to optim
 
 1. On the left side of the portal, click the **Resource groups** link.
 
-1. In the **Resource groups** blade, locate and select the **cosmosgroup-lab** *Resource Group*.
+1. In the **Resource groups** blade, locate and select the **cosmoslab** *Resource Group*.
 
-1. In the **cosmosgroup-lab** blade, select the **Azure Cosmos DB** account you recently created.
+1. In the **cosmoslab** blade, select the **Azure Cosmos DB** account you recently created.
 
 1. In the **Azure Cosmos DB** blade, locate and click the **Data Explorer** link on the left side of the blade.
 
@@ -321,7 +321,7 @@ In this lab, you will use the .NET SDK to tune Azure Cosmos DB requests to optim
     }
     ```
 
-    > This policy will index all paths in your JSON document. This policy implements maximum percision (-1) for both numbers (max 8) and strings (max 100) paths. This policy will also index spatial data.
+    > This policy will index all paths in your JSON document. This policy implements maximum precision (-1) for both numbers (max 8) and strings (max 100) paths. This policy will also index spatial data.
 
 1. Replace the indexing policy with a new policy that removes the ``/relatives/*`` path from the index:
 
@@ -411,9 +411,9 @@ In this lab, you will use the .NET SDK to tune Azure Cosmos DB requests to optim
 
 1. On the left side of the portal, click the **Resource groups** link.
 
-1. In the **Resource groups** blade, locate and select the **cosmosgroup-lab** *Resource Group*.
+1. In the **Resource groups** blade, locate and select the **cosmoslab** *Resource Group*.
 
-1. In the **cosmosgroup-lab** blade, select the **Azure Cosmos DB** account you recently created.
+1. In the **cosmoslab** blade, select the **Azure Cosmos DB** account you recently created.
 
 1. In the **Azure Cosmos DB** blade, locate and click the **Data Explorer** link on the left side of the blade.
 
@@ -650,9 +650,9 @@ In this lab, you will use the .NET SDK to tune Azure Cosmos DB requests to optim
 
 1. On the left side of the portal, click the **Resource groups** link.
 
-1. In the **Resource groups** blade, locate and select the **cosmosgroup-lab** *Resource Group*.
+1. In the **Resource groups** blade, locate and select the **cosmoslab** *Resource Group*.
 
-1. In the **cosmosgroup-lab** blade, select the **Azure Cosmos DB** account you recently created.
+1. In the **cosmoslab** blade, select the **Azure Cosmos DB** account you recently created.
 
 1. In the **Azure Cosmos DB** blade, locate and click the **Data Explorer** link on the left side of the blade.
 
@@ -700,7 +700,7 @@ In this lab, you will use the .NET SDK to tune Azure Cosmos DB requests to optim
 
 *You will now tune your requests to Azure Cosmos DB by manipulating the SQL query and properties of the **RequestOptions** class in the .NET SDK.*
 
-### Measuing RU Charge
+### Measuring RU Charge
 
 1. Locate the *using* block within the **Main** method and delete the code added for the previous section so it again looks like this:
 
@@ -1256,9 +1256,9 @@ In this lab, you will use the .NET SDK to tune Azure Cosmos DB requests to optim
 
 1. On the left side of the portal, click the **Resource groups** link.
 
-1. In the **Resource groups** blade, locate and select the **cosmosgroup-lab** *Resource Group*.
+1. In the **Resource groups** blade, locate and select the **cosmoslab** *Resource Group*.
 
-1. In the **cosmosgroup-lab** blade, select the **Azure Cosmos DB** account you recently created.
+1. In the **cosmoslab** blade, select the **Azure Cosmos DB** account you recently created.
 
 1. In the **Azure Cosmos DB** blade, locate and click the **Metrics** link on the left side of the blade under the **Monitoring** section. Observe the values in the *Number of requests* graph to see the volume of requests your lab work has been making to your Cosmos containers.
 
@@ -1379,9 +1379,9 @@ In this lab, you will use the .NET SDK to tune Azure Cosmos DB requests to optim
 
 1. On the left side of the portal, click the **Resource groups** link.
 
-1. In the **Resource groups** blade, locate and select the **cosmosgroup-lab** *Resource Group*.
+1. In the **Resource groups** blade, locate and select the **cosmoslab** *Resource Group*.
 
-1. In the **cosmosgroup-lab** blade, select the **Azure Cosmos DB** account you recently created.
+1. In the **cosmoslab** blade, select the **Azure Cosmos DB** account you recently created.
 
 1. In the **Azure Cosmos DB** blade, locate and click the **Data Explorer** link on the left side of the blade.
 

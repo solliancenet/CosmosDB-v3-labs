@@ -1,6 +1,6 @@
 # Authoring Azure Cosmos DB Stored Procedures for Multi-Document Transactions
 
-In this lab, you will author and execute multiple stored procedures within your Azure Cosmos DB instance. You will explore features unique to JavaScript stored procedures such as throwing errors for transaction rollback, logging using the JavaScript console and implementing a continuation model within a bounded execution enviornment.
+In this lab, you will author and execute multiple stored procedures within your Azure Cosmos DB instance. You will explore features unique to JavaScript stored procedures such as throwing errors for transaction rollback, logging using the JavaScript console and implementing a continuation model within a bounded execution environment.
 
 ## Author Simple Stored Procedures
 
@@ -340,7 +340,7 @@ In this lab, you will author and execute multiple stored procedures within your 
     }
     ```
 
-    > Transactions are deeply and natively integrated into Cosmos DB’s JavaScript programming model. Inside a JavaScript function, all operations are automatically wrapped under a single transaction. If the JavaScript completes without any exception, the operations to the database are committed. We are going to change the stored procedure to put in a different foodGroup name for the second item. This should cause the stored procedure to fail since the second item uses a different partition key. If there is any exception that’s propagated from the script, Cosmos DB’s JavaScript runtime will roll back the whole transaction. This will effectively ensure that the first or second items are not commited to the database.
+    > Transactions are deeply and natively integrated into Cosmos DB’s JavaScript programming model. Inside a JavaScript function, all operations are automatically wrapped under a single transaction. If the JavaScript completes without any exception, the operations to the database are committed. We are going to change the stored procedure to put in a different foodGroup name for the second item. This should cause the stored procedure to fail since the second item uses a different partition key. If there is any exception that’s propagated from the script, Cosmos DB’s JavaScript runtime will roll back the whole transaction. This will effectively ensure that the first or second items are not committed to the database.
 
 1. Click the **Update** button at the top of the tab.
 

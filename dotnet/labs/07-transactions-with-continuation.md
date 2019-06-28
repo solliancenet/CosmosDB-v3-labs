@@ -1,6 +1,6 @@
 # Authoring Azure Cosmos DB Stored Procedures with Continuation Tokens
 
-In this lab, you will author and execute multiple stored procedures within your Azure Cosmos DB instance. You will explore features unique to JavaScript stored procedures such as throwing errors for transaction rollback, logging using the JavaScript console and implementing a continuation model within a bounded execution enviornment.
+In this lab, you will author and execute multiple stored procedures within your Azure Cosmos DB instance. You will explore features unique to JavaScript stored procedures such as throwing errors for transaction rollback, logging using the JavaScript console and implementing a continuation model within a bounded execution environment.
 
 ## Author Stored Procedures using the Continuation Model
 
@@ -158,15 +158,15 @@ _You will now implement stored procedures that may execute longer than the bound
 
 1. In the **Explorer** pane verify that you have a **DataTypes.cs** file in your project folder.
 
-    > This file contains the data classes you will be working with in the following steps.
+   > This file contains the data classes you will be working with in the following steps.
 
 1. Double-click the **Program.cs** link in the **Explorer** pane to open the file in the editor.
 
-1. For the ``_endpointUri`` variable, replace the placeholder value with the **URI** value and for the ``_primaryKey`` variable, replace the placeholder value with the **PRIMARY KEY** value from your Azure Cosmos DB account. Use [these instructions](00-account_setup.md) to get these values if you do not already have them:
+1. For the `_endpointUri` variable, replace the placeholder value with the **URI** value and for the `_primaryKey` variable, replace the placeholder value with the **PRIMARY KEY** value from your Azure Cosmos DB account. Use [these instructions](00-account_setup.md) to get these values if you do not already have them:
 
-    > For example, if your **uri** is ``https://cosmosacct.documents.azure.com:443/``, your new variable assignment will look like this: ``private static readonly string _endpointUri = "https://cosmosacct.documents.azure.com:443/";``.
+   > For example, if your **uri** is `https://cosmosacct.documents.azure.com:443/`, your new variable assignment will look like this: `private static readonly string _endpointUri = "https://cosmosacct.documents.azure.com:443/";`.
 
-    > For example, if your **primary key** is ``elzirrKCnXlacvh1CRAnQdYVbVLspmYHQyYrhx0PltHi8wn5lHVHFnd1Xm3ad5cn4TUcH4U0MSeHsVykkFPHpQ==``, your new variable assignment will look like this: ``private static readonly string _primaryKey = "elzirrKCnXlacvh1CRAnQdYVbVLspmYHQyYrhx0PltHi8wn5lHVHFnd1Xm3ad5cn4TUcH4U0MSeHsVykkFPHpQ==";``.
+   > For example, if your **primary key** is `elzirrKCnXlacvh1CRAnQdYVbVLspmYHQyYrhx0PltHi8wn5lHVHFnd1Xm3ad5cn4TUcH4U0MSeHsVykkFPHpQ==`, your new variable assignment will look like this: `private static readonly string _primaryKey = "elzirrKCnXlacvh1CRAnQdYVbVLspmYHQyYrhx0PltHi8wn5lHVHFnd1Xm3ad5cn4TUcH4U0MSeHsVykkFPHpQ==";`.
 
 1. Save all of your open editor tabs.
 
@@ -224,7 +224,7 @@ _You will now implement stored procedures that may execute longer than the bound
    pointer += result.Response;
    ```
 
-   > Everytime the stored procedure returns how many documents were processed, we will increment the counter.
+   > Every time the stored procedure returns how many documents were processed, we will increment the counter.
 
 1. Still within the **while** block, add the following line of code to print out the amount of documents uploaded in the current iteration:
 
@@ -287,9 +287,9 @@ _You will now implement stored procedures that may execute longer than the bound
 
 1. On the left side of the portal, click the **Resource groups** link.
 
-1. In the **Resource groups** blade, locate and select the **cosmosgroup-lab** _Resource Group_.
+1. In the **Resource groups** blade, locate and select the **cosmoslab** _Resource Group_.
 
-1. In the **cosmosgroup-lab** blade, select the **Azure Cosmos DB** account you recently created.
+1. In the **cosmoslab** blade, select the **Azure Cosmos DB** account you recently created.
 
 1. In the **Azure Cosmos DB** blade, locate and click the **Data Explorer** link on the left side of the blade.
 
@@ -389,9 +389,9 @@ _You will now implement stored procedures that may execute longer than the bound
 
 1. On the left side of the portal, click the **Resource groups** link.
 
-1. In the **Resource groups** blade, locate and select the **cosmosgroup-lab** _Resource Group_.
+1. In the **Resource groups** blade, locate and select the **cosmoslab** _Resource Group_.
 
-1. In the **cosmosgroup-lab** blade, select the **Azure Cosmos DB** account you recently created.
+1. In the **cosmoslab** blade, select the **Azure Cosmos DB** account you recently created.
 
 1. In the **Azure Cosmos DB** blade, locate and click the **Data Explorer** link on the left side of the blade.
 

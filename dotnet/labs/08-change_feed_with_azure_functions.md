@@ -1,6 +1,6 @@
 # Azure Cosmos DB Change Feed
 
-In this lab you will use the Change Feed Procesor Library and Azure Functions to implement three use cases for the Azure Cosmos DB Change Feed
+In this lab you will use the Change Feed Processor Library and Azure Functions to implement three use cases for the Azure Cosmos DB Change Feed
 
 ## Prerequisites
 
@@ -14,7 +14,7 @@ Finally, you will need a Microsoft Azure account. Free accounts are available fo
 
 ## Build A .NET Console App to Generate Data
 
-_In order to simulate data flowing into our store, in the form of actions on an ecommerce website, we'll build a simple .NET Console App to generate and add documents to our Cosmos DB CartContainer_
+_In order to simulate data flowing into our store, in the form of actions on an e-commerce website, we'll build a simple .NET Console App to generate and add documents to our Cosmos DB CartContainer_
 
 1. On your local machine, locate the CosmosLabs folder in your Documents folder and open the Lab08 folder that will be used to contain the content of your .NET Core project.
 
@@ -36,9 +36,9 @@ _In order to simulate data flowing into our store, in the form of actions on an 
 
 ### Create Function to Add Documents to Cosmos DB
 
-_The key functionality of the console application is to add documents to our Cosmos DB to simulate activity on our ecommerce website. Here, you'll create a data definition for these documents and define a function to add them_
+_The key functionality of the console application is to add documents to our Cosmos DB to simulate activity on our e-commerce website. Here, you'll create a data definition for these documents and define a function to add them_
 
-1. Within the **program.cs** file in the **DataGenerator** folder, locate the **AddItem** method. The purpose of this method is to add an instace of **CartAction** to our CosmosDB Container.
+1. Within the **program.cs** file in the **DataGenerator** folder, locate the **AddItem** method. The purpose of this method is to add an instance of **CartAction** to our CosmosDB Container.
 
    > If you'd like to review how to add documents to a CosmosDB container, [refer to Lab05](05-build_net_app.md).
 
@@ -103,7 +103,7 @@ _The first use case we'll explore for Cosmos DB Change Feed is Live Migration. A
    ```csharp
    Container leaseContainer = await db.CreateContainerIfNotExists(
        id: "consoleLeases",
-       partiionKey: "/id",
+       partitionKey: "/id",
        throughput: 400
    );
    ```
@@ -124,7 +124,7 @@ _The first use case we'll explore for Cosmos DB Change Feed is Live Migration. A
                    .Build();
    ```
 
-   > Each time a set of changes is recieved, the Func<T> defined in **CreateChangeFeedProcessorBuilder** will be called. We're skipping the handling of those changes for the moment.
+   > Each time a set of changes is received, the Func<T> defined in **CreateChangeFeedProcessorBuilder** will be called. We're skipping the handling of those changes for the moment.
 
 1. In order for our processor to run, we have to start it. Following the definition of **processor** add the following line of code:
 
@@ -404,7 +404,7 @@ _The Materialized View pattern is used to generate pre-populated views of data i
 
 > The function works by polling your container on an interval and checking for changes since the last lease time. Each turn of the function may result in multiple documents that have changed, which is why the input is an IReadOnlyList of Documents.
 
-1. Add the following usings to the top of the **MaterializedViewFunction.cs** file:
+1. Add the following using statements to the top of the **MaterializedViewFunction.cs** file:
 
    ```csharp
    using System.Threading.Tasks;
@@ -703,13 +703,13 @@ _The Materialized View pattern is used to generate pre-populated views of data i
 
 1. You should see the asterisks in the **first** window as data is being generated, and in the **second** and **third** windows you should see console messages indicating that your functions are running.
 
-1. Open a browser window and navigate to the **cosmosdblab** Comsmos DB Data Explorer
+1. Open a browser window and navigate to the **cosmosdblab** CosmosDB Data Explorer
 
 1. Expand **StoreDatabase**, then **StateSales** and click **Items**
 
 1. You should see data being populated in the container by state, click on an item to see the contents of the data.
 
-   ![Comos DB StateSales](../media/08-cosmos-state-sales.jpg)
+   ![Cosmos DB StateSales](../media/08-cosmos-state-sales.jpg)
 
 1. In the **first** terminal window, press any key to stop data generation
 
@@ -719,7 +719,7 @@ _The Materialized View pattern is used to generate pre-populated views of data i
 
 ## Use Azure Cosmos DB Change Feed to Write Data to EventHub using Azure Functions
 
-_In the final example of a Change Feed use case in this lab, you'll write a simple Azure Function to write out change data to an Azure Event Hub. You'll use a stream procesor to create real-time data outputs that you can consume in Power BI to build an ecommerce dashboard._
+_In the final example of a Change Feed use case in this lab, you'll write a simple Azure Function to write out change data to an Azure Event Hub. You'll use a stream Processor to create real-time data outputs that you can consume in Power BI to build an e-commerce dashboard._
 
 ### Create a Power BI Account
 
@@ -777,7 +777,7 @@ _This step is optional, if you do not wish to connect to Power BI to visualize y
 
    1. Set _Table name_ to `averagePrice`
 
-   1. Click the **Authorize** button and follow the login promps to authorize this output in your Power BI account
+   1. Click the **Authorize** button and follow the login prompts to authorize this output in your Power BI account
 
    1. Click **Save**
 
@@ -857,7 +857,7 @@ _With all of the configuration out of the way, you'll see how simple it is to wr
 
 1. Modify the signature of the **Run** function by setting **databaseName** to `StoreDatabase`, **collectionName** to `CartContainer`, **ConnectionStringSetting** to `DBConnection` and **LeaseCollectionName** to `analyticsLeases`.
 
-1. In between the **ConnectionStringSetting** and **LeaseColelctionName** add the following line:
+1. In between the **ConnectionStringSetting** and **LeaseCollectionName** add the following line:
 
    ```csharp
    CreateLeaseCollectionIfNotExists = true,
@@ -1035,7 +1035,7 @@ _The remaining steps are optional, if you do not wish to visualize the Event Hub
 
    ![Power BI](../media/08-power-bi.jpg)
 
-1. In the top right of the screen select **Create** and choose **Dashboard** give the dashbaord any _Name_
+1. In the top right of the screen select **Create** and choose **Dashboard** give the dashboard any _Name_
 
 1. In the **Dashboard** screen, select **Add tile** from the top
 
@@ -1045,7 +1045,7 @@ _The remaining steps are optional, if you do not wish to visualize the Event Hub
 
    ![Power BI Custom Streaming Data](../media/08-pbi-custom-streaming-data.jpg)
 
-1. Choose **averagePrice** from the **Add custom sreaming data tile** window
+1. Choose **averagePrice** from the **Add custom streaming data tile** window
 
    ![Power BI averagePrice](../media/08-add-averageprice-pbi.jpg)
 
