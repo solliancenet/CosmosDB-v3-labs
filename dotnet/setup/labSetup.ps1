@@ -6,11 +6,40 @@ $randomNum = if ($null -eq $session) { Get-Random -Maximum 100000 } else { $sess
 $accountName = "cosmoslab$($randomNum)"
 $eventHubNS = "shoppingHub$($randomNum)"
 
-if ($teardown){
+if ($teardown) {
     # Remove the whole resource group
-    Write-Output "Removing all resources in '$($resourceGroupName)'"
+    Write-Output "Preparing to remove all resources in '$($resourceGroupName)'"
+
+    try {
+        $accounts = Get-AzResource -ResourceType "Microsoft.DocumentDb/databaseAccounts" -ApiVersion "2018-06-01" -ResourceGroupName $resourceGroupName -ErrorAction Stop | Select -ExpandProperty Name
+    }
+    catch {
+        Write-Output "Unable to locate resource group '$($resourceGroupName)' for removal. Please ensure that you are logged in to the correct Azure subscription."
+        exit
+    }
+
+    $structureMatch = $FALSE
+    if ($accounts.count -eq 1) {
+        $oneAccount = $accounts | Select -First 1
+        if ($oneAccount.StartsWith("cosmoslab")) {
+            $structureMatch = $TRUE
+        }
+    }
+
+    if (-not $structureMatch) {
+        Read-Host "Unable to confirm that resource group '$($resourceGroupName)' contains lab resources. Please verify resource group contents and delete manually from https://portal.azure.com. Press Enter to end script"
+        exit
+    }
+
+    $confirmation = Read-Host -Prompt "Removal of Azure Resource Group '$($resourceGroupName)' will also delete all resources within the resource group. Are you sure you want to continue with removal? (yes or no)"
     
-    Remove-AzResourceGroup -Name $resourceGroupName
+    if ($confirmation -eq 'yes') {
+        Remove-AzResourceGroup -Name $resourceGroupName
+        Write-Output "Lab resource teardown complete"
+    }
+    else {
+        Write-Output "Lab resource teardown cancelled"
+    }
 
     exit
 }
@@ -58,9 +87,9 @@ function New-Container ($resourceGroupName, $accountName, $databaseName, $contai
                         @{
                             "kind"="Spatial";
                             "dataType"="point";
-                        }
-                    )
-                });
+                            }
+                        )
+                    });
             };
         };
         "options"  = @{ "Throughput" = $throughput }
@@ -366,8 +395,8 @@ $CosmosDBProperties = @{
 }
 
 New-AzResource -ResourceType "Microsoft.DocumentDb/databaseAccounts" `
-     -ApiVersion "2015-04-08" -ResourceGroupName $resourceGroupName -Location $location `
-     -Name $accountName -PropertyObject $CosmosDBProperties -Force
+    -ApiVersion "2015-04-08" -ResourceGroupName $resourceGroupName -Location $location `
+    -Name $accountName -PropertyObject $CosmosDBProperties -Force
 
 New-Database $resourceGroupName $accountName "FinancialDatabase"
 New-Container $resourceGroupName $accountName "FinancialDatabase" "PeopleCollection" "/accountHolder/LastName"
@@ -377,7 +406,7 @@ New-Database $resourceGroupName $accountName "NutritionDatabase"
 New-Container $resourceGroupName $accountName "NutritionDatabase" "FoodCollection" "/foodGroup" 11000
 
 #Lab08
- New-Database $resourceGroupName $accountName "StoreDatabase"
+New-Database $resourceGroupName $accountName "StoreDatabase"
 New-Container $resourceGroupName $accountName "StoreDatabase" "CartContainer" "/Item"
 New-Container $resourceGroupName $accountName "StoreDatabase" "CartContainerByState" "/BuyerState"
 New-Container $resourceGroupName $accountName "StoreDatabase" "StateSales" "/State"
