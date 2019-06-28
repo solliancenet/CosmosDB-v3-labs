@@ -2,9 +2,7 @@
 
 In this lab you will use the Change Feed Processor Library and Azure Functions to implement three use cases for the Azure Cosmos DB Change Feed
 
-## Prerequisites
-
-If this is your first lab, please [visit Lab00](00-account_setup.md) for setup instructions.
+> If this is your first lab and you have not already completed the setup for the lab content see the instructions for [Account Setup](00-account_setup.md) before starting this lab.
 
 ## Build A .NET Console App to Generate Data
 

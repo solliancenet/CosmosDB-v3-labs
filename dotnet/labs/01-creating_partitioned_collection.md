@@ -2,6 +2,8 @@
 
 In this lab, you will create multiple Azure Cosmos DB containers using different partition keys and settings. You will then use the SQL API and .NET SDK to query specific containers using a single partition key or across multiple partition keys.
 
+> If you have not already completed setup for the lab content see the instructions for [Account Setup](00-account_setup.md) before starting this lab.
+
 ## Create Containers using the .NET SDK
 
 > You will start by using the .NET SDK to create containers to use in the lab.

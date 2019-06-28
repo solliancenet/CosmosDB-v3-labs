@@ -4,6 +4,8 @@
 
 _The SQL API supports optimistic concurrency control (OCC) through HTTP entity tags, or ETags. Every SQL API resource has an ETag, and the ETag is set on the server every time an item is updated. In this exercise, we will view the ETag property of a resource that is requested using the SDK._
 
+> If this is your first lab and you have not already completed the setup for the lab content see the instructions for [Account Setup](00-account_setup.md) before starting this lab.
+
 ### Create a .NET Core Project
 
 1. On your local machine, locate the CosmosLabs folder in your Documents folder and open the Lab10 folder that will be used to contain the content of your .NET Core project.

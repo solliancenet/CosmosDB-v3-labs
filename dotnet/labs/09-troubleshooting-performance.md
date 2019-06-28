@@ -2,11 +2,9 @@
 
 In this lab, you will use the .NET SDK to tune Azure Cosmos DB requests to optimize the performance and cost of your application.
 
-## Setup
+> If this is your first lab and you have not already completed the setup for the lab content see the instructions for [Account Setup](00-account_setup.md) before starting this lab.
 
-> Before you start this lab, you will need to create an Azure Cosmos DB database and container that you will use throughout the lab.
-
-### Create a .NET Core Project
+## Create a .NET Core Project
 
 1. On your local machine, locate the CosmosLabs folder in your Documents folder and open the Lab09 folder that will be used to contain the content of your .NET Core project.
 

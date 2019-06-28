@@ -2,6 +2,8 @@
 
 _After using the Azure Portal's **Data Explorer** to query an Azure Cosmos DB container. You are now going to use the .NET SDK to issue similar queries._
 
+> If this is your first lab and you have not already completed the setup for the lab content see the instructions for [Account Setup](00-account_setup.md) before starting this lab.
+
 ### Create a .NET Core Project
 
 1. On your local machine, locate the CosmosLabs folder in your Documents folder and open the Lab05 folder that will be used to contain the content of your .NET Core project.
