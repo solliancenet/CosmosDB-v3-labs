@@ -1,7 +1,6 @@
-param($session = $null, $location = "West US", [switch]$teardown)
+param($session = $null, $location = "West US", $resourceGroupName = "cosmoslabs", [switch]$teardown, [switch]$overwriteGroup)
 
 # Settings to apply to new deployment
-$resourceGroupName = "cosmoslabs"
 $randomNum = if ($null -eq $session) { Get-Random -Maximum 100000 } else { $session } # some resources need unique names - this could be user entered instead
 $accountName = "cosmoslab$($randomNum)"
 $eventHubNS = "shoppingHub$($randomNum)"
@@ -383,7 +382,16 @@ function Add-StreamProcessor($resourceGroupName, $location, $eventHubNS, $jobNam
 
 
 # Begin Setup
-New-AzResourceGroup -Name $resourceGroupName -Location $location
+if(!$overwriteGroup){
+    Get-AzResourceGroup -Name $resourceGroupName -ErrorVariable notPresent -ErrorAction SilentlyContinue
+
+    if(!$notPresent){
+        throw "A resource group called " + $resourceGroupName + " already exists. If you'd like to overwrite it, use the -overwriteGroup switch";
+    }
+
+}
+
+New-AzResourceGroup -Name $resourceGroupName -Location $location -Force
 
 $locations = @(
     @{ "locationName" = $location; "failoverPriority" = 0 }
