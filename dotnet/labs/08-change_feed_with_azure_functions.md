@@ -12,7 +12,7 @@ _In order to simulate data flowing into our store, in the form of actions on an 
 
 1. In the Lab08 folder, right-click the folder and select the **Open with Code** menu option.
 
-   > Alternatively, you can run a command prompt in your current directory and execute the `code .` command.
+   > Alternatively, you can run a terminal in your current directory and execute the `code .` command.
 
 1. In the explorer pane on the left, locate the **DataGenerator** folder and expand it.
 

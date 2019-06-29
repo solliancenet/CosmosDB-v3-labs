@@ -12,11 +12,11 @@ _The SQL API supports optimistic concurrency control (OCC) through HTTP entity t
 
 1. In the Lab10 folder, right-click the folder and select the **Open with Code** menu option.
 
-   > Alternatively, you can run a command prompt in your current directory and execute the `code .` command.
+   > Alternatively, you can run a terminal in your current directory and execute the `code .` command.
 
 1. In the Visual Studio Code window that appears, right-click the **Explorer** pane and select the **Open in Terminal** menu option.
 
-   ![Open in Terminal](../media/05-open_command_prompt.jpg)
+   ![Open in Terminal](../media/open_in_terminal.jpg)
 
 1) In the terminal pane, enter and execute the following command:
 
@@ -38,17 +38,17 @@ _The SQL API supports optimistic concurrency control (OCC) through HTTP entity t
 
 1. In the **Explorer** pane verify that you have a **DataTypes.cs** file in your project folder.
 
-    > This file contains the data classes you will be working with in the following steps.
+   > This file contains the data classes you will be working with in the following steps.
 
 1) Double-click the **Program.cs** link in the **Explorer** pane to open the file in the editor.
 
    ![Open editor](../media/05-program_editor.jpg)
 
-1. For the ``_endpointUri`` variable, replace the placeholder value with the **URI** value and for the ``_primaryKey`` variable, replace the placeholder value with the **PRIMARY KEY** value from your Azure Cosmos DB account. Use [these instructions](00-account_setup.md) to get these values if you do not already have them:
+1. For the `_endpointUri` variable, replace the placeholder value with the **URI** value and for the `_primaryKey` variable, replace the placeholder value with the **PRIMARY KEY** value from your Azure Cosmos DB account. Use [these instructions](00-account_setup.md) to get these values if you do not already have them:
 
-    > For example, if your **uri** is ``https://cosmosacct.documents.azure.com:443/``, your new variable assignment will look like this: ``private static readonly string _endpointUri = "https://cosmosacct.documents.azure.com:443/";``.
+   > For example, if your **uri** is `https://cosmosacct.documents.azure.com:443/`, your new variable assignment will look like this: `private static readonly string _endpointUri = "https://cosmosacct.documents.azure.com:443/";`.
 
-    > For example, if your **primary key** is ``elzirrKCnXlacvh1CRAnQdYVbVLspmYHQyYrhx0PltHi8wn5lHVHFnd1Xm3ad5cn4TUcH4U0MSeHsVykkFPHpQ==``, your new variable assignment will look like this: ``private static readonly string _primaryKey = "elzirrKCnXlacvh1CRAnQdYVbVLspmYHQyYrhx0PltHi8wn5lHVHFnd1Xm3ad5cn4TUcH4U0MSeHsVykkFPHpQ==";``.
+   > For example, if your **primary key** is `elzirrKCnXlacvh1CRAnQdYVbVLspmYHQyYrhx0PltHi8wn5lHVHFnd1Xm3ad5cn4TUcH4U0MSeHsVykkFPHpQ==`, your new variable assignment will look like this: `private static readonly string _primaryKey = "elzirrKCnXlacvh1CRAnQdYVbVLspmYHQyYrhx0PltHi8wn5lHVHFnd1Xm3ad5cn4TUcH4U0MSeHsVykkFPHpQ==";`.
 
    > We will now execute build the application to make sure our code compiles successfully.
 

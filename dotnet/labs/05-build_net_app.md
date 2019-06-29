@@ -12,11 +12,11 @@ _After using the Azure Portal's **Data Explorer** to query an Azure Cosmos DB co
 
    ![Open with Visual Studio Code](../media/03-open_with_code.jpg)
 
-   > Alternatively, you can run a command prompt in your current directory and execute the `code .` command.
+   > Alternatively, you can run a terminal in your current directory and execute the `code .` command.
 
 1. In the Visual Studio Code window that appears, right-click the **Explorer** pane and select the **Open in Terminal** menu option.
 
-   ![Open in Terminal](../media/03-open_command_prompt.jpg)
+   ![Open in Terminal](../media/open_in_terminal.jpg)
 
 1. In the terminal pane, enter and execute the following command:
 
