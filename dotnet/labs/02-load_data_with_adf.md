@@ -22,11 +22,7 @@ In this lab, you will populate an Azure Cosmos DB container from an existing set
 
     ![Cosmos resource](../media/03-cosmos_resource.jpg)
 
-1. In the **Azure Cosmos DB** blade, locate and click the **Overview** link on the left side of the blade.
-
-    ![Overview pane](../media/03-overview.jpg)
-
-1. At the top of the **Azure Cosmos DB** blade, click the **Add Container** button.
+1. In the **Azure Cosmos DB** blade, locate and click the **Overview** link on the left side of the blade. At the top click the **Add Container** button.
 
     ![Add container](../media/03-add_collection.jpg)
 
@@ -44,10 +40,6 @@ In this lab, you will populate an Azure Cosmos DB container from an existing set
 
     1. In the **Throughput** field, enter the value ``11000``.
 
-    1. Click the **+ Add Unique Key** link.
-
-    1. In the new **Unique Keys** field, enter the value ``/description``.
-
     1. Click the **OK** button.
 
     ![Add container](../media/04-add_collection_settings.jpg)
@@ -58,11 +50,7 @@ In this lab, you will populate an Azure Cosmos DB container from an existing set
 
 *The .NET SDK requires credentials to connect to your Azure Cosmos DB account. You will collect and store these credentials for use throughout the lab.*
 
-1. On the left side of the **Azure Cosmos DB** blade, locate the **Settings** section and click the **Keys** link.
-
-    ![Keys pane](../media/03-keys_pane.jpg)
-
-1. In the **Keys** pane, record the values in the **CONNECTION STRING**, **URI** and **PRIMARY KEY** fields. You will use these values later in this lab.
+1. On the left side of the **Azure Cosmos DB** blade, locate the **Settings** section and click the **Keys** link. In the **Keys** pane, record the values in the **CONNECTION STRING**, **URI** and **PRIMARY KEY** fields. You will use these values later in this lab.
 
     ![Credentials](../media/03-keys.jpg)
 
@@ -78,16 +66,11 @@ You will use **Azure Data Factory (ADF)** to import the JSON array stored in the
 
 1. In the **Resource groups** blade, locate and select the **cosmoslabs** *Resource Group*.
 
-
-1. Click **add** to add a new resource
+1. Click **Add** to add a new resource
 
     ![Add adf](../media/03-add_adf.jpg)
 
-1. Search for **Data Factory** and select it
-
-    ![adf-search](../media/03-adf_search.png)
-
-1. Create a new **Data Factory**. You should name this data factory **importnutritiondata** with a unique number appended and select the relevant Azure subscription. You should ensure your existing **cosmosdblab-group** resource group is selected as well as a Version **V2**. Select **East US** as the region. Click **create**.
+1. Search for **Data Factory** and select it. Create a new **Data Factory**. You should name this data factory **importnutritiondata** with a unique number appended and select the relevant Azure subscription. You should ensure your existing **cosmoslabs** resource group is selected as well as a Version **V2**. Select **East US** as the region. Click **create**.
 
     ![df](../media/03-adf_selections.jpg)
 
@@ -103,27 +86,27 @@ You will use **Azure Data Factory (ADF)** to import the JSON array stored in the
 
     ![](../media/03-adf_blob.jpg)
 
-1. Name the source **NutritionJson** and select **Use SAS URI** as the Authentication method. Please use the following SAS URI for read-only access to this Blob Storage container: https://cosmoslabsv3update.blob.core.windows.net/?sv=2018-03-28&ss=bfqt&srt=sco&sp=rl&st=2019-06-11T13%3A43%3A56Z&se=2020-06-12T13%3A43%3A00Z&sig=KJRYFY4%2Fm1pu6rklgvx8T%2BEl5JzF7LUt%2FErvKt1NBhw%3D
+    ![](../media/03-adf_blob2.jpg)
+
+1. Name the source **NutritionJson** and select **SAS URI** as the Authentication method. Please use the following SAS URI for read-only access to this Blob Storage container: https://cosmoslabsv3update.blob.core.windows.net/?sv=2018-03-28&ss=bfqt&srt=sco&sp=rl&st=2019-06-11T13%3A43%3A56Z&se=2020-06-12T13%3A43%3A00Z&sig=KJRYFY4%2Fm1pu6rklgvx8T%2BEl5JzF7LUt%2FErvKt1NBhw%3D
 
     ![](../media/03-adf_connecttoblob.jpg)
 
-1. Select the **nutrition** folder
+1. Click **Next** and then **Browse** to select the **nutrition** folder
 
     ![](../media/03-adf_choosestudents.jpg)
 
-1. Do not check **Copy file recursively** and **Binary Copy**. Also ensure that **Compression Type** is "none".
+1. Do not check **Copy file recursively** and **Binary Copy**. Also ensure that other fields are empty.
 
     ![](../media/03-adf_source_next.jpg)
 
-1. ADF should auto-detect the file format to be JSON. You can also select the file format as **JSON format.** You should also make sure you select **Array of Objects**  as the File pattern.
+1. Select the file format as **JSON format**. You should also make sure you select **Array of Objects**  as the File pattern.
 
     ![](../media/03-adf_source_dataset_format.jpg)
 
-1. You have now successfully connected the Blob Storage container with the nutrition.json file. You should select **NutritionJson** as the source and click **Next**.
+1. You have now successfully connected the Blob Storage container with the nutrition.json file as the source.
 
-    ![](../media/03-adf_SourceNext.JPG)
-
-1. Add the Cosmos DB target data store by selecting **Create new connection** and selecting **Azure Cosmos DB (SQL API)**.
+1. For the **Destination data store** add the Cosmos DB target data store by selecting **Create new connection** and selecting **Azure Cosmos DB (SQL API)**.
 
     ![](../media/03-adf_selecttarget.jpg)
 
@@ -135,7 +118,7 @@ You will use **Azure Data Factory (ADF)** to import the JSON array stored in the
 
     ![](../media/03-adf_destconnectionnext.jpg)
 
-1. Select your container from the drop-down menu. You will map your Blob storage file to the correct Cosmos DB container. Select **Skip column mapping for all tables** before continuing.
+1. Select your **FoodCollection** container from the drop-down menu. You will map your Blob storage file to the correct Cosmos DB container. Select **Skip column mapping for all tables** before continuing.
 
     ![](../media/03-adf_correcttable.jpg)
 
@@ -147,13 +130,11 @@ You will use **Azure Data Factory (ADF)** to import the JSON array stored in the
 
     ![](../media/03-adf_settings.jpg)
 
-1. After deployment is complete, select **Monitor**.
+1. Click **Next** to begin deployment After deployment is complete, select **Monitor**.
 
     ![](../media/03-adf_deployment.jpg)
 
 1. After a few minutes, refresh the page and the status for the ImportNutrition pipeline should be listed as **Succeeded**.
-
-    ![](../media/03-adf-succeeded.jpg)
 
 1. Once the import process has completed, close the ADF. You will now proceed to validate your imported data. 
 
