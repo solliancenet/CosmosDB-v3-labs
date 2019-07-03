@@ -6,6 +6,10 @@ $accountName = "cosmoslab$($randomNum)"
 $eventHubNS = "shoppingHub$($randomNum)"
 
 if ($teardown) {
+    if ($resourceGroupName -ieq "cosmoslabs"){
+        $resourceGroupName = Read-Host -Prompt "Enter the name of your resource group. If you don't know your resource group name locate the resources used for labs in the Azure portal"
+    }
+
     # Remove the whole resource group
     Write-Output "Preparing to remove all resources in '$($resourceGroupName)'"
 
