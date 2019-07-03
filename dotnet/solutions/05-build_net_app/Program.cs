@@ -25,7 +25,11 @@ public class Program
             Console.Out.WriteLine($"Read {candy.Description}");
 
             string sqlA = "SELECT f.description, f.manufacturerName, f.servings FROM foods f WHERE f.foodGroup = 'Sweets'";
-            FeedIterator<Food> queryA = container.GetItemQueryIterator<Food>(new QueryDefinition(sqlA), requestOptions: new QueryRequestOptions { MaxConcurrency = 1 });
+            FeedIterator<Food> queryA = container.GetItemQueryIterator<Food>(new QueryDefinition(sqlA), requestOptions: new QueryRequestOptions
+            {
+                MaxConcurrency = 1,
+                PartitionKey = new PartitionKey("Sweets")
+            });
             foreach (Food food in await queryA.ReadNextAsync())
             {
                 await Console.Out.WriteLineAsync($"{food.Description} by {food.ManufacturerName}");
